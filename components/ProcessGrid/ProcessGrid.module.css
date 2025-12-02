@@ -2,8 +2,7 @@
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 3rem 1.5rem;
-  border: 1px solid red ;
+  padding: 2rem 1.5rem;
 }
 
 .grid {
@@ -12,9 +11,9 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 800px) {
   .container {
-    padding: 4rem 2rem;
+    padding: 0rem 2rem;
   }
 
   .grid {
@@ -25,7 +24,7 @@
 
 @media (min-width: 1024px) {
   .container {
-    padding: 5rem 2rem;
+    padding: 0rem 2rem;
   }
 
   .grid {
