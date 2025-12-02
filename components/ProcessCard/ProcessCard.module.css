@@ -12,6 +12,7 @@
   align-items: center;
   text-align: center;
   font-family: inherit;
+  border: 1px solid green;
 }
 
 .card:hover {
