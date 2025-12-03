@@ -1,19 +1,21 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import styles from "./Header.module.css";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import SearchIcon from "@mui/icons-material/Search";
 
 export default function Header() {
+  const router = useRouter();
+
   const handleHelpClick = () => {
-    // Aqui será implementado o modal de dúvidas frequentes
-    console.log("Abrir modal de dúvidas frequentes");
+    router.push("/faq");
   };
 
   const handleSearchClick = () => {
     // Aqui será implementado o modal de consulta de processos
-    console.log("Abrir consulta de processos");
+    router.push("http://contribuinte.novaiguacu.rj.gov.br/#processos");
   };
 
   return (
