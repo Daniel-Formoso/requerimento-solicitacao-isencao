@@ -44,7 +44,7 @@ export default function Header() {
           </h1>
           <p className={styles.subtitle}>
             Escolha abaixo o processo que deseja solicitar a{" "}
-            <span>isenção de IPTU.</span>
+            <span>isenção ou imunidade de IPTU.</span>
           </p>
         </div>
       </div>
