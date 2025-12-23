@@ -23,7 +23,9 @@ export default function Header() {
       <div className={styles.container}>
         <div className={styles.topBar}>
           <div className={styles.logo}>
+            <a href="/">
             <img src="/assets/logo.png" alt="Logo da Prefeitura" />
+            </a>
           </div>
 
           <nav className={styles.navigation}>

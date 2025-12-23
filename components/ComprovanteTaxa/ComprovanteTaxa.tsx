@@ -35,11 +35,11 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
       <h1 className={styles.title}>{titulo}</h1>
 
       <div className={styles.alertBox}>
-        <div className={styles.alertIcon}>
-          <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
-        </div>
         <div className={styles.alertContent}>
-          <strong>ATENÇÃO</strong>
+          <span className={styles.alertTitle}>
+            <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+            ATENÇÃO
+          </span>
           <p>
             Para prosseguir com o preenchimento do formulário, é obrigatório o
             pagamento prévio da guia e o anexo do comprovante.
@@ -51,7 +51,14 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
         <h2 className={styles.sectionTitle}>1. Pagamento da Guia de Abertura</h2>
         <p className={styles.sectionText}>
           Se você ainda não pagou: Acesse o Portal do Contribuinte para gerar o{" "}
-          <strong>boleto da taxa de abertura</strong> e realize o pagamento.
+          <a
+            href="https://parcelamento.novaiguacu.rj.gov.br/taxa-abertura-processo-inicio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.linkBoleto}
+          >
+            boleto da taxa de abertura
+          </a> e realize o pagamento.
         </p>
         <p className={styles.attention}>
           <strong>Atenção:</strong> Você deve salvar o Comprovante de Pagamento
@@ -70,6 +77,8 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
         </p>
       </div>
 
+      <div className={styles.divider}></div>
+
       <div className={styles.uploadSection}>
         <div className={styles.uploadField}>
           <label className={styles.label}>
@@ -87,7 +96,6 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
           </label>
           {guia && <p className={styles.fileName}>{guia.name}</p>}
         </div>
-
         <div className={styles.uploadField}>
           <label className={styles.label}>
             Comprovante <span className={styles.required}>*</span>
@@ -105,7 +113,7 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
           {comprovante && <p className={styles.fileName}>{comprovante.name}</p>}
         </div>
       </div>
-
+      <div className={styles.divider}></div>
       <button
         className={styles.continueButton}
         onClick={handleSubmit}
