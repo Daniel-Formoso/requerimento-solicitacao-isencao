@@ -2,6 +2,7 @@
 
 import React from "react";
 import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
 import styles from "./page.module.css";
 
@@ -21,6 +22,7 @@ export default function ImunidadeInstituicoesPage() {
           onContinue={handleContinue}
         />
       </main>
+      <Footer />
     </div>
   );
 }
