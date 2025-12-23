@@ -1,0 +1,26 @@
+"use client";
+
+import React from "react";
+import Header from "@/components/Header/Header";
+import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
+import styles from "./page.module.css";
+
+export default function ImunidadeInstituicoesPage() {
+  const handleContinue = (guia: File | null, comprovante: File | null) => {
+    console.log("Guia:", guia);
+    console.log("Comprovante:", comprovante);
+    // Aqui você poderá avançar para a próxima etapa do formulário
+  };
+
+  return (
+    <div className={styles.page}>
+      <Header />
+      <main className={styles.main}>
+        <ComprovanteTaxa
+          titulo="Comprovante da Taxa de Abertura"
+          onContinue={handleContinue}
+        />
+      </main>
+    </div>
+  );
+}
