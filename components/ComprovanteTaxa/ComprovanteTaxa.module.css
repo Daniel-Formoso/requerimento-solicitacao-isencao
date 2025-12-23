@@ -1,3 +1,14 @@
+/* Link para o boleto da taxa de abertura */
+.linkBoleto {
+  color: #3a3570;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.linkBoleto:hover {
+  color: #EB5F1A;
+}
 .container {
   max-width: 960px;
   margin: 0 auto;
@@ -14,44 +25,41 @@
   padding-bottom: 20px;
 }
 
+
 .alertBox {
   background-color: #fff8e1;
   border-left: 4px solid #EB5F1A;
   padding: 16px 20px;
   margin-bottom: 40px;
   display: flex;
-  /* align-items: flex-start; */
-  gap: 12px;
-  border-radius: 8px;
-  /* border: 1px solid red; */
-}
-
-.alertIcon {
-  flex-shrink: 0;
-  display: flex;
+  justify-content: center;
   align-items: center;
-  margin-top: 2px;
+  border-radius: 8px;
 }
 
 .alertContent {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  text-align: center;
+  width: 100%;
 }
 
-.alertContent strong {
+.alertTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   color: #EB5F1A;
-  font-size: 14px;
-  display: block;
+  font-size: 16px;
   font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .alertContent p {
   color: #5d4e37;
   line-height: 1.5;
   margin: 0;
-  display: block;
   font-size: 14px;
 }
 
@@ -82,11 +90,22 @@
   color: #ff9800;
 }
 
+
 .uploadSection {
   display: flex;
   gap: 32px;
-  margin: 40px 0;
+  margin: 0 auto 0 auto;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  max-width: 600px;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 32px 0 24px 0;
 }
 
 .uploadField {
@@ -100,6 +119,7 @@
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .required {
@@ -135,10 +155,11 @@
   font-size: 14px;
 }
 
+
 .continueButton {
   display: block;
   width: 200px;
-  margin: 40px auto 0;
+  margin: 48px auto 0;
   padding: 16px 32px;
   background-color: #3a3570;
   color: white;
