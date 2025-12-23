@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/Footer/Footer";
 import styles from "./page.module.css";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddIcon from "@mui/icons-material/Add";
@@ -124,6 +125,7 @@ export default function FAQPage() {
           </div>
         ))}
       </div>
+      <Footer />
     </div>
   );
 }
