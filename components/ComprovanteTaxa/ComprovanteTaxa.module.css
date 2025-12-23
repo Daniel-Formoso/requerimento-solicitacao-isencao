@@ -1,0 +1,155 @@
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.title {
+  color: #3a3570;
+  font-size: 32px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 20px;
+}
+
+.alertBox {
+  background-color: #fff8e1;
+  border-left: 4px solid #EB5F1A;
+  padding: 16px 20px;
+  margin-bottom: 40px;
+  display: flex;
+  /* align-items: flex-start; */
+  gap: 12px;
+  border-radius: 8px;
+  /* border: 1px solid red; */
+}
+
+.alertIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.alertContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alertContent strong {
+  color: #EB5F1A;
+  font-size: 14px;
+  display: block;
+  font-weight: 600;
+}
+
+.alertContent p {
+  color: #5d4e37;
+  line-height: 1.5;
+  margin: 0;
+  display: block;
+  font-size: 14px;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  color: #3a3570;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.sectionText {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.attention {
+  color: #666;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+
+.attention strong {
+  color: #ff9800;
+}
+
+.uploadSection {
+  display: flex;
+  gap: 32px;
+  margin: 40px 0;
+  flex-wrap: wrap;
+}
+
+.uploadField {
+  flex: 1;
+  min-width: 280px;
+}
+
+.label {
+  display: block;
+  color: #3a3570;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.required {
+  color: #ff0000;
+}
+
+.uploadButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px;
+  background-color: #3a3570;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.uploadButton:hover {
+  background-color: #EB5F1A;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileName {
+  margin-top: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.continueButton {
+  display: block;
+  width: 200px;
+  margin: 40px auto 0;
+  padding: 16px 32px;
+  background-color: #3a3570;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.continueButton:hover {
+  background-color: #EB5F1A;
+}

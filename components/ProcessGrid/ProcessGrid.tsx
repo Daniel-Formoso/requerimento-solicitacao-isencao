@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import ProcessCard from "../ProcessCard/ProcessCard";
 import styles from "./ProcessGrid.module.css";
 import ElderlyIcon from "@mui/icons-material/Elderly";
@@ -16,6 +17,7 @@ import HandshakeIcon from "@mui/icons-material/Handshake";
 
 
 export default function ProcessGrid() {
+  const router = useRouter();
   const iconStyle = { fontSize: 56, color: "#EB5F1A", backgroundColor: "none" };
 
   const processes = [
@@ -25,6 +27,7 @@ export default function ProcessGrid() {
       processType: "Isenção",
       description: "Imóvel de idoso com renda até 2 salários mínimos.",
       icon: <ElderlyIcon sx={iconStyle} />,
+      route: "/formularios/isencao-idoso",
     },
     {
       id: 2,
@@ -32,6 +35,7 @@ export default function ProcessGrid() {
       processType: "Isenção",
       description: "Imóvel de ex-combatente ou cônjuge, único e residencial.",
       icon: <MilitaryTechIcon sx={iconStyle} />,
+      route: "/formularios/isencao-excombatente",
     },
     {
       id: 3,
@@ -39,6 +43,7 @@ export default function ProcessGrid() {
       processType: "Isenção",
       description: "Imóvel de PCD ou ascendente direto, único e residencial.",
       icon: <AccessibleIcon sx={iconStyle} />,
+      route: "/formularios/isencao-pcd",
     },
     {
       id: 4,
@@ -47,6 +52,7 @@ export default function ProcessGrid() {
       description:
         "Imóvel alugado ou cedido à Administração Pública Municipal.",
       icon: <AccountBalanceIcon sx={iconStyle} />,
+      route: "/formularios/isencao-imovel-cedido",
     },
     {
       id: 5,
@@ -54,6 +60,7 @@ export default function ProcessGrid() {
       processType: "Isenção",
       description: "Imóvel destinado ao funcionamento de templos religiosos.",
       icon: <ChurchIcon sx={iconStyle} />,
+      route: "/formularios/isencao-templo-religioso",
     },
     {
       id: 6,
@@ -62,6 +69,7 @@ export default function ProcessGrid() {
       description:
         "Isenção de taxas para templos religiosos.",
       icon: <MonetizationOnIcon sx={iconStyle} />,
+      route: "/formularios/isencao-taxas-mercantis",
     },
         {
       id: 7,
@@ -70,6 +78,7 @@ export default function ProcessGrid() {
       description:
         "Imóvel destinado ao funcionamento de templos religiosos.",
       icon: <ChurchIcon sx={iconStyle} />,
+      route: "/formularios/imunidade-templo-religioso",
     },
         {
       id: 8,
@@ -78,6 +87,7 @@ export default function ProcessGrid() {
       description:
         "Imunidade para instituições sociais.",
       icon: <VolunteerActivismIcon sx={iconStyle} />,
+      route: "/formularios/imunidade-instituicoes",
     },
         {
       id: 9,
@@ -86,6 +96,7 @@ export default function ProcessGrid() {
       description:
         "Imunidade para sindicatos e órgãos de classe.",
       icon: <GroupsIcon sx={iconStyle} />,
+      route: "/formularios/imunidade-sindicatos",
     },
         {
       id: 10,
@@ -94,6 +105,7 @@ export default function ProcessGrid() {
       description:
         "Imunidade para imóveis de entes públicos.",
       icon: <HandshakeIcon sx={iconStyle} />,
+      route: "/formularios/imunidade-reciproca",
     },
   ];
 
@@ -107,9 +119,7 @@ export default function ProcessGrid() {
             processType={process.processType}
             description={process.description}
             icon={process.icon}
-            onClick={() =>
-              console.log(`Processo selecionado: ${process.title}`)
-            }
+            onClick={() => router.push(process.route)}
           />
         ))}
       </div>
