@@ -16,13 +16,13 @@
 }
 
 .title {
-  color: #3a3570;
-  font-size: 32px;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 40px;
+  color: #2b2862;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: left;
+  margin-bottom: 24px;
   border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 20px;
+  padding-bottom: 16px;
 }
 
 
@@ -97,7 +97,7 @@
   margin: 0 auto 0 auto;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   max-width: 600px;
 }
 
@@ -111,6 +111,10 @@
 .uploadField {
   flex: 1;
   min-width: 280px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
 }
 
 .label {
@@ -131,18 +135,22 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 16px;
-  background-color: #3a3570;
+  padding: 12px 24px;
+  background-color: #2b2862;
   color: white;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .uploadButton:hover {
   background-color: #EB5F1A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(235, 95, 26, 0.3);
 }
 
 .fileInput {
@@ -158,19 +166,23 @@
 
 .continueButton {
   display: block;
-  width: 200px;
-  margin: 48px auto 0;
-  padding: 16px 32px;
-  background-color: #3a3570;
+  width: auto;
+  margin: 48px 0 0 auto;
+  padding: 12px 24px;
+  background-color: #2b2862;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 4px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .continueButton:hover {
   background-color: #EB5F1A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(235, 95, 26, 0.3);
 }

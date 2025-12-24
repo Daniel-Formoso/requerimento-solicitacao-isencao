@@ -24,7 +24,7 @@ export default function ImunidadeInstituicoesPage() {
       />
       <main className={styles.main}>
         <ComprovanteTaxa
-          titulo="Comprovante da Taxa de Abertura"
+          titulo="01. Comprovante da Taxa de Abertura"
           onContinue={handleContinue}
         />
       </main>
