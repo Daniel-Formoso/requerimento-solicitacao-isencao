@@ -5,6 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
 import styles from "./page.module.css";
+import AccessibleIcon from "@mui/icons-material/Accessible";
 
 export default function IsencaoPcdPage() {
   const handleContinue = (guia: File | null, comprovante: File | null) => {
@@ -15,7 +16,12 @@ export default function IsencaoPcdPage() {
 
   return (
     <div className={styles.page}>
-      <Header />
+      <Header 
+        icon={<AccessibleIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
+        processType="ISENÇÃO"
+        title="Pessoa com Deficiência (PCD)"
+        description="Imóvel de PCD ou ascendente direto, único e residencial."
+      />
       <main className={styles.main}>
         <ComprovanteTaxa
           titulo="Comprovante da Taxa de Abertura"

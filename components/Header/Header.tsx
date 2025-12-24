@@ -6,7 +6,14 @@ import styles from "./Header.module.css";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import SearchIcon from "@mui/icons-material/Search";
 
-export default function Header() {
+interface HeaderProps {
+  icon?: React.ReactNode;
+  processType?: string;
+  title?: string;
+  description?: string;
+}
+
+export default function Header({ icon, processType, title, description }: HeaderProps) {
   const router = useRouter();
 
   const handleHelpClick = () => {
@@ -41,13 +48,35 @@ export default function Header() {
         </div>
 
         <div className={styles.titleSection}>
-          <h1 className={styles.title}>
-            Requerimento de Solicitação de Isenção e Imunidade
-          </h1>
-          <p className={styles.subtitle}>
-            Escolha abaixo o processo que deseja solicitar a{" "}
-            <span>isenção ou imunidade de IPTU.</span>
-          </p>
+          {icon ? (
+            <div className={styles.formHeader}>
+              <div className={styles.topRow}>
+                <div className={styles.iconWrapper}>
+                  {icon}
+                </div>
+                <h1 className={styles.title}>
+                  {title}
+                </h1>
+              </div>
+              {processType && (
+                <span className={styles.processType}>{processType}</span>
+              )}
+            </div>
+          ) : (
+            <div className={styles.defaultHeader}>
+              <h1 className={styles.title}>
+                {title || "Requerimento de Solicitação de Isenção e Imunidade"}
+              </h1>
+              <p className={styles.subtitle}>
+                {description || (
+                  <>
+                    Escolha abaixo o processo que deseja solicitar a{" "}
+                    <span>isenção ou imunidade de IPTU.</span>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </header>
