@@ -5,6 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
 import styles from "./page.module.css";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 
 export default function ImunidadeInstituicoesPage() {
   const handleContinue = (guia: File | null, comprovante: File | null) => {
@@ -15,7 +16,12 @@ export default function ImunidadeInstituicoesPage() {
 
   return (
     <div className={styles.page}>
-      <Header />
+      <Header 
+        icon={<VolunteerActivismIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
+        processType="IMUNIDADE"
+        title="Instituições sem fins lucrativos"
+        description="Imunidade para instituições sociais."
+      />
       <main className={styles.main}>
         <ComprovanteTaxa
           titulo="Comprovante da Taxa de Abertura"

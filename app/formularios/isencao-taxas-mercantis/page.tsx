@@ -5,6 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
 import styles from "./page.module.css";
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 export default function IsencaoTaxasMercantisPage() {
   const handleContinue = (guia: File | null, comprovante: File | null) => {
@@ -15,7 +16,12 @@ export default function IsencaoTaxasMercantisPage() {
 
   return (
     <div className={styles.page}>
-      <Header />
+      <Header 
+        icon={<MonetizationOnIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
+        processType="ISENÇÃO"
+        title="Taxas mercantis para Templos Religiosos"
+        description="Isenção de taxas para templos religiosos."
+      />
       <main className={styles.main}>
         <ComprovanteTaxa
           titulo="Comprovante da Taxa de Abertura"

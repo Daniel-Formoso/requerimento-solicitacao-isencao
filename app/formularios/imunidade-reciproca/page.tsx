@@ -5,6 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
 import styles from "./page.module.css";
+import HandshakeIcon from "@mui/icons-material/Handshake";
 
 export default function ImunidadeReciprocaPage() {
   const handleContinue = (guia: File | null, comprovante: File | null) => {
@@ -15,7 +16,12 @@ export default function ImunidadeReciprocaPage() {
 
   return (
     <div className={styles.page}>
-      <Header />
+      <Header 
+        icon={<HandshakeIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
+        processType="IMUNIDADE"
+        title="Imunidade Recíproca"
+        description="Imunidade para órgãos públicos federais, estaduais e municipais."
+      />
       <main className={styles.main}>
         <ComprovanteTaxa
           titulo="Comprovante da Taxa de Abertura"
