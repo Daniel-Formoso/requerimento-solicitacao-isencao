@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Portal de Isenção e Imunidade Tributária",
+  title: "Portal de Isenção e Imunidade",
   description:
-    "Sistema digital para abertura de processos de isenção e imunidade tributária",
+    "Portal de requerimento digital para solicitação de isenção e imunidade.",
 };
 
 export default function RootLayout({
@@ -14,6 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="icon" href="/assets/logo_ico.ico" sizes="any" />
+      </head>
       <body>{children}</body>
     </html>
   );
