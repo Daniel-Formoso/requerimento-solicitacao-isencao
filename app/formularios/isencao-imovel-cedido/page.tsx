@@ -5,6 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
 import styles from "./page.module.css";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 export default function IsencaoImovelCedidoPage() {
   const handleContinue = (guia: File | null, comprovante: File | null) => {
@@ -15,7 +16,12 @@ export default function IsencaoImovelCedidoPage() {
 
   return (
     <div className={styles.page}>
-      <Header />
+      <Header 
+        icon={<AccountBalanceIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
+        processType="ISENÇÃO"
+        title="Imóvel cedido à Prefeitura"
+        description="Imóvel alugado ou cedido à Administração Pública Municipal."
+      />
       <main className={styles.main}>
         <ComprovanteTaxa
           titulo="Comprovante da Taxa de Abertura"
