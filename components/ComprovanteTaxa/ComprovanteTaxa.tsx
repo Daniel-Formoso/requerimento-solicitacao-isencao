@@ -77,7 +77,7 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
         </p>
       </div>
 
-      <div className={styles.divider}></div>
+      {/* <div className={styles.divider}></div> */}
 
       <div className={styles.uploadSection}>
         <div className={styles.uploadField}>

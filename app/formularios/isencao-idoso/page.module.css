@@ -1,11 +1,510 @@
 .page {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 .main {
   flex: 1;
+  padding: 0;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
   padding: 40px 20px;
-  background-color: #f5f5f5;
+}
+
+/* Seções */
+.section {
+  margin-bottom: 24px;
+  transition: opacity 0.3s ease;
+}
+
+.sectionActive {
+  animation: fadeIn 0.5s ease;
+}
+
+.sectionCompleted {
+  opacity: 0.95;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.5;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header da Seção */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.sectionHeader:hover {
+  border-bottom-color: #2b2862;
+}
+
+.sectionHeaderIcons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionTitle {
+  color: #2b2862;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.checkIcon {
+  color: #4caf50;
+  font-size: 32px;
+}
+
+.expandIcon {
+  color: #2b2862;
+  font-size: 32px;
+  transition: transform 0.3s ease;
+}
+
+.expandIconOpen {
+  transform: rotate(180deg);
+}
+
+.sectionContent {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+  to {
+    opacity: 1;
+    max-height: 5000px;
+  }
+}
+
+/* Form Groups */
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  color: #2b2862;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.required {
+  color: #eb5f1a;
+  margin-left: 4px;
+}
+
+/* Inputs */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #2b2862;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: #2b2862;
+  box-shadow: 0 0 0 3px rgba(43, 40, 98, 0.1);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #999;
+}
+
+.inputHighlight {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2b2862;
+  background-color: #fff8e1;
+  border: 2px solid #eb5f1a;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.inputHighlight:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: #eb5f1a;
+  box-shadow: 0 0 0 3px rgba(235, 95, 26, 0.15);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Grid Layouts */
+.gridTwo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.gridThree {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .gridTwo,
+  .gridThree {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Radio Buttons */
+.radioGroup {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2b2862;
+  position: relative;
+  padding-left: 32px;
+}
+
+.radioInput {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.radioCustom {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 20px;
+  background-color: #f9f9f9;
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.radioInput:checked ~ .radioCustom {
+  background-color: #2b2862;
+  border-color: #2b2862;
+}
+
+.radioCustom::after {
+  content: "";
+  position: absolute;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+.radioInput:checked ~ .radioCustom::after {
+  display: block;
+}
+
+/* Checkboxes */
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2b2862;
+  position: relative;
+  padding-left: 32px;
+  line-height: 1.6;
+}
+
+.checkbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkboxCustom {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  height: 20px;
+  width: 20px;
+  background-color: #f9f9f9;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.checkbox:checked ~ .checkboxCustom {
+  background-color: #2b2862;
+  border-color: #2b2862;
+}
+
+.checkboxCustom::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox:checked ~ .checkboxCustom::after {
+  display: block;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Upload */
+.uploadList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.uploadItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.uploadLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #2b2862;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.uploadLabel:hover {
+  background-color: #2b2862;
+  color: #ffffff;
+  border-color: #2b2862;
+}
+
+.uploadLabel:hover .uploadIcon {
+  color: #ffffff;
+}
+
+.uploadIcon {
+  color: #2b2862;
+  font-size: 24px;
+  transition: color 0.3s ease;
+}
+
+.uploadText {
+  flex: 1;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileName {
+  font-size: 12px;
+  color: #4caf50;
+  padding-left: 20px;
+  font-weight: 500;
+}
+
+/* Botões */
+.btnContinue,
+.btnSubmit {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #2b2862;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-left: auto;
+}
+
+.btnContinue:hover:not(:disabled),
+.btnSubmit:hover:not(:disabled) {
+  background-color: #eb5f1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(235, 95, 26, 0.3);
+}
+
+.btnContinue:disabled,
+.btnSubmit:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btnSubmit {
+  display: block;
+  margin-left: auto;
+  padding: 14px 32px;
+  font-size: 16px;
+}
+
+/* Subseções */
+.conjugeSection,
+.procuradorSection,
+.testemunhaBox {
+  background-color: #f9f9f9;
+  padding: 24px;
+  border-radius: 4px;
+  margin-top: 20px;
+  border-left: 4px solid #2b2862;
+}
+
+.subTitle {
+  color: #2b2862;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.helperText {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* Termo de Aceite */
+.termoBox {
+  background-color: #fff8e1;
+  padding: 20px;
+  border-radius: 4px;
+  border-left: 4px solid #eb5f1a;
+  margin: 24px 0;
+}
+
+.charCount {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Rodapé Informativo */
+.infoFooter {
+  background-color: #2b2862;
+  color: #ffffff;
+  padding: 32px;
+  border-radius: 4px;
+  margin-top: 60px;
+}
+
+.infoTitle {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.infoList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.infoList li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  line-height: 1.6;
+}
+
+.infoList li:last-child {
+  border-bottom: none;
+}
+
+.infoList strong {
+  color: #eb5f1a;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main {
+    padding: 20px 16px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+
+  .radioGroup {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btnSubmit {
+    width: 100%;
+    padding: 16px 24px;
+  }
+
+  .conjugeSection,
+  .procuradorSection,
+  .testemunhaBox {
+    padding: 16px;
+  }
 }
