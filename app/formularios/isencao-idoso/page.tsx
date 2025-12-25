@@ -1091,7 +1091,7 @@ export default function IsencaoIdosoPage() {
             <div className={styles.alertContent}>
               <span className={styles.alertTitle}>
                 <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
-                OBS:
+                ATENÇÃO:
               </span>
               <p>
                 Se você não for o contribuinte responsável pelo imóvel, é necessário preencher a procuração na próxima tela.
@@ -2417,7 +2417,7 @@ export default function IsencaoIdosoPage() {
             <div className={styles.alertContent}>
               <span className={styles.alertTitle}>
                 <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
-                OBS:
+                ATENÇÃO:
               </span>
               <p>
                 A petição serve para detalhar, justificar ou formalizar o seu pedido junto à Prefeitura. Caso deseje apresentar argumentos, solicitações específicas ou documentos complementares, anexe o arquivo PDF aqui.
@@ -2473,13 +2473,7 @@ export default function IsencaoIdosoPage() {
         {/* Rodapé Informativo */}
         <div className={styles.infoFooter}>
           <div className={styles.infoHeader}>
-            <div className={styles.infoIcon}>
-              <WarningIcon sx={{ fontSize: 40, color: "#EB5F1A" }} />
-            </div>
-            <div>
-              <h3 className={styles.infoTitle}>Informações Importantes</h3>
-              <p className={styles.infoSubtitle}>Fique atento aos prazos e requisitos do processo</p>
-            </div>
+            <h3 className={styles.infoTitle}>Informações Importantes</h3>
           </div>
           <div className={styles.infoCards}>
             <div className={styles.infoCard}>
