@@ -519,25 +519,8 @@
 }
 
 .infoHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  gap: 12px;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.infoIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
-  border-radius: 12px;
-  flex-shrink: 0;
+  margin-bottom: 32px;
 }
 
 .infoTitle {
@@ -548,18 +531,10 @@
   letter-spacing: -0.3px;
 }
 
-.infoSubtitle {
-  color: #666;
-  font-size: 14px;
-  margin: 4px 0 0 0;
-  font-weight: 400;
-}
-
 .infoCards {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -568,16 +543,13 @@
   background: #ffffff;
   border: 1px solid #e8e8e8;
   border-radius: 10px;
-  padding: 20px;
+  padding: 24px;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 12px;
-  flex: 1;
-  min-width: 280px;
-  max-width: 320px;
 }
 
 .infoCard:hover {
@@ -606,15 +578,15 @@
 
 .infoCardTitle {
   color: #2b2862;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0 0 8px 0;
 }
 
 .infoCardText {
-  color: #555;
+  color: #666;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
   margin: 0;
 }
 
@@ -648,12 +620,6 @@
   .infoFooter {
     padding: 28px 20px;
     margin-top: 40px;
-  }
-
-  .infoHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
   }
 
   .infoTitle {
