@@ -9,6 +9,7 @@ import ElderlyIcon from "@mui/icons-material/Elderly";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import WarningIcon from "@mui/icons-material/Warning";
 
 export default function IsencaoIdosoPage() {
   // Estado para controlar qual seção está ativa
@@ -30,6 +31,14 @@ export default function IsencaoIdosoPage() {
   const [cpf, setCpf] = useState("");
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
+
+  // Estados de validação e erro da Seção 2
+  const [nomeError, setNomeError] = useState("");
+  const [cpfError, setCpfError] = useState("");
+  const [telefoneError, setTelefoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [processoAnteriorError, setProcessoAnteriorError] = useState("");
+  const [certidaoAnteriorError, setCertidaoAnteriorError] = useState("");
 
   // Estados da Seção 3 - Localização do Imóvel
   const [inscricaoImobiliaria, setInscricaoImobiliaria] = useState("");
@@ -90,17 +99,197 @@ export default function IsencaoIdosoPage() {
   const [docPeticao, setDocPeticao] = useState<File | null>(null);
   const [aceiteTermo, setAceiteTermo] = useState(false);
 
+  // Funções de formatação e validação
+  const formatarCPF = (valor: string): string => {
+    const numeros = valor.replace(/\D/g, "");
+    if (numeros.length <= 11) {
+      return numeros
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    }
+    return cpf;
+  };
+
+  const validarCPF = (cpf: string): boolean => {
+    const numeros = cpf.replace(/\D/g, "");
+    if (numeros.length !== 11) return false;
+    
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1+$/.test(numeros)) return false;
+    
+    // Valida primeiro dígito verificador
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+      soma += parseInt(numeros.charAt(i)) * (10 - i);
+    }
+    let resto = 11 - (soma % 11);
+    let digitoVerificador1 = resto >= 10 ? 0 : resto;
+    
+    if (digitoVerificador1 !== parseInt(numeros.charAt(9))) return false;
+    
+    // Valida segundo dígito verificador
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+      soma += parseInt(numeros.charAt(i)) * (11 - i);
+    }
+    resto = 11 - (soma % 11);
+    let digitoVerificador2 = resto >= 10 ? 0 : resto;
+    
+    return digitoVerificador2 === parseInt(numeros.charAt(10));
+  };
+
+  const formatarTelefone = (valor: string): string => {
+    const numeros = valor.replace(/\D/g, "");
+    
+    if (numeros.length <= 10) {
+      // Formato antigo: (XX) XXXX-XXXX
+      return numeros
+        .replace(/^(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    } else {
+      // Formato novo com 9: (XX) XXXXX-XXXX
+      return numeros
+        .replace(/^(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2")
+        .slice(0, 15);
+    }
+  };
+
+  const validarEmail = (email: string): boolean => {
+    // Regex completo para validação de email
+    const regex = /^[a-zA-Z0-9]([a-zA-Z0-9._-])*[a-zA-Z0-9]@[a-zA-Z0-9]([a-zA-Z0-9-])*[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+    
+    if (!regex.test(email)) return false;
+    
+    // Validações adicionais
+    if (email.includes("..")) return false; // Não permite pontos consecutivos
+    if (email.split("@").length !== 2) return false; // Apenas um @
+    
+    const [local, domain] = email.split("@");
+    if (local.length > 64) return false; // Local part não pode ter mais de 64 caracteres
+    if (domain.length > 255) return false; // Domain não pode ter mais de 255 caracteres
+    
+    const domainParts = domain.split(".");
+    for (const part of domainParts) {
+      if (part.length > 63) return false; // Cada parte do domínio não pode ter mais de 63 caracteres
+    }
+    
+    return true;
+  };
+
+  const validarNome = (nome: string): boolean => {
+    // Permite apenas letras, espaços, acentos e hífen
+    const regex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+    return regex.test(nome) && nome.trim().length >= 3;
+  };
+
+  const handleNomeChange = (valor: string) => {
+    // Remove números e caracteres especiais (exceto espaço, hífen e apóstrofo)
+    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setNome(nomeFormatado);
+    
+    if (nomeFormatado.trim().length === 0) {
+      setNomeError("");
+    } else if (!validarNome(nomeFormatado)) {
+      setNomeError("Nome deve conter apenas letras");
+    } else if (nomeFormatado.trim().length < 3) {
+      setNomeError("Nome deve ter pelo menos 3 caracteres");
+    } else {
+      setNomeError("");
+    }
+  };
+
+  const handleCpfChange = (valor: string) => {
+    const cpfFormatado = formatarCPF(valor);
+    setCpf(cpfFormatado);
+    
+    const numeros = cpfFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setCpfError("");
+    } else if (numeros.length === 11) {
+      if (!validarCPF(cpfFormatado)) {
+        setCpfError("CPF inválido");
+      } else {
+        setCpfError("");
+      }
+    } else {
+      setCpfError("CPF incompleto");
+    }
+  };
+
+  const handleTelefoneChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setTelefone(telefoneFormatado);
+    
+    const numeros = telefoneFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTelefoneError("");
+    } else if (numeros.length < 10) {
+      setTelefoneError("Telefone incompleto");
+    } else if (numeros.length === 10 || numeros.length === 11) {
+      setTelefoneError("");
+    }
+  };
+
+  const handleEmailChange = (valor: string) => {
+    setEmail(valor.trim().toLowerCase());
+    
+    if (valor.trim().length === 0) {
+      setEmailError("");
+    } else if (!validarEmail(valor.trim())) {
+      if (!valor.includes("@")) {
+        setEmailError("Email deve conter @");
+      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
+        setEmailError("Email deve conter um domínio válido");
+      } else if (valor.includes("..")) {
+        setEmailError("Email não pode conter pontos consecutivos");
+      } else if (valor.split("@").length > 2) {
+        setEmailError("Email deve conter apenas um @");
+      } else {
+        setEmailError("Email inválido");
+      }
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const handleProcessoAnteriorChange = (valor: string) => {
+    const apenasNumeros = valor.replace(/\D/g, "");
+    setProcessoAnterior(apenasNumeros);
+    
+    if (apenasNumeros.length === 0) {
+      setProcessoAnteriorError("Por favor, insira o número do processo");
+    } else {
+      setProcessoAnteriorError("");
+    }
+  };
+
+  const handleCertidaoAnteriorChange = (valor: string) => {
+    const apenasNumeros = valor.replace(/\D/g, "");
+    setCertidaoAnterior(apenasNumeros);
+    
+    if (apenasNumeros.length === 0) {
+      setCertidaoAnteriorError("Por favor, insira o número da certidão");
+    } else {
+      setCertidaoAnteriorError("");
+    }
+  };
+
   // Validação de seções
   const isSectionValid = (section: number): boolean => {
     switch (section) {
       case 1: // Taxas
         return guia !== null && comprovante !== null;
       case 2: // Identificação
-        const baseValid = tipoSolicitacao && nome && rg && orgaoEmissor && cpf && telefone && email;
+        const baseValid = tipoSolicitacao && nome && cpf && telefone && email;
+        const noErrors = !nomeError && !cpfError && !telefoneError && !emailError;
         if (tipoSolicitacao === "renovacao") {
-          return !!(baseValid && processoAnterior && certidaoAnterior);
+          const renovacaoValid = processoAnterior && certidaoAnterior;
+          const noRenovacaoErrors = !processoAnteriorError && !certidaoAnteriorError;
+          return !!(baseValid && noErrors && renovacaoValid && noRenovacaoErrors);
         }
-        return !!baseValid;
+        return !!(baseValid && noErrors);
       case 3: // Localização
         return !!(inscricaoImobiliaria && cep && rua && numero && bairro && cidade && estado);
       case 4: // Documentos
@@ -161,10 +350,8 @@ export default function IsencaoIdosoPage() {
       
       setActiveSection(currentSection + 1);
       
-      // Expandir a próxima seção automaticamente
-      if (!expandedSections.includes(currentSection + 1)) {
-        setExpandedSections([...expandedSections, currentSection + 1]);
-      }
+      // Fechar a seção atual e expandir apenas a próxima seção
+      setExpandedSections([currentSection + 1]);
       
       // Scroll imediato para a próxima seção
       setTimeout(() => {
@@ -308,10 +495,16 @@ export default function IsencaoIdosoPage() {
                 <input
                   type="text"
                   value={processoAnterior}
-                  onChange={(e) => setProcessoAnterior(e.target.value)}
-                  className={styles.input}
-                  placeholder="Ex: 2024/12345"
+                  onChange={(e) => handleProcessoAnteriorChange(e.target.value)}
+                  className={`${styles.input} ${processoAnteriorError ? styles.inputError : ""}`}
+                  placeholder="Ex: 202412345"
                 />
+                {processoAnteriorError && (
+                  <p className={styles.fieldError}>
+                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                    {processoAnteriorError}
+                  </p>
+                )}
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>
@@ -320,10 +513,16 @@ export default function IsencaoIdosoPage() {
                 <input
                   type="text"
                   value={certidaoAnterior}
-                  onChange={(e) => setCertidaoAnterior(e.target.value)}
-                  className={styles.input}
+                  onChange={(e) => handleCertidaoAnteriorChange(e.target.value)}
+                  className={`${styles.input} ${certidaoAnteriorError ? styles.inputError : ""}`}
                   placeholder="Ex: 987654"
                 />
+                {certidaoAnteriorError && (
+                  <p className={styles.fieldError}>
+                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                    {certidaoAnteriorError}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -335,16 +534,22 @@ export default function IsencaoIdosoPage() {
             <input
               type="text"
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className={styles.input}
+              onChange={(e) => handleNomeChange(e.target.value)}
+              className={`${styles.input} ${nomeError ? styles.inputError : ""}`}
               placeholder="Digite seu nome completo"
             />
+            {nomeError && (
+              <p className={styles.fieldError}>
+                <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                {nomeError}
+              </p>
+            )}
           </div>
 
           <div className={styles.gridThree}>
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                RG <span className={styles.required}>*</span>
+                RG
               </label>
               <input
                 type="text"
@@ -356,7 +561,7 @@ export default function IsencaoIdosoPage() {
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Órgão Emissor <span className={styles.required}>*</span>
+                Órgão Emissor
               </label>
               <input
                 type="text"
@@ -373,10 +578,16 @@ export default function IsencaoIdosoPage() {
               <input
                 type="text"
                 value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                className={styles.input}
+                onChange={(e) => handleCpfChange(e.target.value)}
+                className={`${styles.input} ${cpfError ? styles.inputError : ""}`}
                 placeholder="000.000.000-00"
               />
+              {cpfError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {cpfError}
+                </p>
+              )}
             </div>
           </div>
 
@@ -388,10 +599,16 @@ export default function IsencaoIdosoPage() {
               <input
                 type="tel"
                 value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
-                className={styles.input}
+                onChange={(e) => handleTelefoneChange(e.target.value)}
+                className={`${styles.input} ${telefoneError ? styles.inputError : ""}`}
                 placeholder="(00) 00000-0000"
               />
+              {telefoneError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {telefoneError}
+                </p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>
@@ -400,10 +617,16 @@ export default function IsencaoIdosoPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={styles.input}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                className={`${styles.input} ${emailError ? styles.inputError : ""}`}
                 placeholder="seu@email.com"
               />
+              {emailError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {emailError}
+                </p>
+              )}
             </div>
           </div>
 
