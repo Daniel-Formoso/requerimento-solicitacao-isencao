@@ -61,7 +61,7 @@
 
 .sectionTitle {
   color: #2b2862;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   margin: 0;
 }
@@ -99,7 +99,7 @@
 
 /* Form Groups */
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .label {
@@ -107,7 +107,7 @@
   color: #2b2862;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .required {
@@ -480,6 +480,26 @@
 .infoList strong {
   color: #eb5f1a;
   font-weight: 600;
+}
+
+/* Mensagens de Erro */
+.fieldError {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  color: #c62828;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.inputError {
+  border-color: #c62828 !important;
+  background-color: #ffebee !important;
+}
+
+.inputError:focus {
+  border-color: #c62828 !important;
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1) !important;
 }
 
 /* Responsive */
