@@ -118,9 +118,25 @@ export default function IsencaoIdosoPage() {
   const [testemunha1Nome, setTestemunha1Nome] = useState("");
   const [testemunha1Cpf, setTestemunha1Cpf] = useState("");
   const [testemunha1Rg, setTestemunha1Rg] = useState("");
+  const [testemunha1OrgaoEmissor, setTestemunha1OrgaoEmissor] = useState("");
+  const [testemunha1Telefone, setTestemunha1Telefone] = useState("");
+  const [testemunha1Email, setTestemunha1Email] = useState("");
   const [testemunha2Nome, setTestemunha2Nome] = useState("");
   const [testemunha2Cpf, setTestemunha2Cpf] = useState("");
   const [testemunha2Rg, setTestemunha2Rg] = useState("");
+  const [testemunha2OrgaoEmissor, setTestemunha2OrgaoEmissor] = useState("");
+  const [testemunha2Telefone, setTestemunha2Telefone] = useState("");
+  const [testemunha2Email, setTestemunha2Email] = useState("");
+
+  // Estados de validação e erro da Seção 7
+  const [testemunha1NomeError, setTestemunha1NomeError] = useState("");
+  const [testemunha1CpfError, setTestemunha1CpfError] = useState("");
+  const [testemunha1TelefoneError, setTestemunha1TelefoneError] = useState("");
+  const [testemunha1EmailError, setTestemunha1EmailError] = useState("");
+  const [testemunha2NomeError, setTestemunha2NomeError] = useState("");
+  const [testemunha2CpfError, setTestemunha2CpfError] = useState("");
+  const [testemunha2TelefoneError, setTestemunha2TelefoneError] = useState("");
+  const [testemunha2EmailError, setTestemunha2EmailError] = useState("");
 
   // Estados da Seção 8 - Preferências de Comunicação
   const [preferenciaAR, setPreferenciaAR] = useState(false);
@@ -461,10 +477,11 @@ export default function IsencaoIdosoPage() {
         return true;
       case 7: // Assinatura a Rogo
         if (assinaturaRogo) {
-          return !!(
-            testemunha1Nome && testemunha1Cpf && testemunha1Rg &&
-            testemunha2Nome && testemunha2Cpf && testemunha2Rg
-          );
+          const testemunha1Valid = testemunha1Nome && testemunha1Cpf && testemunha1Telefone && testemunha1Email;
+          const testemunha2Valid = testemunha2Nome && testemunha2Cpf && testemunha2Telefone && testemunha2Email;
+          const noTestemunha1Errors = !testemunha1NomeError && !testemunha1CpfError && !testemunha1TelefoneError && !testemunha1EmailError;
+          const noTestemunha2Errors = !testemunha2NomeError && !testemunha2CpfError && !testemunha2TelefoneError && !testemunha2EmailError;
+          return !!(testemunha1Valid && testemunha2Valid && noTestemunha1Errors && noTestemunha2Errors);
         }
         return true;
       case 8: // Preferências
@@ -717,6 +734,145 @@ export default function IsencaoIdosoPage() {
     }
   };
 
+  // Handlers para campos das testemunhas
+  const handleTestemunha1NomeChange = (valor: string) => {
+    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setTestemunha1Nome(nomeFormatado);
+    
+    if (nomeFormatado.trim().length === 0) {
+      setTestemunha1NomeError("Por favor, insira o nome da testemunha");
+    } else if (!validarNome(nomeFormatado)) {
+      setTestemunha1NomeError("Nome deve conter apenas letras");
+    } else if (nomeFormatado.trim().length < 3) {
+      setTestemunha1NomeError("Nome deve ter pelo menos 3 caracteres");
+    } else {
+      setTestemunha1NomeError("");
+    }
+  };
+
+  const handleTestemunha1CpfChange = (valor: string) => {
+    const cpfFormatado = formatarCPF(valor);
+    setTestemunha1Cpf(cpfFormatado);
+    
+    const numeros = cpfFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTestemunha1CpfError("Por favor, insira o CPF da testemunha");
+    } else if (numeros.length === 11) {
+      if (!validarCPF(cpfFormatado)) {
+        setTestemunha1CpfError("CPF inválido");
+      } else {
+        setTestemunha1CpfError("");
+      }
+    } else {
+      setTestemunha1CpfError("CPF incompleto");
+    }
+  };
+
+  const handleTestemunha1TelefoneChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setTestemunha1Telefone(telefoneFormatado);
+    
+    const numeros = telefoneFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTestemunha1TelefoneError("Por favor, insira o telefone da testemunha");
+    } else if (numeros.length < 10) {
+      setTestemunha1TelefoneError("Telefone incompleto");
+    } else if (numeros.length === 10 || numeros.length === 11) {
+      setTestemunha1TelefoneError("");
+    }
+  };
+
+  const handleTestemunha1EmailChange = (valor: string) => {
+    setTestemunha1Email(valor.trim().toLowerCase());
+    
+    if (valor.trim().length === 0) {
+      setTestemunha1EmailError("Por favor, insira o email da testemunha");
+    } else if (!validarEmail(valor.trim())) {
+      if (!valor.includes("@")) {
+        setTestemunha1EmailError("Email deve conter @");
+      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
+        setTestemunha1EmailError("Email deve conter um domínio válido");
+      } else if (valor.includes("..")) {
+        setTestemunha1EmailError("Email não pode conter pontos consecutivos");
+      } else if (valor.split("@").length > 2) {
+        setTestemunha1EmailError("Email deve conter apenas um @");
+      } else {
+        setTestemunha1EmailError("Email inválido");
+      }
+    } else {
+      setTestemunha1EmailError("");
+    }
+  };
+
+  const handleTestemunha2NomeChange = (valor: string) => {
+    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setTestemunha2Nome(nomeFormatado);
+    
+    if (nomeFormatado.trim().length === 0) {
+      setTestemunha2NomeError("Por favor, insira o nome da testemunha");
+    } else if (!validarNome(nomeFormatado)) {
+      setTestemunha2NomeError("Nome deve conter apenas letras");
+    } else if (nomeFormatado.trim().length < 3) {
+      setTestemunha2NomeError("Nome deve ter pelo menos 3 caracteres");
+    } else {
+      setTestemunha2NomeError("");
+    }
+  };
+
+  const handleTestemunha2CpfChange = (valor: string) => {
+    const cpfFormatado = formatarCPF(valor);
+    setTestemunha2Cpf(cpfFormatado);
+    
+    const numeros = cpfFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTestemunha2CpfError("Por favor, insira o CPF da testemunha");
+    } else if (numeros.length === 11) {
+      if (!validarCPF(cpfFormatado)) {
+        setTestemunha2CpfError("CPF inválido");
+      } else {
+        setTestemunha2CpfError("");
+      }
+    } else {
+      setTestemunha2CpfError("CPF incompleto");
+    }
+  };
+
+  const handleTestemunha2TelefoneChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setTestemunha2Telefone(telefoneFormatado);
+    
+    const numeros = telefoneFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTestemunha2TelefoneError("Por favor, insira o telefone da testemunha");
+    } else if (numeros.length < 10) {
+      setTestemunha2TelefoneError("Telefone incompleto");
+    } else if (numeros.length === 10 || numeros.length === 11) {
+      setTestemunha2TelefoneError("");
+    }
+  };
+
+  const handleTestemunha2EmailChange = (valor: string) => {
+    setTestemunha2Email(valor.trim().toLowerCase());
+    
+    if (valor.trim().length === 0) {
+      setTestemunha2EmailError("Por favor, insira o email da testemunha");
+    } else if (!validarEmail(valor.trim())) {
+      if (!valor.includes("@")) {
+        setTestemunha2EmailError("Email deve conter @");
+      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
+        setTestemunha2EmailError("Email deve conter um domínio válido");
+      } else if (valor.includes("..")) {
+        setTestemunha2EmailError("Email não pode conter pontos consecutivos");
+      } else if (valor.split("@").length > 2) {
+        setTestemunha2EmailError("Email deve conter apenas um @");
+      } else {
+        setTestemunha2EmailError("Email inválido");
+      }
+    } else {
+      setTestemunha2EmailError("");
+    }
+  };
+
   // Atualiza estado civil e habilita cônjuge
   useEffect(() => {
     if (estadoCivil === "casado" || estadoCivil === "uniao-estavel") {
@@ -837,7 +993,31 @@ export default function IsencaoIdosoPage() {
         }
         break;
       case 7:
-        setAssinaturaRogo(false);
+        setAssinaturaRogo(true);
+        // Testemunha 1
+        const testemunha1Data = gerarDadosAleatorios({});
+        setTestemunha1Nome(testemunha1Data.nome);
+        setTestemunha1Cpf(testemunha1Data.cpf);
+        setTestemunha1Rg(testemunha1Data.rg);
+        setTestemunha1OrgaoEmissor("SSP/RJ");
+        setTestemunha1Telefone(testemunha1Data.telefone);
+        setTestemunha1Email(testemunha1Data.email);
+        setTestemunha1NomeError("");
+        setTestemunha1CpfError("");
+        setTestemunha1TelefoneError("");
+        setTestemunha1EmailError("");
+        // Testemunha 2
+        const testemunha2Data = gerarDadosAleatorios({});
+        setTestemunha2Nome(testemunha2Data.nome);
+        setTestemunha2Cpf(testemunha2Data.cpf);
+        setTestemunha2Rg(testemunha2Data.rg);
+        setTestemunha2OrgaoEmissor("SSP/SP");
+        setTestemunha2Telefone(testemunha2Data.telefone);
+        setTestemunha2Email(testemunha2Data.email);
+        setTestemunha2NomeError("");
+        setTestemunha2CpfError("");
+        setTestemunha2TelefoneError("");
+        setTestemunha2EmailError("");
         break;
       case 8:
         setPreferenciaAR(true);
@@ -1897,12 +2077,18 @@ export default function IsencaoIdosoPage() {
                   <input
                     type="text"
                     value={testemunha1Nome}
-                    onChange={(e) => setTestemunha1Nome(e.target.value)}
-                    className={styles.input}
+                    onChange={(e) => handleTestemunha1NomeChange(e.target.value)}
+                    className={`${styles.input} ${testemunha1NomeError ? styles.inputError : ""}`}
                     placeholder="Nome da testemunha"
                   />
+                  {testemunha1NomeError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {testemunha1NomeError}
+                    </p>
+                  )}
                 </div>
-                <div className={styles.gridTwo}>
+                <div className={styles.gridThree}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
                       CPF <span className={styles.required}>*</span>
@@ -1910,22 +2096,81 @@ export default function IsencaoIdosoPage() {
                     <input
                       type="text"
                       value={testemunha1Cpf}
-                      onChange={(e) => setTestemunha1Cpf(e.target.value)}
-                      className={styles.input}
+                      onChange={(e) => handleTestemunha1CpfChange(e.target.value)}
+                      className={`${styles.input} ${testemunha1CpfError ? styles.inputError : ""}`}
                       placeholder="000.000.000-00"
                     />
+                    {testemunha1CpfError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                        {testemunha1CpfError}
+                      </p>
+                    )}
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      RG <span className={styles.required}>*</span>
+                      RG
                     </label>
                     <input
                       type="text"
                       value={testemunha1Rg}
-                      onChange={(e) => setTestemunha1Rg(e.target.value)}
+                      onChange={(e) => {
+                        const rgFormatado = e.target.value.replace(/[^0-9a-zA-Z.\-\s]/g, "");
+                        setTestemunha1Rg(rgFormatado);
+                      }}
                       className={styles.input}
                       placeholder="00.000.000-0"
                     />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Órgão Emissor
+                    </label>
+                    <input
+                      type="text"
+                      value={testemunha1OrgaoEmissor}
+                      onChange={(e) => setTestemunha1OrgaoEmissor(e.target.value)}
+                      className={styles.input}
+                      placeholder="Ex: SSP/RJ"
+                    />
+                  </div>
+                </div>
+                <div className={styles.gridTwo}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Telefone <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={testemunha1Telefone}
+                      onChange={(e) => handleTestemunha1TelefoneChange(e.target.value)}
+                      className={`${styles.input} ${testemunha1TelefoneError ? styles.inputError : ""}`}
+                      placeholder="(00) 00000-0000"
+                    />
+                    {testemunha1TelefoneError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                        {testemunha1TelefoneError}
+                      </p>
+                    )}
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      E-mail <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={testemunha1Email}
+                      onChange={(e) => handleTestemunha1EmailChange(e.target.value)}
+                      className={`${styles.input} ${testemunha1EmailError ? styles.inputError : ""}`}
+                      placeholder="email@exemplo.com"
+                    />
+                    {testemunha1EmailError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                        {testemunha1EmailError}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1939,12 +2184,18 @@ export default function IsencaoIdosoPage() {
                   <input
                     type="text"
                     value={testemunha2Nome}
-                    onChange={(e) => setTestemunha2Nome(e.target.value)}
-                    className={styles.input}
+                    onChange={(e) => handleTestemunha2NomeChange(e.target.value)}
+                    className={`${styles.input} ${testemunha2NomeError ? styles.inputError : ""}`}
                     placeholder="Nome da testemunha"
                   />
+                  {testemunha2NomeError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {testemunha2NomeError}
+                    </p>
+                  )}
                 </div>
-                <div className={styles.gridTwo}>
+                <div className={styles.gridThree}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
                       CPF <span className={styles.required}>*</span>
@@ -1952,22 +2203,81 @@ export default function IsencaoIdosoPage() {
                     <input
                       type="text"
                       value={testemunha2Cpf}
-                      onChange={(e) => setTestemunha2Cpf(e.target.value)}
-                      className={styles.input}
+                      onChange={(e) => handleTestemunha2CpfChange(e.target.value)}
+                      className={`${styles.input} ${testemunha2CpfError ? styles.inputError : ""}`}
                       placeholder="000.000.000-00"
                     />
+                    {testemunha2CpfError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                        {testemunha2CpfError}
+                      </p>
+                    )}
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      RG <span className={styles.required}>*</span>
+                      RG
                     </label>
                     <input
                       type="text"
                       value={testemunha2Rg}
-                      onChange={(e) => setTestemunha2Rg(e.target.value)}
+                      onChange={(e) => {
+                        const rgFormatado = e.target.value.replace(/[^0-9a-zA-Z.\-\s]/g, "");
+                        setTestemunha2Rg(rgFormatado);
+                      }}
                       className={styles.input}
                       placeholder="00.000.000-0"
                     />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Órgão Emissor
+                    </label>
+                    <input
+                      type="text"
+                      value={testemunha2OrgaoEmissor}
+                      onChange={(e) => setTestemunha2OrgaoEmissor(e.target.value)}
+                      className={styles.input}
+                      placeholder="Ex: SSP/RJ"
+                    />
+                  </div>
+                </div>
+                <div className={styles.gridTwo}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Telefone <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={testemunha2Telefone}
+                      onChange={(e) => handleTestemunha2TelefoneChange(e.target.value)}
+                      className={`${styles.input} ${testemunha2TelefoneError ? styles.inputError : ""}`}
+                      placeholder="(00) 00000-0000"
+                    />
+                    {testemunha2TelefoneError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                        {testemunha2TelefoneError}
+                      </p>
+                    )}
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      E-mail <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={testemunha2Email}
+                      onChange={(e) => handleTestemunha2EmailChange(e.target.value)}
+                      className={`${styles.input} ${testemunha2EmailError ? styles.inputError : ""}`}
+                      placeholder="email@exemplo.com"
+                    />
+                    {testemunha2EmailError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                        {testemunha2EmailError}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1998,7 +2308,7 @@ export default function IsencaoIdosoPage() {
             onClick={() => toggleSection(8)}
             style={{ cursor: 'pointer' }}
           >
-            <h2 className={styles.sectionTitle}>08. Formas de Contato e Notificação</h2>
+            <h2 className={styles.sectionTitle}>08. Como deseja receber o nosso contato?</h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(8) && <CheckCircleIcon className={styles.checkIcon} />}
               <ExpandMoreIcon 
@@ -2112,10 +2422,13 @@ export default function IsencaoIdosoPage() {
             </div>
           </div>
 
-          <div className={styles.uploadItem}>
-            <label className={styles.uploadLabel}>
-              <CloudUploadIcon className={styles.uploadIcon} />
-              <span className={styles.uploadText}>Petição (Opcional - PDF)</span>
+          <div className={styles.uploadField}>
+            <label className={styles.labelDoc}>
+              Petição (Opcional - PDF)
+            </label>
+            <label className={styles.uploadButton}>
+              <CloudUploadIcon sx={{ marginRight: "8px" }} />
+              Anexar arquivo
               <input
                 type="file"
                 accept=".pdf"
@@ -2123,7 +2436,7 @@ export default function IsencaoIdosoPage() {
                 className={styles.fileInput}
               />
             </label>
-            {docPeticao && <span className={styles.fileName}>{docPeticao.name}</span>}
+            {docPeticao && <p className={styles.fileName}>{docPeticao.name}</p>}
           </div>
 
           <div className={styles.termoBox}>
