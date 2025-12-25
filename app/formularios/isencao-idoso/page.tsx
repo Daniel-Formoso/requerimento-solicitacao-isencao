@@ -51,6 +51,15 @@ export default function IsencaoIdosoPage() {
   const [lote, setLote] = useState("");
   const [quadra, setQuadra] = useState("");
 
+  // Estados de validação e erro da Seção 3
+  const [inscricaoError, setInscricaoError] = useState("");
+  const [cepError, setCepError] = useState("");
+  const [ruaError, setRuaError] = useState("");
+  const [numeroError, setNumeroError] = useState("");
+  const [bairroError, setBairroError] = useState("");
+  const [cidadeError, setCidadeError] = useState("");
+  const [estadoError, setEstadoError] = useState("");
+
   // Estados da Seção 4 - Documentos
   const [docCertidaoImovel, setDocCertidaoImovel] = useState<File | null>(null);
   const [docTaxas, setDocTaxas] = useState<File | null>(null);
@@ -276,6 +285,99 @@ export default function IsencaoIdosoPage() {
     }
   };
 
+  // Funções de validação e formatação da Seção 3
+  const formatarInscricao = (valor: string): string => {
+    const numeros = valor.replace(/\D/g, "");
+    if (numeros.length <= 7) {
+      return numeros.replace(/(\d{6})(\d)/, "$1-$2");
+    }
+    return inscricaoImobiliaria;
+  };
+
+  const formatarCEP = (valor: string): string => {
+    const numeros = valor.replace(/\D/g, "");
+    if (numeros.length <= 8) {
+      return numeros.replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    return cep;
+  };
+
+  const handleInscricaoChange = (valor: string) => {
+    const inscricaoFormatada = formatarInscricao(valor);
+    setInscricaoImobiliaria(inscricaoFormatada);
+    
+    const numeros = inscricaoFormatada.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setInscricaoError("Por favor, insira a inscrição imobiliária");
+    } else if (numeros.length < 7) {
+      setInscricaoError("Inscrição imobiliária incompleta");
+    } else {
+      setInscricaoError("");
+    }
+  };
+
+  const handleCepChange = (valor: string) => {
+    const cepFormatado = formatarCEP(valor);
+    setCep(cepFormatado);
+    
+    const numeros = cepFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setCepError("Por favor, insira o CEP");
+    } else if (numeros.length < 8) {
+      setCepError("CEP incompleto");
+    } else {
+      setCepError("");
+    }
+  };
+
+  const handleRuaChange = (valor: string) => {
+    setRua(valor);
+    if (valor.trim().length === 0) {
+      setRuaError("Por favor, insira o nome da rua");
+    } else {
+      setRuaError("");
+    }
+  };
+
+  const handleNumeroChange = (valor: string) => {
+    setNumero(valor);
+    if (valor.trim().length === 0) {
+      setNumeroError("Por favor, insira o número");
+    } else {
+      setNumeroError("");
+    }
+  };
+
+  const handleBairroChange = (valor: string) => {
+    setBairro(valor);
+    if (valor.trim().length === 0) {
+      setBairroError("Por favor, insira o bairro");
+    } else {
+      setBairroError("");
+    }
+  };
+
+  const handleCidadeChange = (valor: string) => {
+    setCidade(valor);
+    if (valor.trim().length === 0) {
+      setCidadeError("Por favor, insira a cidade");
+    } else {
+      setCidadeError("");
+    }
+  };
+
+  const handleEstadoChange = (valor: string) => {
+    const estadoUpper = valor.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+    setEstado(estadoUpper);
+    if (estadoUpper.length === 0) {
+      setEstadoError("Por favor, insira o estado");
+    } else if (estadoUpper.length < 2) {
+      setEstadoError("Estado incompleto");
+    } else {
+      setEstadoError("");
+    }
+  };
+
   // Validação de seções
   const isSectionValid = (section: number): boolean => {
     switch (section) {
@@ -291,7 +393,9 @@ export default function IsencaoIdosoPage() {
         }
         return !!(baseValid && noErrors);
       case 3: // Localização
-        return !!(inscricaoImobiliaria && cep && rua && numero && bairro && cidade && estado);
+        const imovelValid = inscricaoImobiliaria && cep && rua && numero && bairro && cidade && estado;
+        const noImovelErrors = !inscricaoError && !cepError && !ruaError && !numeroError && !bairroError && !cidadeError && !estadoError;
+        return !!(imovelValid && noImovelErrors);
       case 4: // Documentos
         return !!(
           docCertidaoImovel &&
@@ -367,15 +471,20 @@ export default function IsencaoIdosoPage() {
 
   // Auto-complete de endereço via CEP
   const handleCepBlur = async () => {
-    if (cep.length === 8) {
+    const numeros = cep.replace(/\D/g, "");
+    if (numeros.length === 8) {
       try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const response = await fetch(`https://viacep.com.br/ws/${numeros}/json/`);
         const data = await response.json();
         if (!data.erro) {
           setRua(data.logradouro);
           setBairro(data.bairro);
           setCidade(data.localidade);
           setEstado(data.uf);
+          setRuaError("");
+          setBairroError("");
+          setCidadeError("");
+          setEstadoError("");
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
@@ -672,10 +781,16 @@ export default function IsencaoIdosoPage() {
             <input
               type="text"
               value={inscricaoImobiliaria}
-              onChange={(e) => setInscricaoImobiliaria(e.target.value)}
-              className={styles.inputHighlight}
-              placeholder="Digite a inscrição imobiliária"
+              onChange={(e) => handleInscricaoChange(e.target.value)}
+              className={`${styles.input} ${inscricaoError ? styles.inputError : ""}`}
+              placeholder="000000-0"
             />
+            {inscricaoError && (
+              <p className={styles.fieldError}>
+                <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                {inscricaoError}
+              </p>
+            )}
           </div>
 
           <div className={styles.gridTwo}>
@@ -686,38 +801,36 @@ export default function IsencaoIdosoPage() {
               <input
                 type="text"
                 value={cep}
-                onChange={(e) => setCep(e.target.value)}
+                onChange={(e) => handleCepChange(e.target.value)}
                 onBlur={handleCepBlur}
-                className={styles.input}
+                className={`${styles.input} ${cepError ? styles.inputError : ""}`}
                 placeholder="00000-000"
-                maxLength={8}
               />
+              {cepError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {cepError}
+                </p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Número <span className={styles.required}>*</span>
+                Rua/Logradouro <span className={styles.required}>*</span>
               </label>
               <input
                 type="text"
-                value={numero}
-                onChange={(e) => setNumero(e.target.value)}
-                className={styles.input}
-                placeholder="Nº"
+                value={rua}
+                onChange={(e) => handleRuaChange(e.target.value)}
+                className={`${styles.input} ${ruaError ? styles.inputError : ""}`}
+                placeholder="Nome da rua"
               />
+              {ruaError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {ruaError}
+                </p>
+              )}
             </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              Rua/Logradouro <span className={styles.required}>*</span>
-            </label>
-            <input
-              type="text"
-              value={rua}
-              onChange={(e) => setRua(e.target.value)}
-              className={styles.input}
-              placeholder="Nome da rua"
-            />
           </div>
 
           <div className={styles.gridThree}>
@@ -728,10 +841,16 @@ export default function IsencaoIdosoPage() {
               <input
                 type="text"
                 value={bairro}
-                onChange={(e) => setBairro(e.target.value)}
-                className={styles.input}
+                onChange={(e) => handleBairroChange(e.target.value)}
+                className={`${styles.input} ${bairroError ? styles.inputError : ""}`}
                 placeholder="Bairro"
               />
+              {bairroError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {bairroError}
+                </p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>
@@ -740,10 +859,16 @@ export default function IsencaoIdosoPage() {
               <input
                 type="text"
                 value={cidade}
-                onChange={(e) => setCidade(e.target.value)}
-                className={styles.input}
+                onChange={(e) => handleCidadeChange(e.target.value)}
+                className={`${styles.input} ${cidadeError ? styles.inputError : ""}`}
                 placeholder="Cidade"
               />
+              {cidadeError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {cidadeError}
+                </p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>
@@ -752,15 +877,39 @@ export default function IsencaoIdosoPage() {
               <input
                 type="text"
                 value={estado}
-                onChange={(e) => setEstado(e.target.value)}
-                className={styles.input}
+                onChange={(e) => handleEstadoChange(e.target.value)}
+                className={`${styles.input} ${estadoError ? styles.inputError : ""}`}
                 placeholder="UF"
                 maxLength={2}
               />
+              {estadoError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {estadoError}
+                </p>
+              )}
             </div>
           </div>
 
-          <div className={styles.gridTwo}>
+          <div className={styles.gridThree}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                Número <span className={styles.required}>*</span>
+              </label>
+              <input
+                type="text"
+                value={numero}
+                onChange={(e) => handleNumeroChange(e.target.value)}
+                className={`${styles.input} ${numeroError ? styles.inputError : ""}`}
+                placeholder="Nº"
+              />
+              {numeroError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {numeroError}
+                </p>
+              )}
+            </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>Lote</label>
               <input
