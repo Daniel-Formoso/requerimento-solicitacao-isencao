@@ -13,20 +13,40 @@ interface ComprovanteTaxaProps {
 export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaProps) {
   const [guia, setGuia] = useState<File | null>(null);
   const [comprovante, setComprovante] = useState<File | null>(null);
+  const [guiaError, setGuiaError] = useState<boolean>(false);
+  const [comprovanteError, setComprovanteError] = useState<boolean>(false);
 
   const handleGuiaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setGuia(e.target.files[0]);
+      setGuiaError(false);
     }
   };
 
   const handleComprovanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setComprovante(e.target.files[0]);
+      setComprovanteError(false);
     }
   };
 
   const handleSubmit = () => {
+    let hasError = false;
+
+    if (!guia) {
+      setGuiaError(true);
+      hasError = true;
+    }
+
+    if (!comprovante) {
+      setComprovanteError(true);
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
     onContinue(guia, comprovante);
   };
 
@@ -95,6 +115,12 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
             />
           </label>
           {guia && <p className={styles.fileName}>{guia.name}</p>}
+          {guiaError && !guia && (
+            <p className={styles.fieldError}>
+              <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+              Por favor, anexe o arquivo da guia
+            </p>
+          )}
         </div>
         <div className={styles.uploadField}>
           <label className={styles.label}>
@@ -111,8 +137,15 @@ export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaP
             />
           </label>
           {comprovante && <p className={styles.fileName}>{comprovante.name}</p>}
+          {comprovanteError && !comprovante && (
+            <p className={styles.fieldError}>
+              <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+              Por favor, anexe o arquivo do comprovante
+            </p>
+          )}
         </div>
       </div>
+
       <div className={styles.divider}></div>
       <button
         className={styles.continueButton}

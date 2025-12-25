@@ -163,6 +163,16 @@
   font-size: 14px;
 }
 
+.fieldError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  color: #c62828;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 
 .continueButton {
   display: block;
