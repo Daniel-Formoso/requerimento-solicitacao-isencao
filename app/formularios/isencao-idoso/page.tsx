@@ -665,6 +665,155 @@ export default function IsencaoIdosoPage() {
     }
   };
 
+  // Função para gerar dados aleatórios para testes
+  const gerarDadosAleatorios = () => {
+    // Geradores de dados aleatórios
+    const gerarNome = () => {
+      const nomes = ["João Silva Santos", "Maria Oliveira Costa", "José Pereira Lima", "Ana Paula Souza", "Carlos Eduardo Mendes", "Fernanda Alves Rocha", "Roberto Carlos Dias", "Juliana Martins Ferreira", "Paulo Henrique Gomes", "Mariana Santos Ribeiro"];
+      return nomes[Math.floor(Math.random() * nomes.length)];
+    };
+
+    const gerarCPF = () => {
+      const n = Math.floor(Math.random() * 999999999) + 1;
+      const cpf = String(n).padStart(9, '0');
+      let soma = 0;
+      for (let i = 0; i < 9; i++) {
+        soma += parseInt(cpf.charAt(i)) * (10 - i);
+      }
+      let resto = 11 - (soma % 11);
+      const dig1 = resto >= 10 ? 0 : resto;
+      
+      soma = 0;
+      for (let i = 0; i < 10; i++) {
+        soma += parseInt((cpf + dig1).charAt(i)) * (11 - i);
+      }
+      resto = 11 - (soma % 11);
+      const dig2 = resto >= 10 ? 0 : resto;
+      
+      return formatarCPF(cpf + dig1 + dig2);
+    };
+
+    const gerarTelefone = () => {
+      const ddd = Math.floor(Math.random() * 90) + 11;
+      const num = Math.floor(Math.random() * 900000000) + 100000000;
+      return formatarTelefone(`${ddd}${num}`);
+    };
+
+    const gerarEmail = () => {
+      const prefixos = ["joao", "maria", "jose", "ana", "carlos", "fernanda", "roberto", "juliana", "paulo", "mariana"];
+      const dominios = ["email.com", "teste.com", "exemplo.com.br", "mail.com"];
+      const prefixo = prefixos[Math.floor(Math.random() * prefixos.length)];
+      const num = Math.floor(Math.random() * 9999);
+      const dominio = dominios[Math.floor(Math.random() * dominios.length)];
+      return `${prefixo}${num}@${dominio}`;
+    };
+
+    const gerarRG = () => {
+      return String(Math.floor(Math.random() * 90000000) + 10000000);
+    };
+
+    const gerarInscricao = () => {
+      return formatarInscricao(String(Math.floor(Math.random() * 9000000) + 1000000));
+    };
+
+    const gerarCEP = () => {
+      return formatarCEP(String(Math.floor(Math.random() * 90000000) + 10000000));
+    };
+
+    const gerarAno = () => {
+      const anoAtual = new Date().getFullYear();
+      return String(Math.floor(Math.random() * (anoAtual - 1970)) + 1970);
+    };
+
+    // Função para criar arquivo fake para testes
+    const criarArquivoFake = (nomeArquivo: string) => {
+      const conteudo = `Documento de teste: ${nomeArquivo}\nGerado automaticamente em ${new Date().toLocaleString()}`;
+      const blob = new Blob([conteudo], { type: 'application/pdf' });
+      return new File([blob], nomeArquivo, { type: 'application/pdf' });
+    };
+
+    // Preencher dados de acordo com a seção ativa
+    switch (activeSection) {
+      case 2: // Identificação
+        setTipoSolicitacao("primeira");
+        setNome(gerarNome());
+        setRg(gerarRG());
+        setOrgaoEmissor("SSP/SP");
+        const cpfGerado = gerarCPF();
+        setCpf(cpfGerado);
+        setCpfError("");
+        const telGerado = gerarTelefone();
+        setTelefone(telGerado);
+        setTelefoneError("");
+        const emailGerado = gerarEmail();
+        setEmail(emailGerado);
+        setEmailError("");
+        setNomeError("");
+        break;
+
+      case 3: // Localização
+        setInscricaoImobiliaria(gerarInscricao());
+        setCep(gerarCEP());
+        setRua("Rua das Flores");
+        setNumero(String(Math.floor(Math.random() * 9999) + 1));
+        setBairro("Centro");
+        setCidade("São Paulo");
+        setEstado("SP");
+        setLote(String(Math.floor(Math.random() * 99) + 1));
+        setQuadra(String(Math.floor(Math.random() * 99) + 1));
+        setInscricaoError("");
+        setCepError("");
+        setRuaError("");
+        setNumeroError("");
+        setBairroError("");
+        setCidadeError("");
+        setEstadoError("");
+        break;
+
+      case 4: // Documentos
+        setDocCertidaoImovel(criarArquivoFake("certidao_imovel.pdf"));
+        setDocTaxas(criarArquivoFake("taxas_municipais.pdf"));
+        setDocRgCpf(criarArquivoFake("rg_cpf.pdf"));
+        setDocResidencia(criarArquivoFake("comprovante_residencia.pdf"));
+        setDocRendimentos(criarArquivoFake("comprovante_rendimentos.pdf"));
+        setDocEscritura(criarArquivoFake("escritura_imovel.pdf"));
+        setDocUnicoImovel(criarArquivoFake("certidao_unico_imovel.pdf"));
+        setDocFichaIptu(criarArquivoFake("ficha_iptu.pdf"));
+        break;
+
+      case 5: // Declaração
+        setStatusSocial("aposentado");
+        setEstadoCivil("solteiro");
+        setUnicoImovel(true);
+        setResidenciaPropria(true);
+        setAnoInicio(gerarAno());
+        setConfirmaRenda(true);
+        setStatusSocialError("");
+        setEstadoCivilError("");
+        setAnoInicioError("");
+        break;
+
+      case 6: // Representação
+        setPossuiProcurador(false);
+        break;
+
+      case 7: // Assinatura a Rogo
+        setAssinaturaRogo(false);
+        break;
+
+      case 8: // Preferências
+        setPreferenciaAR(true);
+        setPreferenciaWhatsapp(true);
+        setPreferenciaEmail(false);
+        break;
+
+      case 9: // Finalização
+        setObservacoes("Observações de teste geradas automaticamente para facilitar o preenchimento do formulário.");
+        setAceiteTermo(true);
+        break;
+    }
+  };
+
   return (
     <div className={styles.page}>
       <Header
@@ -1829,6 +1978,17 @@ export default function IsencaoIdosoPage() {
         </div>
       </main>
       <Footer />
+
+      {/* Botão flutuante para gerar dados aleatórios */}
+      {activeSection >= 2 && (
+        <button
+          onClick={gerarDadosAleatorios}
+          className={styles.btnGerarDados}
+          title="Gerar dados aleatórios para teste"
+        >
+          🎲 Gerar Dados
+        </button>
+      )}
     </div>
   );
 }
