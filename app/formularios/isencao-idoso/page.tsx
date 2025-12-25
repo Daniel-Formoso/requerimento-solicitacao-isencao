@@ -81,6 +81,18 @@ export default function IsencaoIdosoPage() {
   const [nomeConjuge, setNomeConjuge] = useState("");
   const [cpfConjuge, setCpfConjuge] = useState("");
   const [rgConjuge, setRgConjuge] = useState("");
+  const [telefoneConjuge, setTelefoneConjuge] = useState("");
+  const [emailConjuge, setEmailConjuge] = useState("");
+
+  // Estados de validação e erro da Seção 5
+  const [statusSocialError, setStatusSocialError] = useState("");
+  const [estadoCivilError, setEstadoCivilError] = useState("");
+  const [residenciaPropriaError, setResidenciaPropriaError] = useState("");
+  const [anoInicioError, setAnoInicioError] = useState("");
+  const [nomeConjugeError, setNomeConjugeError] = useState("");
+  const [cpfConjugeError, setCpfConjugeError] = useState("");
+  const [telefoneConjugeError, setTelefoneConjugeError] = useState("");
+  const [emailConjugeError, setEmailConjugeError] = useState("");
 
   // Estados da Seção 6 - Representação
   const [possuiProcurador, setPossuiProcurador] = useState(false);
@@ -408,11 +420,25 @@ export default function IsencaoIdosoPage() {
           docFichaIptu
         );
       case 5: // Declaração
-        const baseDeclaracaoValid = statusSocial && estadoCivil && unicoImovel && residenciaPropria && anoInicio && confirmaRenda;
-        if (temConjuge) {
-          return !!(baseDeclaracaoValid && nomeConjuge && cpfConjuge && rgConjuge);
+        // Status Social e Estado Civil são obrigatórios
+        if (!statusSocial || !estadoCivil) {
+          return false;
         }
-        return !!baseDeclaracaoValid;
+        // Se marcou residência própria, precisa informar o ano
+        if (residenciaPropria && !anoInicio) {
+          return false;
+        }
+        // Verificar se não há erros
+        if (statusSocialError || estadoCivilError || anoInicioError) {
+          return false;
+        }
+        // Se tem cônjuge, validar dados do cônjuge (RG não é obrigatório)
+        if (temConjuge) {
+          const conjugeValid = nomeConjuge && cpfConjuge && telefoneConjuge && emailConjuge;
+          const noConjugeErrors = !nomeConjugeError && !cpfConjugeError && !telefoneConjugeError && !emailConjugeError;
+          return !!(conjugeValid && noConjugeErrors);
+        }
+        return true;
       case 6: // Representação
         if (possuiProcurador) {
           return !!(nomeProcurador && cpfProcurador && rgProcurador && docProcuracao);
@@ -492,6 +518,120 @@ export default function IsencaoIdosoPage() {
     }
   };
 
+  // Handlers da Seção 5
+  const handleStatusSocialChange = (valor: string) => {
+    setStatusSocial(valor);
+    if (valor) {
+      setStatusSocialError("");
+    } else {
+      setStatusSocialError("Por favor, selecione o status social");
+    }
+  };
+
+  const handleEstadoCivilChange = (valor: string) => {
+    setEstadoCivil(valor);
+    if (valor) {
+      setEstadoCivilError("");
+    } else {
+      setEstadoCivilError("Por favor, selecione o estado civil");
+    }
+  };
+
+  const handleResidenciaPropriaChange = (checked: boolean) => {
+    setResidenciaPropria(checked);
+    if (!checked) {
+      setAnoInicio("");
+      setAnoInicioError("");
+    }
+    // Remove a mensagem de erro, pois não é mais obrigatório
+    setResidenciaPropriaError("");
+  };
+
+  const handleAnoInicioChange = (valor: string) => {
+    setAnoInicio(valor);
+    const anoAtual = new Date().getFullYear();
+    const ano = parseInt(valor);
+    
+    if (!valor) {
+      setAnoInicioError("Por favor, informe o ano de início da residência");
+    } else if (ano < 1900 || ano > anoAtual) {
+      setAnoInicioError(`Ano deve estar entre 1900 e ${anoAtual}`);
+    } else {
+      setAnoInicioError("");
+    }
+  };
+
+  // Handlers para campos do cônjuge
+  const handleNomeConjugeChange = (valor: string) => {
+    // Remove números e caracteres especiais (exceto espaço, hífen e apóstrofo)
+    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setNomeConjuge(nomeFormatado);
+    
+    if (nomeFormatado.trim().length === 0) {
+      setNomeConjugeError("Por favor, insira o nome do cônjuge");
+    } else if (!validarNome(nomeFormatado)) {
+      setNomeConjugeError("Nome deve conter apenas letras");
+    } else if (nomeFormatado.trim().length < 3) {
+      setNomeConjugeError("Nome deve ter pelo menos 3 caracteres");
+    } else {
+      setNomeConjugeError("");
+    }
+  };
+
+  const handleCpfConjugeChange = (valor: string) => {
+    const cpfFormatado = formatarCPF(valor);
+    setCpfConjuge(cpfFormatado);
+    
+    const numeros = cpfFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setCpfConjugeError("Por favor, insira o CPF do cônjuge");
+    } else if (numeros.length === 11) {
+      if (!validarCPF(cpfFormatado)) {
+        setCpfConjugeError("CPF inválido");
+      } else {
+        setCpfConjugeError("");
+      }
+    } else {
+      setCpfConjugeError("CPF incompleto");
+    }
+  };
+
+  const handleTelefoneConjugeChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setTelefoneConjuge(telefoneFormatado);
+    
+    const numeros = telefoneFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTelefoneConjugeError("");
+    } else if (numeros.length < 10) {
+      setTelefoneConjugeError("Telefone incompleto");
+    } else if (numeros.length === 10 || numeros.length === 11) {
+      setTelefoneConjugeError("");
+    }
+  };
+
+  const handleEmailConjugeChange = (valor: string) => {
+    setEmailConjuge(valor.trim().toLowerCase());
+    
+    if (valor.trim().length === 0) {
+      setEmailConjugeError("");
+    } else if (!validarEmail(valor.trim())) {
+      if (!valor.includes("@")) {
+        setEmailConjugeError("Email deve conter @");
+      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
+        setEmailConjugeError("Email deve conter um domínio válido");
+      } else if (valor.includes("..")) {
+        setEmailConjugeError("Email não pode conter pontos consecutivos");
+      } else if (valor.split("@").length > 2) {
+        setEmailConjugeError("Email deve conter apenas um @");
+      } else {
+        setEmailConjugeError("Email inválido");
+      }
+    } else {
+      setEmailConjugeError("");
+    }
+  };
+
   // Atualiza estado civil e habilita cônjuge
   useEffect(() => {
     if (estadoCivil === "casado" || estadoCivil === "uniao-estavel") {
@@ -501,6 +641,12 @@ export default function IsencaoIdosoPage() {
       setNomeConjuge("");
       setCpfConjuge("");
       setRgConjuge("");
+      setTelefoneConjuge("");
+      setEmailConjuge("");
+      setNomeConjugeError("");
+      setCpfConjugeError("");
+      setTelefoneConjugeError("");
+      setEmailConjugeError("");
     }
   }, [estadoCivil]);
 
@@ -663,7 +809,11 @@ export default function IsencaoIdosoPage() {
               <input
                 type="text"
                 value={rg}
-                onChange={(e) => setRg(e.target.value)}
+                onChange={(e) => {
+                  // Permite números, letras, pontos, hífens e espaços
+                  const rgFormatado = e.target.value.replace(/[^0-9a-zA-Z.\-\s]/g, "");
+                  setRg(rgFormatado);
+                }}
                 className={styles.input}
                 placeholder="00.000.000-0"
               />
@@ -1040,14 +1190,20 @@ export default function IsencaoIdosoPage() {
               </label>
               <select
                 value={statusSocial}
-                onChange={(e) => setStatusSocial(e.target.value)}
-                className={styles.select}
+                onChange={(e) => handleStatusSocialChange(e.target.value)}
+                className={`${styles.select} ${statusSocialError ? styles.inputError : ""}`}
               >
                 <option value="">Selecione...</option>
                 <option value="aposentado">Aposentado</option>
                 <option value="pensionista">Pensionista</option>
-                <option value="ambos">Ambos</option>
+                <option value="ambos">Aposentado e Pensionista</option>
               </select>
+              {statusSocialError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {statusSocialError}
+                </p>
+              )}
             </div>
 
             <div className={styles.formGroup}>
@@ -1056,8 +1212,8 @@ export default function IsencaoIdosoPage() {
               </label>
               <select
                 value={estadoCivil}
-                onChange={(e) => setEstadoCivil(e.target.value)}
-                className={styles.select}
+                onChange={(e) => handleEstadoCivilChange(e.target.value)}
+                className={`${styles.select} ${estadoCivilError ? styles.inputError : ""}`}
               >
                 <option value="">Selecione...</option>
                 <option value="solteiro">Solteiro(a)</option>
@@ -1066,6 +1222,12 @@ export default function IsencaoIdosoPage() {
                 <option value="divorciado">Divorciado(a)</option>
                 <option value="uniao-estavel">União Estável</option>
               </select>
+              {estadoCivilError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {estadoCivilError}
+                </p>
+              )}
             </div>
           </div>
 
@@ -1078,7 +1240,7 @@ export default function IsencaoIdosoPage() {
                 className={styles.checkbox}
               />
               <span className={styles.checkboxCustom}></span>
-              Único imóvel de propriedade <span className={styles.required}>*</span>
+              Único imóvel de propriedade
             </label>
           </div>
 
@@ -1088,12 +1250,18 @@ export default function IsencaoIdosoPage() {
                 <input
                   type="checkbox"
                   checked={residenciaPropria}
-                  onChange={(e) => setResidenciaPropria(e.target.checked)}
+                  onChange={(e) => handleResidenciaPropriaChange(e.target.checked)}
                   className={styles.checkbox}
                 />
                 <span className={styles.checkboxCustom}></span>
                 Residência própria <span className={styles.required}>*</span>
               </label>
+              {residenciaPropriaError && (
+                <p className={styles.fieldError}>
+                  <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                  {residenciaPropriaError}
+                </p>
+              )}
             </div>
 
             {residenciaPropria && (
@@ -1104,12 +1272,18 @@ export default function IsencaoIdosoPage() {
                 <input
                   type="number"
                   value={anoInicio}
-                  onChange={(e) => setAnoInicio(e.target.value)}
-                  className={styles.input}
+                  onChange={(e) => handleAnoInicioChange(e.target.value)}
+                  className={`${styles.input} ${anoInicioError ? styles.inputError : ""}`}
                   placeholder="Ex: 2010"
                   min="1900"
                   max={new Date().getFullYear()}
                 />
+                {anoInicioError && (
+                  <p className={styles.fieldError}>
+                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                    {anoInicioError}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -1123,8 +1297,7 @@ export default function IsencaoIdosoPage() {
                 className={styles.checkbox}
               />
               <span className={styles.checkboxCustom}></span>
-              Confirmo que minha renda familiar não ultrapassa 2 salários mínimos{" "}
-              <span className={styles.required}>*</span>
+              Confirmo que minha renda familiar não ultrapassa 2 salários mínimos
             </label>
           </div>
 
@@ -1139,10 +1312,16 @@ export default function IsencaoIdosoPage() {
                 <input
                   type="text"
                   value={nomeConjuge}
-                  onChange={(e) => setNomeConjuge(e.target.value)}
-                  className={styles.input}
+                  onChange={(e) => handleNomeConjugeChange(e.target.value)}
+                  className={`${styles.input} ${nomeConjugeError ? styles.inputError : ""}`}
                   placeholder="Nome completo do cônjuge"
                 />
+                {nomeConjugeError && (
+                  <p className={styles.fieldError}>
+                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                    {nomeConjugeError}
+                  </p>
+                )}
               </div>
 
               <div className={styles.gridTwo}>
@@ -1153,22 +1332,71 @@ export default function IsencaoIdosoPage() {
                   <input
                     type="text"
                     value={cpfConjuge}
-                    onChange={(e) => setCpfConjuge(e.target.value)}
-                    className={styles.input}
+                    onChange={(e) => handleCpfConjugeChange(e.target.value)}
+                    className={`${styles.input} ${cpfConjugeError ? styles.inputError : ""}`}
                     placeholder="000.000.000-00"
                   />
+                  {cpfConjugeError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {cpfConjugeError}
+                    </p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    RG <span className={styles.required}>*</span>
+                    RG
                   </label>
                   <input
                     type="text"
                     value={rgConjuge}
-                    onChange={(e) => setRgConjuge(e.target.value)}
+                    onChange={(e) => {
+                      // Permite números, letras, pontos, hífens e espaços
+                      const rgFormatado = e.target.value.replace(/[^0-9a-zA-Z.\-\s]/g, "");
+                      setRgConjuge(rgFormatado);
+                    }}
                     className={styles.input}
                     placeholder="00.000.000-0"
                   />
+                </div>
+              </div>
+
+              <div className={styles.gridTwo}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Telefone <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={telefoneConjuge}
+                    onChange={(e) => handleTelefoneConjugeChange(e.target.value)}
+                    className={`${styles.input} ${telefoneConjugeError ? styles.inputError : ""}`}
+                    placeholder="(00) 00000-0000"
+                  />
+                  {telefoneConjugeError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {telefoneConjugeError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    E-mail <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={emailConjuge}
+                    onChange={(e) => handleEmailConjugeChange(e.target.value)}
+                    className={`${styles.input} ${emailConjugeError ? styles.inputError : ""}`}
+                    placeholder="email@exemplo.com"
+                  />
+                  {emailConjugeError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {emailConjugeError}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
