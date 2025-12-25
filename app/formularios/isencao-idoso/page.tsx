@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
@@ -99,7 +100,18 @@ export default function IsencaoIdosoPage() {
   const [nomeProcurador, setNomeProcurador] = useState("");
   const [cpfProcurador, setCpfProcurador] = useState("");
   const [rgProcurador, setRgProcurador] = useState("");
+  const [orgaoEmissorProcurador, setOrgaoEmissorProcurador] = useState("");
+  const [telefoneProcurador, setTelefoneProcurador] = useState("");
+  const [emailProcurador, setEmailProcurador] = useState("");
   const [docProcuracao, setDocProcuracao] = useState<File | null>(null);
+  const [docCpfProcurador, setDocCpfProcurador] = useState<File | null>(null);
+  const [docIdentidadeProcurador, setDocIdentidadeProcurador] = useState<File | null>(null);
+
+  // Estados de validação e erro da Seção 6
+  const [nomeProcuradorError, setNomeProcuradorError] = useState("");
+  const [cpfProcuradorError, setCpfProcuradorError] = useState("");
+  const [telefoneProcuradorError, setTelefoneProcuradorError] = useState("");
+  const [emailProcuradorError, setEmailProcuradorError] = useState("");
 
   // Estados da Seção 7 - Assinatura a Rogo
   const [assinaturaRogo, setAssinaturaRogo] = useState(false);
@@ -441,7 +453,10 @@ export default function IsencaoIdosoPage() {
         return true;
       case 6: // Representação
         if (possuiProcurador) {
-          return !!(nomeProcurador && cpfProcurador && rgProcurador && docProcuracao);
+          const procuradorValid = nomeProcurador && cpfProcurador && telefoneProcurador && emailProcurador;
+          const docsValid = docProcuracao && docCpfProcurador && docIdentidadeProcurador;
+          const noErrors = !nomeProcuradorError && !cpfProcuradorError && !telefoneProcuradorError && !emailProcuradorError;
+          return !!(procuradorValid && docsValid && noErrors);
         }
         return true;
       case 7: // Assinatura a Rogo
@@ -632,6 +647,76 @@ export default function IsencaoIdosoPage() {
     }
   };
 
+  // Handlers para campos do procurador
+  const handleNomeProcuradorChange = (valor: string) => {
+    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setNomeProcurador(nomeFormatado);
+    
+    if (nomeFormatado.trim().length === 0) {
+      setNomeProcuradorError("Por favor, insira o nome do procurador");
+    } else if (!validarNome(nomeFormatado)) {
+      setNomeProcuradorError("Nome deve conter apenas letras");
+    } else if (nomeFormatado.trim().length < 3) {
+      setNomeProcuradorError("Nome deve ter pelo menos 3 caracteres");
+    } else {
+      setNomeProcuradorError("");
+    }
+  };
+
+  const handleCpfProcuradorChange = (valor: string) => {
+    const cpfFormatado = formatarCPF(valor);
+    setCpfProcurador(cpfFormatado);
+    
+    const numeros = cpfFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setCpfProcuradorError("Por favor, insira o CPF do procurador");
+    } else if (numeros.length === 11) {
+      if (!validarCPF(cpfFormatado)) {
+        setCpfProcuradorError("CPF inválido");
+      } else {
+        setCpfProcuradorError("");
+      }
+    } else {
+      setCpfProcuradorError("CPF incompleto");
+    }
+  };
+
+  const handleTelefoneProcuradorChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setTelefoneProcurador(telefoneFormatado);
+    
+    const numeros = telefoneFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTelefoneProcuradorError("Por favor, insira o telefone do procurador");
+    } else if (numeros.length < 10) {
+      setTelefoneProcuradorError("Telefone incompleto");
+    } else if (numeros.length === 10 || numeros.length === 11) {
+      setTelefoneProcuradorError("");
+    }
+  };
+
+  const handleEmailProcuradorChange = (valor: string) => {
+    setEmailProcurador(valor.trim().toLowerCase());
+    
+    if (valor.trim().length === 0) {
+      setEmailProcuradorError("Por favor, insira o email do procurador");
+    } else if (!validarEmail(valor.trim())) {
+      if (!valor.includes("@")) {
+        setEmailProcuradorError("Email deve conter @");
+      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
+        setEmailProcuradorError("Email deve conter um domínio válido");
+      } else if (valor.includes("..")) {
+        setEmailProcuradorError("Email não pode conter pontos consecutivos");
+      } else if (valor.split("@").length > 2) {
+        setEmailProcuradorError("Email deve conter apenas um @");
+      } else {
+        setEmailProcuradorError("Email inválido");
+      }
+    } else {
+      setEmailProcuradorError("");
+    }
+  };
+
   // Atualiza estado civil e habilita cônjuge
   useEffect(() => {
     if (estadoCivil === "casado" || estadoCivil === "uniao-estavel") {
@@ -665,102 +750,43 @@ export default function IsencaoIdosoPage() {
     }
   };
 
-  // Função para gerar dados aleatórios para testes
-  const gerarDadosAleatorios = () => {
-    // Geradores de dados aleatórios
-    const gerarNome = () => {
-      const nomes = ["João Silva Santos", "Maria Oliveira Costa", "José Pereira Lima", "Ana Paula Souza", "Carlos Eduardo Mendes", "Fernanda Alves Rocha", "Roberto Carlos Dias", "Juliana Martins Ferreira", "Paulo Henrique Gomes", "Mariana Santos Ribeiro"];
-      return nomes[Math.floor(Math.random() * nomes.length)];
-    };
+  // Função para preencher dados aleatórios usando utilitário externo
+  const preencherDadosAleatorios = () => {
+    const dados = gerarDadosAleatorios({
+      incluirDocumentos: true,
+      incluirConjuge: true,
+      incluirProcurador: true,
+      incluirTaxas: true,
+    });
 
-    const gerarCPF = () => {
-      const n = Math.floor(Math.random() * 999999999) + 1;
-      const cpf = String(n).padStart(9, '0');
-      let soma = 0;
-      for (let i = 0; i < 9; i++) {
-        soma += parseInt(cpf.charAt(i)) * (10 - i);
-      }
-      let resto = 11 - (soma % 11);
-      const dig1 = resto >= 10 ? 0 : resto;
-      
-      soma = 0;
-      for (let i = 0; i < 10; i++) {
-        soma += parseInt((cpf + dig1).charAt(i)) * (11 - i);
-      }
-      resto = 11 - (soma % 11);
-      const dig2 = resto >= 10 ? 0 : resto;
-      
-      return formatarCPF(cpf + dig1 + dig2);
-    };
-
-    const gerarTelefone = () => {
-      const ddd = Math.floor(Math.random() * 90) + 11;
-      const num = Math.floor(Math.random() * 900000000) + 100000000;
-      return formatarTelefone(`${ddd}${num}`);
-    };
-
-    const gerarEmail = () => {
-      const prefixos = ["joao", "maria", "jose", "ana", "carlos", "fernanda", "roberto", "juliana", "paulo", "mariana"];
-      const dominios = ["email.com", "teste.com", "exemplo.com.br", "mail.com"];
-      const prefixo = prefixos[Math.floor(Math.random() * prefixos.length)];
-      const num = Math.floor(Math.random() * 9999);
-      const dominio = dominios[Math.floor(Math.random() * dominios.length)];
-      return `${prefixo}${num}@${dominio}`;
-    };
-
-    const gerarRG = () => {
-      return String(Math.floor(Math.random() * 90000000) + 10000000);
-    };
-
-    const gerarInscricao = () => {
-      return formatarInscricao(String(Math.floor(Math.random() * 9000000) + 1000000));
-    };
-
-    const gerarCEP = () => {
-      return formatarCEP(String(Math.floor(Math.random() * 90000000) + 10000000));
-    };
-
-    const gerarAno = () => {
-      const anoAtual = new Date().getFullYear();
-      return String(Math.floor(Math.random() * (anoAtual - 1970)) + 1970);
-    };
-
-    // Função para criar arquivo fake para testes
-    const criarArquivoFake = (nomeArquivo: string) => {
-      const conteudo = `Documento de teste: ${nomeArquivo}\nGerado automaticamente em ${new Date().toLocaleString()}`;
-      const blob = new Blob([conteudo], { type: 'application/pdf' });
-      return new File([blob], nomeArquivo, { type: 'application/pdf' });
-    };
-
-    // Preencher dados de acordo com a seção ativa
     switch (activeSection) {
-      case 2: // Identificação
+      case 1:
+        setGuia(dados.guiaTaxa || null);
+        setComprovante(dados.comprovanteTaxa || null);
+        break;
+      case 2:
         setTipoSolicitacao("primeira");
-        setNome(gerarNome());
-        setRg(gerarRG());
+        setNome(dados.nome);
+        setRg(dados.rg);
         setOrgaoEmissor("SSP/SP");
-        const cpfGerado = gerarCPF();
-        setCpf(cpfGerado);
+        setCpf(dados.cpf);
         setCpfError("");
-        const telGerado = gerarTelefone();
-        setTelefone(telGerado);
+        setTelefone(dados.telefone);
         setTelefoneError("");
-        const emailGerado = gerarEmail();
-        setEmail(emailGerado);
+        setEmail(dados.email);
         setEmailError("");
         setNomeError("");
         break;
-
-      case 3: // Localização
-        setInscricaoImobiliaria(gerarInscricao());
-        setCep(gerarCEP());
+      case 3:
+        setInscricaoImobiliaria("1234567-8");
+        setCep("01001-000");
         setRua("Rua das Flores");
-        setNumero(String(Math.floor(Math.random() * 9999) + 1));
+        setNumero("123");
         setBairro("Centro");
         setCidade("São Paulo");
         setEstado("SP");
-        setLote(String(Math.floor(Math.random() * 99) + 1));
-        setQuadra(String(Math.floor(Math.random() * 99) + 1));
+        setLote("1");
+        setQuadra("A");
         setInscricaoError("");
         setCepError("");
         setRuaError("");
@@ -769,45 +795,56 @@ export default function IsencaoIdosoPage() {
         setCidadeError("");
         setEstadoError("");
         break;
-
-      case 4: // Documentos
-        setDocCertidaoImovel(criarArquivoFake("certidao_imovel.pdf"));
-        setDocTaxas(criarArquivoFake("taxas_municipais.pdf"));
-        setDocRgCpf(criarArquivoFake("rg_cpf.pdf"));
-        setDocResidencia(criarArquivoFake("comprovante_residencia.pdf"));
-        setDocRendimentos(criarArquivoFake("comprovante_rendimentos.pdf"));
-        setDocEscritura(criarArquivoFake("escritura_imovel.pdf"));
-        setDocUnicoImovel(criarArquivoFake("certidao_unico_imovel.pdf"));
-        setDocFichaIptu(criarArquivoFake("ficha_iptu.pdf"));
+      case 4:
+        setDocCertidaoImovel(dados.documentos?.[0] || null);
+        setDocTaxas(dados.documentos?.[1] || null);
+        setDocRgCpf(dados.documentos?.[0] || null);
+        setDocResidencia(dados.documentos?.[1] || null);
+        setDocRendimentos(dados.documentos?.[0] || null);
+        setDocEscritura(dados.documentos?.[1] || null);
+        setDocUnicoImovel(dados.documentos?.[0] || null);
+        setDocFichaIptu(dados.documentos?.[1] || null);
         break;
-
-      case 5: // Declaração
+      case 5:
         setStatusSocial("aposentado");
         setEstadoCivil("solteiro");
         setUnicoImovel(true);
         setResidenciaPropria(true);
-        setAnoInicio(gerarAno());
+        setAnoInicio("2000");
         setConfirmaRenda(true);
         setStatusSocialError("");
         setEstadoCivilError("");
         setAnoInicioError("");
+        if (dados.conjuge) {
+          setNomeConjuge(dados.conjuge.nome);
+          setCpfConjuge(dados.conjuge.cpf);
+          setRgConjuge(dados.conjuge.rg);
+          setTelefoneConjuge(dados.conjuge.telefone);
+          setEmailConjuge(dados.conjuge.email);
+        }
         break;
-
-      case 6: // Representação
-        setPossuiProcurador(false);
+      case 6:
+        setPossuiProcurador(true);
+        if (dados.procurador) {
+          setNomeProcurador(dados.procurador.nome);
+          setCpfProcurador(dados.procurador.cpf);
+          setRgProcurador(dados.procurador.rg);
+          setTelefoneProcurador(dados.procurador.telefone);
+          setEmailProcurador(dados.procurador.email);
+          setDocProcuracao(dados.procurador.documentos?.[0] || null);
+          setDocCpfProcurador(dados.procurador.documentos?.[1] || null);
+          setDocIdentidadeProcurador(dados.procurador.documentos?.[2] || null);
+        }
         break;
-
-      case 7: // Assinatura a Rogo
+      case 7:
         setAssinaturaRogo(false);
         break;
-
-      case 8: // Preferências
+      case 8:
         setPreferenciaAR(true);
         setPreferenciaWhatsapp(true);
         setPreferenciaEmail(false);
         break;
-
-      case 9: // Finalização
+      case 9:
         setObservacoes("Observações de teste geradas automaticamente para facilitar o preenchimento do formulário.");
         setAceiteTermo(true);
         break;
@@ -831,7 +868,12 @@ export default function IsencaoIdosoPage() {
           }`}
           style={{ opacity: activeSection >= 1 ? 1 : 0.5 }}
         >
-          <ComprovanteTaxa titulo="01. Comprovante da Taxa de Abertura" onContinue={handleContinueTaxas} />
+          <ComprovanteTaxa 
+            titulo="01. Comprovante da Taxa de Abertura" 
+            onContinue={handleContinueTaxas} 
+            guiaInicial={guia}
+            comprovanteInicial={comprovante}
+          />
         </section>
 
         {/* Seção 2 - Identificação */}
@@ -858,6 +900,22 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(2) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 2 ? "auto" : "none" }}>
+          <p className={styles.sectionDescription}>
+            Preencha com os dados da pessoa responsável ou da empresa responsável pelo imóvel.
+          </p>
+          
+          <div className={styles.alertBox}>
+            <div className={styles.alertContent}>
+              <span className={styles.alertTitle}>
+                <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+                OBS:
+              </span>
+              <p>
+                Se você não for o contribuinte responsável pelo imóvel, é necessário preencher a procuração na próxima tela.
+              </p>
+            </div>
+          </div>
+
           <div className={styles.formGroup}>
             <label className={styles.label}>
               Tipo de Solicitação <span className={styles.required}>*</span>
@@ -1073,6 +1131,10 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(3) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 3 ? "auto" : "none" }}>
+          <p className={styles.sectionDescription}>
+            Preencha todos os dados do imóvel conforme solicitado abaixo.
+          </p>
+          
           <div className={styles.formGroup}>
             <label className={styles.label}>
               Inscrição Imobiliária <span className={styles.required}>*</span>
@@ -1266,6 +1328,10 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(4) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}>
+          <p className={styles.sectionDescription}>
+            Anexe todos os documentos obrigatórios ao processo.
+          </p>
+          
           <div className={styles.uploadGrid}>
             {[
               { label: "Certidão do Imóvel", file: docCertidaoImovel, setFile: setDocCertidaoImovel },
@@ -1575,7 +1641,7 @@ export default function IsencaoIdosoPage() {
             onClick={() => toggleSection(6)}
             style={{ cursor: 'pointer' }}
           >
-            <h2 className={styles.sectionTitle}>06. Representação Legal</h2>
+            <h2 className={styles.sectionTitle}>06. Informações do Procurador</h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(6) && <CheckCircleIcon className={styles.checkIcon} />}
               <ExpandMoreIcon 
@@ -1586,6 +1652,10 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(6) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 6 ? "auto" : "none" }}>
+          <p className={styles.sectionDescription}>
+            Preencha com os dados do procurador responsável, caso exista.
+          </p>
+          
           <div className={styles.formGroup}>
             <label className={styles.checkboxLabel}>
               <input
@@ -1595,7 +1665,7 @@ export default function IsencaoIdosoPage() {
                 className={styles.checkbox}
               />
               <span className={styles.checkboxCustom}></span>
-              Possui procurador para este ato?
+              Sou um procurador ou possuo uma procuração.
             </label>
           </div>
 
@@ -1608,13 +1678,19 @@ export default function IsencaoIdosoPage() {
                 <input
                   type="text"
                   value={nomeProcurador}
-                  onChange={(e) => setNomeProcurador(e.target.value)}
-                  className={styles.input}
+                  onChange={(e) => handleNomeProcuradorChange(e.target.value)}
+                  className={`${styles.input} ${nomeProcuradorError ? styles.inputError : ""}`}
                   placeholder="Nome completo do procurador"
                 />
+                {nomeProcuradorError && (
+                  <p className={styles.fieldError}>
+                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                    {nomeProcuradorError}
+                  </p>
+                )}
               </div>
 
-              <div className={styles.gridTwo}>
+              <div className={styles.gridThree}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
                     CPF <span className={styles.required}>*</span>
@@ -1622,39 +1698,138 @@ export default function IsencaoIdosoPage() {
                   <input
                     type="text"
                     value={cpfProcurador}
-                    onChange={(e) => setCpfProcurador(e.target.value)}
-                    className={styles.input}
+                    onChange={(e) => handleCpfProcuradorChange(e.target.value)}
+                    className={`${styles.input} ${cpfProcuradorError ? styles.inputError : ""}`}
                     placeholder="000.000.000-00"
                   />
+                  {cpfProcuradorError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {cpfProcuradorError}
+                    </p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    RG <span className={styles.required}>*</span>
+                    RG
                   </label>
                   <input
                     type="text"
                     value={rgProcurador}
-                    onChange={(e) => setRgProcurador(e.target.value)}
+                    onChange={(e) => {
+                      const rgFormatado = e.target.value.replace(/[^0-9a-zA-Z.\-\s]/g, "");
+                      setRgProcurador(rgFormatado);
+                    }}
                     className={styles.input}
                     placeholder="00.000.000-0"
                   />
                 </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Órgão Emissor
+                  </label>
+                  <input
+                    type="text"
+                    value={orgaoEmissorProcurador}
+                    onChange={(e) => setOrgaoEmissorProcurador(e.target.value)}
+                    className={styles.input}
+                    placeholder="Ex: SSP/SP"
+                  />
+                </div>
               </div>
 
-              <div className={styles.uploadItem}>
-                <label className={styles.uploadLabel}>
-                  <CloudUploadIcon className={styles.uploadIcon} />
-                  <span className={styles.uploadText}>
-                    Procuração e Documentos do Representante <span className={styles.required}>*</span>
-                  </span>
+              <div className={styles.gridTwo}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Telefone <span className={styles.required}>*</span>
+                  </label>
                   <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => e.target.files && setDocProcuracao(e.target.files[0])}
-                    className={styles.fileInput}
+                    type="tel"
+                    value={telefoneProcurador}
+                    onChange={(e) => handleTelefoneProcuradorChange(e.target.value)}
+                    className={`${styles.input} ${telefoneProcuradorError ? styles.inputError : ""}`}
+                    placeholder="(00) 00000-0000"
                   />
-                </label>
-                {docProcuracao && <span className={styles.fileName}>{docProcuracao.name}</span>}
+                  {telefoneProcuradorError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {telefoneProcuradorError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    E-mail <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={emailProcurador}
+                    onChange={(e) => handleEmailProcuradorChange(e.target.value)}
+                    className={`${styles.input} ${emailProcuradorError ? styles.inputError : ""}`}
+                    placeholder="email@exemplo.com"
+                  />
+                  {emailProcuradorError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {emailProcuradorError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <h3 className={styles.subTitle}>Documentos do Procurador</h3>
+
+              <div className={styles.uploadGrid}>
+                <div className={styles.uploadField}>
+                  <label className={styles.labelDoc}>
+                    Procuração Autenticada <span className={styles.required}>*</span>
+                  </label>
+                  <label className={styles.uploadButton}>
+                    <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                    Anexar arquivo
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => e.target.files && setDocProcuracao(e.target.files[0])}
+                      className={styles.fileInput}
+                    />
+                  </label>
+                  {docProcuracao && <p className={styles.fileName}>{docProcuracao.name}</p>}
+                </div>
+
+                <div className={styles.uploadField}>
+                  <label className={styles.labelDoc}>
+                    CPF do Procurador <span className={styles.required}>*</span>
+                  </label>
+                  <label className={styles.uploadButton}>
+                    <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                    Anexar arquivo
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => e.target.files && setDocCpfProcurador(e.target.files[0])}
+                      className={styles.fileInput}
+                    />
+                  </label>
+                  {docCpfProcurador && <p className={styles.fileName}>{docCpfProcurador.name}</p>}
+                </div>
+
+                <div className={styles.uploadField}>
+                  <label className={styles.labelDoc}>
+                    Identidade do Procurador <span className={styles.required}>*</span>
+                  </label>
+                  <label className={styles.uploadButton}>
+                    <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                    Anexar arquivo
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => e.target.files && setDocIdentidadeProcurador(e.target.files[0])}
+                      className={styles.fileInput}
+                    />
+                  </label>
+                  {docIdentidadeProcurador && <p className={styles.fileName}>{docIdentidadeProcurador.name}</p>}
+                </div>
               </div>
             </div>
           )}
@@ -1834,8 +2009,10 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(8) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 8 ? "auto" : "none" }}>
-          <p className={styles.helperText}>Selecione no mínimo 2 opções de contato</p>
-
+          <p className={styles.sectionDescription}>
+            Escolha a melhor forma para receber atualizações sobre seu processo. Selecione pelo menos 2 opções de notificação.
+          </p>
+          
           <div className={styles.checkboxGroup}>
             <label className={styles.checkboxLabel}>
               <input
@@ -1906,6 +2083,10 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(9) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 9 ? "auto" : "none" }}>
+          <p className={styles.sectionDescription}>
+            Inclua informações adicionais que possam ser relevantes para o seu processo.
+          </p>
+          
           <div className={styles.formGroup}>
             <label className={styles.label}>Observações (Opcional)</label>
             <textarea
@@ -1917,6 +2098,18 @@ export default function IsencaoIdosoPage() {
               rows={5}
             />
             <span className={styles.charCount}>{observacoes.length}/1000 caracteres</span>
+          </div>
+
+          <div className={styles.alertBox}>
+            <div className={styles.alertContent}>
+              <span className={styles.alertTitle}>
+                <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+                OBS:
+              </span>
+              <p>
+                A petição serve para detalhar, justificar ou formalizar o seu pedido junto à Prefeitura. Caso deseje apresentar argumentos, solicitações específicas ou documentos complementares, anexe o arquivo PDF aqui.
+              </p>
+            </div>
           </div>
 
           <div className={styles.uploadItem}>
@@ -1980,9 +2173,9 @@ export default function IsencaoIdosoPage() {
       <Footer />
 
       {/* Botão flutuante para gerar dados aleatórios */}
-      {activeSection >= 2 && (
+      {activeSection >= 1 && (
         <button
-          onClick={gerarDadosAleatorios}
+          onClick={preencherDadosAleatorios}
           className={styles.btnGerarDados}
           title="Gerar dados aleatórios para teste"
         >
