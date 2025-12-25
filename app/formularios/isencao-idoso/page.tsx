@@ -956,7 +956,7 @@ export default function IsencaoIdosoPage() {
             onClick={() => toggleSection(4)}
             style={{ cursor: 'pointer' }}
           >
-            <h2 className={styles.sectionTitle}>04. Documentação Comprobatória</h2>
+            <h2 className={styles.sectionTitle}>04. Documentação Necessária</h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(4) && <CheckCircleIcon className={styles.checkIcon} />}
               <ExpandMoreIcon 
@@ -967,7 +967,7 @@ export default function IsencaoIdosoPage() {
 
           {expandedSections.includes(4) && (
             <div className={styles.sectionContent} style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}>
-          <div className={styles.uploadList}>
+          <div className={styles.uploadGrid}>
             {[
               { label: "Certidão do Imóvel", file: docCertidaoImovel, setFile: setDocCertidaoImovel },
               { label: "Taxas Municipais", file: docTaxas, setFile: setDocTaxas },
@@ -978,20 +978,27 @@ export default function IsencaoIdosoPage() {
               { label: "Certidão de Único Imóvel", file: docUnicoImovel, setFile: setDocUnicoImovel },
               { label: "Ficha de Lançamento IPTU", file: docFichaIptu, setFile: setDocFichaIptu },
             ].map((doc, index) => (
-              <div key={index} className={styles.uploadItem}>
-                <label className={styles.uploadLabel}>
-                  <CloudUploadIcon className={styles.uploadIcon} />
-                  <span className={styles.uploadText}>
-                    {doc.label} <span className={styles.required}>*</span>
-                  </span>
+              <div key={index} className={styles.uploadField}>
+                <label className={styles.labelDoc}>
+                  {doc.label} <span className={styles.required}>*</span>
+                </label>
+                <label className={styles.uploadButton}>
+                  <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                  Anexar arquivo
                   <input
                     type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf"
                     onChange={(e) => e.target.files && doc.setFile(e.target.files[0])}
                     className={styles.fileInput}
                   />
                 </label>
-                {doc.file && <span className={styles.fileName}>{doc.file.name}</span>}
+                {doc.file && <p className={styles.fileName}>{doc.file.name}</p>}
+                {!doc.file && (
+                  <p className={styles.fieldError}>
+                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                    Por favor, anexe o arquivo
+                  </p>
+                )}
               </div>
             ))}
           </div>
