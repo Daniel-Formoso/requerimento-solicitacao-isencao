@@ -578,3 +578,46 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Botão flutuante para gerar dados aleatórios */
+.btnGerarDados {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #EB5F1A 0%, #d34f0f 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(235, 95, 26, 0.4);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btnGerarDados:hover {
+  background: linear-gradient(135deg, #d34f0f 0%, #EB5F1A 100%);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(235, 95, 26, 0.5);
+}
+
+.btnGerarDados:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 3px 15px rgba(235, 95, 26, 0.4);
+}
+
+@media (max-width: 768px) {
+  .btnGerarDados {
+    bottom: 20px;
+    right: 20px;
+    padding: 14px 20px;
+    font-size: 13px;
+  }
+}
