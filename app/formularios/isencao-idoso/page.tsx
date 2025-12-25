@@ -993,12 +993,7 @@ export default function IsencaoIdosoPage() {
                   />
                 </label>
                 {doc.file && <p className={styles.fileName}>{doc.file.name}</p>}
-                {!doc.file && (
-                  <p className={styles.fieldError}>
-                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                    Por favor, anexe o arquivo
-                  </p>
-                )}
+                  {/* Mensagem de erro removida, pois o botão Continuar já está bloqueado até anexar todos os arquivos obrigatórios */}
               </div>
             ))}
           </div>
