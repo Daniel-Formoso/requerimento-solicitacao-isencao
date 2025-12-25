@@ -14,6 +14,8 @@ import WarningIcon from "@mui/icons-material/Warning";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GavelIcon from "@mui/icons-material/Gavel";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function IsencaoIdosoPage() {
   // Estado para controlar qual seção está ativa
@@ -227,6 +229,19 @@ export default function IsencaoIdosoPage() {
       if (part.length > 63) return false; // Cada parte do domínio não pode ter mais de 63 caracteres
     }
     
+    return true;
+  };
+
+  // Validação de tamanho de arquivo (máximo 5MB)
+  const validarTamanhoArquivo = (file: File): boolean => {
+    const maxSize = 5 * 1024 * 1024; // 5MB em bytes
+    if (file.size > maxSize) {
+      const tamanhoMB = (file.size / (1024 * 1024)).toFixed(2);
+      toast.error(`Arquivo muito grande! "${file.name}" possui ${tamanhoMB}MB. O tamanho máximo permitido é 5MB.`, {
+        autoClose: 6000,
+      });
+      return false;
+    }
     return true;
   };
 
@@ -546,9 +561,12 @@ export default function IsencaoIdosoPage() {
           setBairroError("");
           setCidadeError("");
           setEstadoError("");
+        } else {
+          toast.error('CEP não encontrado. Verifique o número digitado e tente novamente.');
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
+        toast.error('Erro ao buscar CEP. Tente novamente mais tarde.');
       }
     }
   };
@@ -905,7 +923,9 @@ export default function IsencaoIdosoPage() {
   const handleSubmit = () => {
     if (isSectionValid(9)) {
       console.log("Formulário enviado com sucesso!");
-      alert("Requerimento enviado com sucesso!");
+      toast.success('Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.', {
+        autoClose: 5000,
+      });
     }
   };
 
@@ -1536,7 +1556,16 @@ export default function IsencaoIdosoPage() {
                   <input
                     type="file"
                     accept=".pdf"
-                    onChange={(e) => e.target.files && doc.setFile(e.target.files[0])}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        if (validarTamanhoArquivo(file)) {
+                          doc.setFile(file);
+                        } else {
+                          e.target.value = ''; // Limpa o input
+                        }
+                      }
+                    }}
                     className={styles.fileInput}
                   />
                 </label>
@@ -1973,7 +2002,16 @@ export default function IsencaoIdosoPage() {
                     <input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => e.target.files && setDocProcuracao(e.target.files[0])}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          if (validarTamanhoArquivo(file)) {
+                            setDocProcuracao(file);
+                          } else {
+                            e.target.value = '';
+                          }
+                        }
+                      }}
                       className={styles.fileInput}
                     />
                   </label>
@@ -1990,7 +2028,16 @@ export default function IsencaoIdosoPage() {
                     <input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => e.target.files && setDocCpfProcurador(e.target.files[0])}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          if (validarTamanhoArquivo(file)) {
+                            setDocCpfProcurador(file);
+                          } else {
+                            e.target.value = '';
+                          }
+                        }
+                      }}
                       className={styles.fileInput}
                     />
                   </label>
@@ -2007,7 +2054,16 @@ export default function IsencaoIdosoPage() {
                     <input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => e.target.files && setDocIdentidadeProcurador(e.target.files[0])}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          if (validarTamanhoArquivo(file)) {
+                            setDocIdentidadeProcurador(file);
+                          } else {
+                            e.target.value = '';
+                          }
+                        }
+                      }}
                       className={styles.fileInput}
                     />
                   </label>
@@ -2435,7 +2491,16 @@ export default function IsencaoIdosoPage() {
               <input
                 type="file"
                 accept=".pdf"
-                onChange={(e) => e.target.files && setDocPeticao(e.target.files[0])}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
+                    if (validarTamanhoArquivo(file)) {
+                      setDocPeticao(file);
+                    } else {
+                      e.target.value = '';
+                    }
+                  }
+                }}
                 className={styles.fileInput}
               />
             </label>
@@ -2513,6 +2578,20 @@ export default function IsencaoIdosoPage() {
         </div>
       </main>
       <Footer />
+
+      {/* ToastContainer para exibir notificações */}
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
 
       {/* Botão flutuante para gerar dados aleatórios */}
       {activeSection >= 1 && (
