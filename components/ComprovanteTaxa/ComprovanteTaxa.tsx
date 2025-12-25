@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import styles from "./ComprovanteTaxa.module.css";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import WarningIcon from "@mui/icons-material/Warning";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface ComprovanteTaxaProps {
   titulo: string;
@@ -33,17 +35,40 @@ export default function ComprovanteTaxa({ titulo, onContinue, guiaInicial, compr
     }
   }, [comprovanteInicial]);
 
+  // Validação de tamanho de arquivo (máximo 5MB)
+  const validarTamanhoArquivo = (file: File): boolean => {
+    const maxSize = 5 * 1024 * 1024; // 5MB em bytes
+    if (file.size > maxSize) {
+      const tamanhoMB = (file.size / (1024 * 1024)).toFixed(2);
+      toast.error(`Arquivo muito grande! "${file.name}" possui ${tamanhoMB}MB. O tamanho máximo permitido é 5MB.`, {
+        autoClose: 6000,
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleGuiaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setGuia(e.target.files[0]);
-      setGuiaError(false);
+      const file = e.target.files[0];
+      if (validarTamanhoArquivo(file)) {
+        setGuia(file);
+        setGuiaError(false);
+      } else {
+        e.target.value = ''; // Limpa o input
+      }
     }
   };
 
   const handleComprovanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setComprovante(e.target.files[0]);
-      setComprovanteError(false);
+      const file = e.target.files[0];
+      if (validarTamanhoArquivo(file)) {
+        setComprovante(file);
+        setComprovanteError(false);
+      } else {
+        e.target.value = ''; // Limpa o input
+      }
     }
   };
 
