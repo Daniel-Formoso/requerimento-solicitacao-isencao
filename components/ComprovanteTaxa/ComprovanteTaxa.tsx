@@ -8,13 +8,30 @@ import WarningIcon from "@mui/icons-material/Warning";
 interface ComprovanteTaxaProps {
   titulo: string;
   onContinue: (guia: File | null, comprovante: File | null) => void;
+  guiaInicial?: File | null;
+  comprovanteInicial?: File | null;
 }
 
-export default function ComprovanteTaxa({ titulo, onContinue }: ComprovanteTaxaProps) {
+export default function ComprovanteTaxa({ titulo, onContinue, guiaInicial, comprovanteInicial }: ComprovanteTaxaProps) {
   const [guia, setGuia] = useState<File | null>(null);
   const [comprovante, setComprovante] = useState<File | null>(null);
   const [guiaError, setGuiaError] = useState<boolean>(false);
   const [comprovanteError, setComprovanteError] = useState<boolean>(false);
+
+  // Sincronizar com valores externos quando fornecidos
+  React.useEffect(() => {
+    if (guiaInicial) {
+      setGuia(guiaInicial);
+      setGuiaError(false);
+    }
+  }, [guiaInicial]);
+
+  React.useEffect(() => {
+    if (comprovanteInicial) {
+      setComprovante(comprovanteInicial);
+      setComprovanteError(false);
+    }
+  }, [comprovanteInicial]);
 
   const handleGuiaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
