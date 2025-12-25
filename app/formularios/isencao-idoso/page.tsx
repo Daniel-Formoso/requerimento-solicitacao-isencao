@@ -11,6 +11,9 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import WarningIcon from "@mui/icons-material/Warning";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import GavelIcon from "@mui/icons-material/Gavel";
 
 export default function IsencaoIdosoPage() {
   // Estado para controlar qual seção está ativa
@@ -2469,18 +2472,50 @@ export default function IsencaoIdosoPage() {
 
         {/* Rodapé Informativo */}
         <div className={styles.infoFooter}>
-          <h3 className={styles.infoTitle}>Informações Importantes</h3>
-          <ul className={styles.infoList}>
-            <li>
-              <strong>Análise:</strong> 15 dias úteis após a instrução completa do processo.
-            </li>
-            <li>
-              <strong>Regularização:</strong> Notificações de débitos devem ser sanadas em até 30 dias.
-            </li>
-            <li>
-              <strong>Legislação:</strong> Pedido condicionado aos prazos do Decreto Municipal vigente.
-            </li>
-          </ul>
+          <div className={styles.infoHeader}>
+            <div className={styles.infoIcon}>
+              <WarningIcon sx={{ fontSize: 40, color: "#EB5F1A" }} />
+            </div>
+            <div>
+              <h3 className={styles.infoTitle}>Informações Importantes</h3>
+              <p className={styles.infoSubtitle}>Fique atento aos prazos e requisitos do processo</p>
+            </div>
+          </div>
+          <div className={styles.infoCards}>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <AssignmentIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+              </div>
+              <div className={styles.infoCardContent}>
+                <h4 className={styles.infoCardTitle}>Análise do Processo</h4>
+                <p className={styles.infoCardText}>
+                  O prazo para análise é de <strong>15 dias úteis</strong> após a instrução completa do processo.
+                </p>
+              </div>
+            </div>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <AccessTimeIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+              </div>
+              <div className={styles.infoCardContent}>
+                <h4 className={styles.infoCardTitle}>Regularização de Débitos</h4>
+                <p className={styles.infoCardText}>
+                  Notificações de débitos devem ser sanadas em até <strong>30 dias</strong> corridos.
+                </p>
+              </div>
+            </div>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <GavelIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+              </div>
+              <div className={styles.infoCardContent}>
+                <h4 className={styles.infoCardTitle}>Base Legal</h4>
+                <p className={styles.infoCardText}>
+                  Pedido condicionado aos prazos e requisitos do <strong>Decreto Municipal vigente</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
