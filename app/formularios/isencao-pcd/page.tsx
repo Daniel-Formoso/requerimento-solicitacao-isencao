@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
@@ -23,7 +24,7 @@ export default function IsencaoPcdPage() {
   // Estado para controlar qual seção está ativa
   const [activeSection, setActiveSection] = useState(1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
-  const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Seção 1 expandida por padrão
+  const [expandedSections, setExpandedSections] = useState<number[]>([]); // Seção 1 começa fechada
 
   // Estados da Seção 1 - Taxas
   const [guia, setGuia] = useState<File | null>(null);
@@ -596,6 +597,19 @@ export default function IsencaoPcdPage() {
     }
   };
 
+  // Função para iniciar o preenchimento do requerimento
+  const handleStartFilling = () => {
+    setActiveSection(1);
+    setExpandedSections([1]);
+    // Rolar até a seção 1
+    setTimeout(() => {
+      const section1 = document.querySelector('[data-section="1"]');
+      if (section1) {
+        section1.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   // Avançar para próxima seção
   const handleNextSection = (currentSection: number) => {
     if (isSectionValid(currentSection)) {
@@ -1146,20 +1160,99 @@ export default function IsencaoPcdPage() {
         description="Imóvel de PCD ou ascendente direto, único e residencial."
       />
       <main className={styles.main}>
+        {/* Seção de Explicação - Nova */}
+        <section className={styles.explanationSection}>
+          <div className={styles.explanationContent}>
+            <div className={styles.explanationImageContainer}>
+              <Image
+                src="/assets/pcd/pcd.webp"
+                alt="Pessoa com Deficiência"
+                width={300}
+                height={300}
+                className={styles.explanationImage}
+                priority
+              />
+            </div>
+            <div className={styles.explanationTextContainer}>
+              <h2 className={styles.explanationTitle}>
+                Isenção de IPTU para Pessoas com Deficiência
+              </h2>
+              <div className={styles.explanationText}>
+                <p>
+                  <strong>Quem tem direito?</strong> Pessoas com deficiência física, auditiva, visual, mental severa ou profunda, ou autistas que sejam proprietários de único imóvel residencial utilizado para moradia.
+                </p>
+                <p>
+                  <strong>O que você precisa saber:</strong>
+                </p>
+                <ul>
+                  <li>O imóvel deve estar em seu nome</li>
+                  <li>Deve ser sua única propriedade</li>
+                  <li>O imóvel deve ser utilizado exclusivamente para moradia</li>
+                  <li>É necessário laudo médico que comprove a deficiência</li>
+                </ul>
+                <p>
+                  <strong>Documentos necessários:</strong> Laudo médico, certidão de matrícula do imóvel, RG, CPF, comprovante de residência e outros documentos que serão solicitados ao longo do formulário.
+                </p>
+                <div className={styles.explanationAlert}>
+                  <WarningIcon sx={{ fontSize: 24, color: "#EB5F1A" }} />
+                  <span>
+                    Este requerimento tem validade de 5 anos e deve ser renovado após esse período.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className={styles.explanationButtonContainer}>
+            <button 
+              className={styles.btnStartFilling} 
+              onClick={handleStartFilling}
+            >
+              <AssignmentIcon sx={{ fontSize: 24 }} />
+              Preencher Requerimento
+            </button>
+          </div>
+        </section>
+
+        <div className={styles.formContainer}>
+
         {/* Seção 1 - Taxas */}
         <section
           data-section="1"
           className={`${styles.section} ${
             activeSection === 1 ? styles.sectionActive : ""
-          } ${activeSection > 1 ? styles.sectionCompleted : ""}`}
+          } ${completedSections.includes(1) ? styles.sectionCompleted : ""}`}
           style={{ opacity: activeSection >= 1 ? 1 : 0.5 }}
         >
-          <ComprovanteTaxa
-            titulo="01. Comprovante da Taxa de Abertura"
-            onContinue={handleContinueTaxas}
-            guiaInicial={guia}
-            comprovanteInicial={comprovante}
-          />
+          <div
+            className={styles.sectionHeader}
+            onClick={() => toggleSection(1)}
+            style={{ cursor: "pointer" }}
+          >
+            <h2 className={styles.sectionTitle}>
+              01. Comprovante da Taxa de Abertura
+            </h2>
+            <div className={styles.sectionHeaderIcons}>
+              {completedSections.includes(1) && (
+                <CheckCircleIcon className={styles.checkIcon} />
+              )}
+              <ExpandMoreIcon
+                className={`${styles.expandIcon} ${
+                  expandedSections.includes(1) ? styles.expandIconOpen : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          {expandedSections.includes(1) && (
+            <div className={styles.sectionContent}>
+              <ComprovanteTaxa
+                titulo=""
+                onContinue={handleContinueTaxas}
+                guiaInicial={guia}
+                comprovanteInicial={comprovante}
+              />
+            </div>
+          )}
         </section>
 
         {/* Seção 2 - Identificação */}
@@ -2981,6 +3074,8 @@ export default function IsencaoPcdPage() {
             </div>
           )}
         </section>
+
+        </div>
 
         {/* Rodapé Informativo */}
         <div className={styles.infoFooter}>

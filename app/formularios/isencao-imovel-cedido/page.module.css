@@ -7,10 +7,13 @@
 .main {
   flex: 1;
   padding: 0;
+  width: 100%;
+}
+
+.formContainer {
   max-width: 900px;
   margin: 0 auto;
-  width: 100%;
-  padding: 40px 20px;
+  padding: 20px 20px 40px 20px;
 }
 
 /* Seções */
@@ -795,5 +798,200 @@
   .sectionDescription {
     font-size: 14px;
     margin-bottom: 16px;
+  }
+}
+
+/* Seção de Explicação */
+.explanationSection {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 60px 80px;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.explanationContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.explanationImageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.explanationImage {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.explanationTextContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.explanationTitle {
+  color: #2b2862;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+  padding-bottom: 16px;
+  border-bottom: 4px solid #EB5F1A;
+}
+
+.explanationText {
+  color: #333;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.explanationText p {
+  margin: 0 0 16px 0;
+}
+
+.explanationText strong {
+  color: #2b2862;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.explanationText ul {
+  margin: 12px 0 20px 0;
+  padding-left: 24px;
+  list-style-type: none;
+}
+
+.explanationText ul li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.explanationText ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #EB5F1A;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.explanationAlert {
+  background-color: #fff8e1;
+  border-left: 4px solid #EB5F1A;
+  padding: 16px 20px;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.explanationAlert span {
+  color: #5d4e37;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Botão de Iniciar Preenchimento */
+.explanationButtonContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btnStartFilling {
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #2b2862;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btnStartFilling:hover {
+  background-color: #eb5f1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(235, 95, 26, 0.3);
+}
+
+.btnStartFilling:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(235, 95, 26, 0.3);
+}
+
+@media (max-width: 768px) {
+  .explanationSection {
+    padding: 30px 20px;
+  }
+
+  .explanationContent {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .explanationImageContainer {
+    order: -1;
+  }
+
+  .explanationImage {
+    max-width: 300px;
+  }
+
+  .explanationTitle {
+    font-size: 24px;
+    padding-bottom: 12px;
+  }
+
+  .explanationText {
+    font-size: 14px;
+  }
+
+  .explanationText strong {
+    font-size: 15px;
+  }
+
+  .explanationAlert {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .explanationAlert span {
+    font-size: 13px;
+  }
+
+  .explanationButtonContainer {
+    justify-content: center;
+    padding-top: 30px;
+  }
+
+  .btnStartFilling {
+    padding: 12px 28px;
+    font-size: 14px;
   }
 }
