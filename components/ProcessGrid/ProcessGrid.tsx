@@ -47,10 +47,10 @@ export default function ProcessGrid() {
     },
     {
       id: 4,
-      title: "Imóvel cedido à Prefeitura",
+      title: "Imóvel Locado ou Cedido à Administração Pública",
       processType: "Isenção",
       description:
-        "Imóvel alugado ou cedido à Administração Pública Municipal.",
+        "Imóvel destinado à Administração Pública.",
       icon: <AccountBalanceIcon sx={iconStyle} />,
       route: "/formularios/isencao-imovel-cedido",
     },
