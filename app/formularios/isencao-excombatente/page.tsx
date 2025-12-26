@@ -87,6 +87,9 @@ export default function IsencaoExcombatentePage() {
   const [origemRendaOutro, setOrigemRendaOutro] = useState("");
   const [nomeConjuge, setNomeConjuge] = useState("");
   const [cpfConjuge, setCpfConjuge] = useState("");
+  const [rgConjuge, setRgConjuge] = useState("");
+  const [telefoneConjuge, setTelefoneConjuge] = useState("");
+  const [emailConjuge, setEmailConjuge] = useState("");
   const [coproprietario, setCoproprietario] = useState(false);
   const [origemRendaConjuge, setOrigemRendaConjuge] = useState("");
 
@@ -100,6 +103,8 @@ export default function IsencaoExcombatentePage() {
   const [anoInicioError, setAnoInicioError] = useState("");
   const [nomeConjugeError, setNomeConjugeError] = useState("");
   const [cpfConjugeError, setCpfConjugeError] = useState("");
+  const [telefoneConjugeError, setTelefoneConjugeError] = useState("");
+  const [emailConjugeError, setEmailConjugeError] = useState("");
 
   // Estados da Seção 6 - Representação
   const [possuiProcurador, setPossuiProcurador] = useState(false);
@@ -509,8 +514,13 @@ export default function IsencaoExcombatentePage() {
         }
         // Se tem cônjuge, validar dados do cônjuge
         if (temConjuge) {
-          const conjugeValid = nomeConjuge && cpfConjuge;
-          const noConjugeErrors = !nomeConjugeError && !cpfConjugeError;
+          const conjugeValid =
+            nomeConjuge && cpfConjuge && telefoneConjuge && emailConjuge;
+          const noConjugeErrors =
+            !nomeConjugeError &&
+            !cpfConjugeError &&
+            !telefoneConjugeError &&
+            !emailConjugeError;
           return !!(conjugeValid && noConjugeErrors);
         }
         return true;
@@ -664,10 +674,15 @@ export default function IsencaoExcombatentePage() {
     if (valor && valor !== "casado" && valor !== "uniao-estavel") {
       setNomeConjuge("");
       setCpfConjuge("");
+      setRgConjuge("");
+      setTelefoneConjuge("");
+      setEmailConjuge("");
       setCoproprietario(false);
       setOrigemRendaConjuge("");
       setNomeConjugeError("");
       setCpfConjugeError("");
+      setTelefoneConjugeError("");
+      setEmailConjugeError("");
     }
   };
 
@@ -717,6 +732,38 @@ export default function IsencaoExcombatentePage() {
       }
     } else {
       setCpfConjugeError("CPF incompleto");
+    }
+  };
+
+  const handleTelefoneConjugeChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setTelefoneConjuge(telefoneFormatado);
+
+    const numeros = telefoneFormatado.replace(/\D/g, "");
+    if (numeros.length === 0) {
+      setTelefoneConjugeError("");
+    } else if (numeros.length < 10) {
+      setTelefoneConjugeError("Telefone incompleto");
+    } else if (numeros.length === 10 || numeros.length === 11) {
+      setTelefoneConjugeError("");
+    }
+  };
+
+  const handleEmailConjugeChange = (valor: string) => {
+    setEmailConjuge(valor.trim().toLowerCase());
+
+    if (valor.trim().length === 0) {
+      setEmailConjugeError("");
+    } else if (!validarEmail(valor.trim())) {
+      if (!valor.includes("@")) {
+        setEmailConjugeError("Email deve conter @");
+      } else if (valor.includes("..")) {
+        setEmailConjugeError("Email não pode conter pontos consecutivos");
+      } else {
+        setEmailConjugeError("Email inválido");
+      }
+    } else {
+      setEmailConjugeError("");
     }
   };
 
@@ -1021,8 +1068,15 @@ export default function IsencaoExcombatentePage() {
         if (dados.conjuge) {
           setNomeConjuge(dados.conjuge.nome);
           setCpfConjuge(dados.conjuge.cpf);
+          setRgConjuge(dados.conjuge.rg);
+          setTelefoneConjuge(dados.conjuge.telefone);
+          setEmailConjuge(dados.conjuge.email);
           setCoproprietario(true);
           setOrigemRendaConjuge("aposentadoria");
+          setNomeConjugeError("");
+          setCpfConjugeError("");
+          setTelefoneConjugeError("");
+          setEmailConjugeError("");
         }
         break;
       case 6:
@@ -1862,7 +1916,8 @@ export default function IsencaoExcombatentePage() {
                     className={styles.checkbox}
                   />
                   <span className={styles.checkboxCustom}></span>
-                  Rendimentos de até 2 salários mínimos
+                  Confirmo que minha renda familiar não ultrapassa 2 salários
+                  mínimos
                 </label>
               </div>
 
@@ -1952,27 +2007,97 @@ export default function IsencaoExcombatentePage() {
                     )}
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      CPF <span className={styles.required}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={cpfConjuge}
-                      onChange={(e) => handleCpfConjugeChange(e.target.value)}
-                      className={`${styles.input} ${
-                        cpfConjugeError ? styles.inputError : ""
-                      }`}
-                      placeholder="000.000.000-00"
-                    />
-                    {cpfConjugeError && (
-                      <p className={styles.fieldError}>
-                        <WarningIcon
-                          sx={{ fontSize: 16, marginRight: "4px" }}
-                        />
-                        {cpfConjugeError}
-                      </p>
-                    )}
+                  <div className={styles.gridTwo}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        CPF <span className={styles.required}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={cpfConjuge}
+                        onChange={(e) => handleCpfConjugeChange(e.target.value)}
+                        className={`${styles.input} ${
+                          cpfConjugeError ? styles.inputError : ""
+                        }`}
+                        placeholder="000.000.000-00"
+                      />
+                      {cpfConjugeError && (
+                        <p className={styles.fieldError}>
+                          <WarningIcon
+                            sx={{ fontSize: 16, marginRight: "4px" }}
+                          />
+                          {cpfConjugeError}
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>RG</label>
+                      <input
+                        type="text"
+                        value={rgConjuge}
+                        onChange={(e) => {
+                          // Permite números, letras, pontos, hífens e espaços
+                          const rgFormatado = e.target.value.replace(
+                            /[^0-9a-zA-Z.\-\s]/g,
+                            ""
+                          );
+                          setRgConjuge(rgFormatado);
+                        }}
+                        className={styles.input}
+                        placeholder="00.000.000-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.gridTwo}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        Telefone <span className={styles.required}>*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={telefoneConjuge}
+                        onChange={(e) =>
+                          handleTelefoneConjugeChange(e.target.value)
+                        }
+                        className={`${styles.input} ${
+                          telefoneConjugeError ? styles.inputError : ""
+                        }`}
+                        placeholder="(00) 00000-0000"
+                      />
+                      {telefoneConjugeError && (
+                        <p className={styles.fieldError}>
+                          <WarningIcon
+                            sx={{ fontSize: 16, marginRight: "4px" }}
+                          />
+                          {telefoneConjugeError}
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        E-mail <span className={styles.required}>*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={emailConjuge}
+                        onChange={(e) =>
+                          handleEmailConjugeChange(e.target.value)
+                        }
+                        className={`${styles.input} ${
+                          emailConjugeError ? styles.inputError : ""
+                        }`}
+                        placeholder="email@exemplo.com"
+                      />
+                      {emailConjugeError && (
+                        <p className={styles.fieldError}>
+                          <WarningIcon
+                            sx={{ fontSize: 16, marginRight: "4px" }}
+                          />
+                          {emailConjugeError}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className={styles.formGroup}>
