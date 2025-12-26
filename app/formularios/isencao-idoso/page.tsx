@@ -51,6 +51,7 @@ export default function IsencaoIdosoPage() {
   const [cep, setCep] = useState("");
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
@@ -1613,6 +1614,16 @@ export default function IsencaoIdosoPage() {
                   )}
                 </div>
                 <div className={styles.formGroup}>
+                  <label className={styles.label}>Complemento</label>
+                  <input
+                    type="text"
+                    value={complemento}
+                    onChange={(e) => setComplemento(e.target.value)}
+                    className={styles.input}
+                    placeholder="Apto, Casa, etc."
+                  />
+                </div>
+                <div className={styles.formGroup}>
                   <label className={styles.label}>Lote</label>
                   <input
                     type="text"
@@ -1622,16 +1633,17 @@ export default function IsencaoIdosoPage() {
                     placeholder="Lote"
                   />
                 </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Quadra</label>
-                  <input
-                    type="text"
-                    value={quadra}
-                    onChange={(e) => setQuadra(e.target.value)}
-                    className={styles.input}
-                    placeholder="Quadra"
-                  />
-                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Quadra</label>
+                <input
+                  type="text"
+                  value={quadra}
+                  onChange={(e) => setQuadra(e.target.value)}
+                  className={styles.input}
+                  placeholder="Quadra"
+                />
               </div>
 
               <button
@@ -1801,7 +1813,7 @@ export default function IsencaoIdosoPage() {
               <div className={styles.gridTwo}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    Status Social <span className={styles.required}>*</span>
+                    Perfil do Requerente <span className={styles.required}>*</span>
                   </label>
                   <select
                     value={statusSocial}
@@ -1876,7 +1888,7 @@ export default function IsencaoIdosoPage() {
                     />
                     <span className={styles.checkboxCustom}></span>
                     Residência própria{" "}
-                    <span className={styles.required}>*</span>
+                    {/* <span className={styles.required}>*</span> */}
                   </label>
                   {residenciaPropriaError && (
                     <p className={styles.fieldError}>
@@ -1889,7 +1901,7 @@ export default function IsencaoIdosoPage() {
                 {residenciaPropria && (
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      Ano de início da residência{" "}
+                      Desde o ano{" "}
                       <span className={styles.required}>*</span>
                     </label>
                     <input
