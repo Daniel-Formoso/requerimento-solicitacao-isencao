@@ -77,24 +77,30 @@ export default function IsencaoIdosoPage() {
   const [docUnicoImovel, setDocUnicoImovel] = useState<File | null>(null);
   const [docFichaIptu, setDocFichaIptu] = useState<File | null>(null);
 
-  // Estados da Seção 5 - Declaração Socioeconômica
-  const [statusSocial, setStatusSocial] = useState("");
+  // Estados da Seção 5 - Questionário de Elegibilidade
+  const [perfilRequerente, setPerfilRequerente] = useState("");
   const [estadoCivil, setEstadoCivil] = useState("");
   const [unicoImovel, setUnicoImovel] = useState(false);
   const [residenciaPropria, setResidenciaPropria] = useState(false);
   const [anoInicio, setAnoInicio] = useState("");
-  const [confirmaRenda, setConfirmaRenda] = useState(false);
-  const [temConjuge, setTemConjuge] = useState(false);
+  const [rendaAte2Salarios, setRendaAte2Salarios] = useState(false);
+  const [origemRenda, setOrigemRenda] = useState("");
+  const [origemRendaOutro, setOrigemRendaOutro] = useState("");
   const [nomeConjuge, setNomeConjuge] = useState("");
   const [cpfConjuge, setCpfConjuge] = useState("");
   const [rgConjuge, setRgConjuge] = useState("");
   const [telefoneConjuge, setTelefoneConjuge] = useState("");
   const [emailConjuge, setEmailConjuge] = useState("");
+  const [coproprietario, setCoproprietario] = useState(false);
+  const [origemRendaConjuge, setOrigemRendaConjuge] = useState("");
+
+  // Calcula se deve exibir seção de cônjuge baseado no estado civil
+  const temConjuge =
+    estadoCivil === "casado" || estadoCivil === "uniao-estavel";
 
   // Estados de validação e erro da Seção 5
-  const [statusSocialError, setStatusSocialError] = useState("");
+  const [perfilRequerenteError, setPerfilRequerenteError] = useState("");
   const [estadoCivilError, setEstadoCivilError] = useState("");
-  const [residenciaPropriaError, setResidenciaPropriaError] = useState("");
   const [anoInicioError, setAnoInicioError] = useState("");
   const [nomeConjugeError, setNomeConjugeError] = useState("");
   const [cpfConjugeError, setCpfConjugeError] = useState("");
@@ -495,9 +501,9 @@ export default function IsencaoIdosoPage() {
           docUnicoImovel &&
           docFichaIptu
         );
-      case 5: // Declaração
-        // Status Social e Estado Civil são obrigatórios
-        if (!statusSocial || !estadoCivil) {
+      case 5: // Questionário de Elegibilidade
+        // Perfil do Requerente e Estado Civil são obrigatórios
+        if (!perfilRequerente || !estadoCivil) {
           return false;
         }
         // Se marcou residência própria, precisa informar o ano
@@ -505,7 +511,7 @@ export default function IsencaoIdosoPage() {
           return false;
         }
         // Verificar se não há erros
-        if (statusSocialError || estadoCivilError || anoInicioError) {
+        if (perfilRequerenteError || estadoCivilError || anoInicioError) {
           return false;
         }
         // Se tem cônjuge, validar dados do cônjuge (RG não é obrigatório)
@@ -650,12 +656,12 @@ export default function IsencaoIdosoPage() {
   };
 
   // Handlers da Seção 5
-  const handleStatusSocialChange = (valor: string) => {
-    setStatusSocial(valor);
+  const handlePerfilRequerenteChange = (valor: string) => {
+    setPerfilRequerente(valor);
     if (valor) {
-      setStatusSocialError("");
+      setPerfilRequerenteError("");
     } else {
-      setStatusSocialError("Por favor, selecione o status social");
+      setPerfilRequerenteError("Por favor, selecione o perfil do requerente");
     }
   };
 
@@ -663,19 +669,23 @@ export default function IsencaoIdosoPage() {
     setEstadoCivil(valor);
     if (valor) {
       setEstadoCivilError("");
+      // Limpar dados do cônjuge se não for casado/união estável
+      if (valor !== "casado" && valor !== "uniao-estavel") {
+        setNomeConjuge("");
+        setCpfConjuge("");
+        setRgConjuge("");
+        setTelefoneConjuge("");
+        setEmailConjuge("");
+        setCoproprietario(false);
+        setOrigemRendaConjuge("");
+        setNomeConjugeError("");
+        setCpfConjugeError("");
+        setTelefoneConjugeError("");
+        setEmailConjugeError("");
+      }
     } else {
       setEstadoCivilError("Por favor, selecione o estado civil");
     }
-  };
-
-  const handleResidenciaPropriaChange = (checked: boolean) => {
-    setResidenciaPropria(checked);
-    if (!checked) {
-      setAnoInicio("");
-      setAnoInicioError("");
-    }
-    // Remove a mensagem de erro, pois não é mais obrigatório
-    setResidenciaPropriaError("");
   };
 
   const handleAnoInicioChange = (valor: string) => {
@@ -972,24 +982,6 @@ export default function IsencaoIdosoPage() {
     }
   };
 
-  // Atualiza estado civil e habilita cônjuge
-  useEffect(() => {
-    if (estadoCivil === "casado" || estadoCivil === "uniao-estavel") {
-      setTemConjuge(true);
-    } else {
-      setTemConjuge(false);
-      setNomeConjuge("");
-      setCpfConjuge("");
-      setRgConjuge("");
-      setTelefoneConjuge("");
-      setEmailConjuge("");
-      setNomeConjugeError("");
-      setCpfConjugeError("");
-      setTelefoneConjugeError("");
-      setEmailConjugeError("");
-    }
-  }, [estadoCivil]);
-
   const handleContinueTaxas = (
     guiaFile: File | null,
     comprovanteFile: File | null
@@ -1069,22 +1061,29 @@ export default function IsencaoIdosoPage() {
         setDocFichaIptu(dados.documentos?.[1] || null);
         break;
       case 5:
-        setStatusSocial("aposentado");
-        setEstadoCivil("solteiro");
+        setPerfilRequerente("aposentado");
+        setEstadoCivil("casado");
         setUnicoImovel(true);
         setResidenciaPropria(true);
-        setAnoInicio("2000");
-        setConfirmaRenda(true);
-        setStatusSocialError("");
+        setAnoInicio("2010");
+        setRendaAte2Salarios(true);
+        setOrigemRenda("aposentadoria");
+        // Dados do cônjuge
+        const conjugeData = gerarDadosAleatorios({});
+        setNomeConjuge(conjugeData.nome);
+        setCpfConjuge(conjugeData.cpf);
+        setRgConjuge(conjugeData.rg);
+        setTelefoneConjuge(conjugeData.telefone);
+        setEmailConjuge(conjugeData.email);
+        setCoproprietario(true);
+        setOrigemRendaConjuge("Pensão");
+        setPerfilRequerenteError("");
         setEstadoCivilError("");
         setAnoInicioError("");
-        if (dados.conjuge) {
-          setNomeConjuge(dados.conjuge.nome);
-          setCpfConjuge(dados.conjuge.cpf);
-          setRgConjuge(dados.conjuge.rg);
-          setTelefoneConjuge(dados.conjuge.telefone);
-          setEmailConjuge(dados.conjuge.email);
-        }
+        setNomeConjugeError("");
+        setCpfConjugeError("");
+        setTelefoneConjugeError("");
+        setEmailConjugeError("");
         break;
       case 6:
         setPossuiProcurador(true);
@@ -1777,7 +1776,7 @@ export default function IsencaoIdosoPage() {
           )}
         </section>
 
-        {/* Seção 5 - Declaração Socioeconômica */}
+        {/* Seção 5 - Questionário de Elegibilidade */}
         <section
           data-section="5"
           className={`${styles.section} ${
@@ -1813,13 +1812,16 @@ export default function IsencaoIdosoPage() {
               <div className={styles.gridTwo}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    Perfil do Requerente <span className={styles.required}>*</span>
+                    Perfil do Requerente{" "}
+                    <span className={styles.required}>*</span>
                   </label>
                   <select
-                    value={statusSocial}
-                    onChange={(e) => handleStatusSocialChange(e.target.value)}
+                    value={perfilRequerente}
+                    onChange={(e) =>
+                      handlePerfilRequerenteChange(e.target.value)
+                    }
                     className={`${styles.select} ${
-                      statusSocialError ? styles.inputError : ""
+                      perfilRequerenteError ? styles.inputError : ""
                     }`}
                   >
                     <option value="">Selecione...</option>
@@ -1827,10 +1829,10 @@ export default function IsencaoIdosoPage() {
                     <option value="pensionista">Pensionista</option>
                     <option value="ambos">Aposentado e Pensionista</option>
                   </select>
-                  {statusSocialError && (
+                  {perfilRequerenteError && (
                     <p className={styles.fieldError}>
                       <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {statusSocialError}
+                      {perfilRequerenteError}
                     </p>
                   )}
                 </div>
@@ -1881,28 +1883,18 @@ export default function IsencaoIdosoPage() {
                     <input
                       type="checkbox"
                       checked={residenciaPropria}
-                      onChange={(e) =>
-                        handleResidenciaPropriaChange(e.target.checked)
-                      }
+                      onChange={(e) => setResidenciaPropria(e.target.checked)}
                       className={styles.checkbox}
                     />
                     <span className={styles.checkboxCustom}></span>
-                    Residência própria{" "}
-                    {/* <span className={styles.required}>*</span> */}
+                    Reside no imóvel
                   </label>
-                  {residenciaPropriaError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {residenciaPropriaError}
-                    </p>
-                  )}
                 </div>
 
                 {residenciaPropria && (
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      Desde o ano{" "}
-                      <span className={styles.required}>*</span>
+                      Desde o ano <span className={styles.required}>*</span>
                     </label>
                     <input
                       type="number"
@@ -1931,8 +1923,8 @@ export default function IsencaoIdosoPage() {
                 <label className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
-                    checked={confirmaRenda}
-                    onChange={(e) => setConfirmaRenda(e.target.checked)}
+                    checked={rendaAte2Salarios}
+                    onChange={(e) => setRendaAte2Salarios(e.target.checked)}
                     className={styles.checkbox}
                   />
                   <span className={styles.checkboxCustom}></span>
@@ -1940,6 +1932,63 @@ export default function IsencaoIdosoPage() {
                   mínimos
                 </label>
               </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Origem da Renda</label>
+                <div className={styles.radioGroup}>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="origemRenda"
+                      value="pensao"
+                      checked={origemRenda === "pensao"}
+                      onChange={(e) => setOrigemRenda(e.target.value)}
+                      className={styles.radioInput}
+                    />
+                    <span className={styles.radioCustom}></span>
+                    Pensão
+                  </label>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="origemRenda"
+                      value="aposentadoria"
+                      checked={origemRenda === "aposentadoria"}
+                      onChange={(e) => setOrigemRenda(e.target.value)}
+                      className={styles.radioInput}
+                    />
+                    <span className={styles.radioCustom}></span>
+                    Aposentadoria
+                  </label>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="origemRenda"
+                      value="outro"
+                      checked={origemRenda === "outro"}
+                      onChange={(e) => setOrigemRenda(e.target.value)}
+                      className={styles.radioInput}
+                    />
+                    <span className={styles.radioCustom}></span>
+                    Outro
+                  </label>
+                </div>
+              </div>
+
+              {origemRenda === "outro" && (
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Especifique a origem da renda
+                  </label>
+                  <input
+                    type="text"
+                    value={origemRendaOutro}
+                    onChange={(e) => setOrigemRendaOutro(e.target.value)}
+                    className={styles.input}
+                    placeholder="Descreva a origem da renda"
+                  />
+                </div>
+              )}
 
               {temConjuge && (
                 <div className={styles.conjugeSection}>
@@ -2061,6 +2110,32 @@ export default function IsencaoIdosoPage() {
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={coproprietario}
+                        onChange={(e) => setCoproprietario(e.target.checked)}
+                        className={styles.checkbox}
+                      />
+                      <span className={styles.checkboxCustom}></span>É
+                      coproprietário do imóvel?
+                    </label>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Origem da renda do cônjuge
+                    </label>
+                    <input
+                      type="text"
+                      value={origemRendaConjuge}
+                      onChange={(e) => setOrigemRendaConjuge(e.target.value)}
+                      className={styles.input}
+                      placeholder="Ex: Aposentadoria, Pensão, etc."
+                    />
                   </div>
                 </div>
               )}
@@ -2418,6 +2493,12 @@ export default function IsencaoIdosoPage() {
                   Necessito de assinatura a rogo
                 </label>
               </div>
+
+              {assinaturaRogo && (
+                <p className={styles.helperText} style={{ marginTop: "12px", marginBottom: "16px" }}>
+                  <strong>Atenção:</strong> São obrigatoriamente necessárias 2 (duas) testemunhas.
+                </p>
+              )}
 
               {assinaturaRogo && (
                 <>
