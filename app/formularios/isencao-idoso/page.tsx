@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
@@ -21,7 +22,7 @@ export default function IsencaoIdosoPage() {
   // Estado para controlar qual seção está ativa
   const [activeSection, setActiveSection] = useState(1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
-  const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Seção 1 expandida por padrão
+  const [expandedSections, setExpandedSections] = useState<number[]>([]); // Seção 1 começa fechada
 
   // Estados da Seção 1 - Taxas
   const [guia, setGuia] = useState<File | null>(null);
@@ -596,6 +597,19 @@ export default function IsencaoIdosoPage() {
     }
   };
 
+  // Função para iniciar o preenchimento do requerimento
+  const handleStartFilling = () => {
+    setActiveSection(1);
+    setExpandedSections([1]);
+    // Rolar até a seção 1
+    setTimeout(() => {
+      const section1 = document.querySelector('[data-section="1"]');
+      if (section1) {
+        section1.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   // Avançar para próxima seção
   const handleNextSection = (currentSection: number) => {
     if (isSectionValid(currentSection)) {
@@ -1148,20 +1162,99 @@ export default function IsencaoIdosoPage() {
         description="Imóvel de idoso com renda até 2 salários mínimos."
       />
       <main className={styles.main}>
+        {/* Seção de Explicação - Nova */}
+        <section className={styles.explanationSection}>
+          <div className={styles.explanationContent}>
+            <div className={styles.explanationImageContainer}>
+              <Image
+                src="/assets/idoso/idoso.webp"
+                alt="Idoso"
+                width={300}
+                height={300}
+                className={styles.explanationImage}
+                priority
+              />
+            </div>
+            <div className={styles.explanationTextContainer}>
+              <h2 className={styles.explanationTitle}>
+                Isenção de IPTU para Idosos
+              </h2>
+              <div className={styles.explanationText}>
+                <p>
+                  <strong>Quem tem direito?</strong> Aposentados, pensionistas ou pessoas com mais de 60 anos que possuam renda familiar de até 2 salários mínimos e o imóvel seja sua única residência.
+                </p>
+                <p>
+                  <strong>O que você precisa saber:</strong>
+                </p>
+                <ul>
+                  <li>O imóvel deve estar em seu nome ou de seu cônjuge</li>
+                  <li>Você deve residir no imóvel</li>
+                  <li>Não pode possuir outro imóvel</li>
+                  <li>A renda familiar total não pode ultrapassar 2 salários mínimos</li>
+                </ul>
+                <p>
+                  <strong>Documentos necessários:</strong> Certidão de matrícula do imóvel, comprovante de rendimentos, RG, CPF, comprovante de residência e outros documentos que serão solicitados ao longo do formulário.
+                </p>
+                <div className={styles.explanationAlert}>
+                  <WarningIcon sx={{ fontSize: 24, color: "#EB5F1A" }} />
+                  <span>
+                    Este requerimento tem validade de 5 anos e deve ser renovado após esse período.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className={styles.explanationButtonContainer}>
+            <button 
+              className={styles.btnStartFilling} 
+              onClick={handleStartFilling}
+            >
+              <AssignmentIcon sx={{ fontSize: 24 }} />
+              Preencher Requerimento
+            </button>
+          </div>
+        </section>
+
+        <div className={styles.formContainer}>
+
         {/* Seção 1 - Taxas */}
         <section
           data-section="1"
           className={`${styles.section} ${
             activeSection === 1 ? styles.sectionActive : ""
-          } ${activeSection > 1 ? styles.sectionCompleted : ""}`}
+          } ${completedSections.includes(1) ? styles.sectionCompleted : ""}`}
           style={{ opacity: activeSection >= 1 ? 1 : 0.5 }}
         >
-          <ComprovanteTaxa
-            titulo="01. Comprovante da Taxa de Abertura"
-            onContinue={handleContinueTaxas}
-            guiaInicial={guia}
-            comprovanteInicial={comprovante}
-          />
+          <div
+            className={styles.sectionHeader}
+            onClick={() => toggleSection(1)}
+            style={{ cursor: "pointer" }}
+          >
+            <h2 className={styles.sectionTitle}>
+              01. Comprovante da Taxa de Abertura
+            </h2>
+            <div className={styles.sectionHeaderIcons}>
+              {completedSections.includes(1) && (
+                <CheckCircleIcon className={styles.checkIcon} />
+              )}
+              <ExpandMoreIcon
+                className={`${styles.expandIcon} ${
+                  expandedSections.includes(1) ? styles.expandIconOpen : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          {expandedSections.includes(1) && (
+            <div className={styles.sectionContent}>
+              <ComprovanteTaxa
+                titulo=""
+                onContinue={handleContinueTaxas}
+                guiaInicial={guia}
+                comprovanteInicial={comprovante}
+              />
+            </div>
+          )}
         </section>
 
         {/* Seção 2 - Identificação */}
@@ -3034,6 +3127,7 @@ export default function IsencaoIdosoPage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </main>
       <Footer />
