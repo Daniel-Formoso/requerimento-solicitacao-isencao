@@ -14,6 +14,8 @@ import WarningIcon from "@mui/icons-material/Warning";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GavelIcon from "@mui/icons-material/Gavel";
+import EventIcon from "@mui/icons-material/Event";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -68,12 +70,11 @@ export default function IsencaoPcdPage() {
   const [estadoError, setEstadoError] = useState("");
 
   // Estados da Seção 4 - Documentos
-  const [docCertidaoImovel, setDocCertidaoImovel] = useState<File | null>(null);
-  const [docTaxas, setDocTaxas] = useState<File | null>(null);
-  const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
   const [docResidencia, setDocResidencia] = useState<File | null>(null);
-  const [docRendimentos, setDocRendimentos] = useState<File | null>(null);
+  const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
   const [docEscritura, setDocEscritura] = useState<File | null>(null);
+  const [docRendimentos, setDocRendimentos] = useState<File | null>(null);
+  const [docLaudoMedico, setDocLaudoMedico] = useState<File | null>(null);
   const [docUnicoImovel, setDocUnicoImovel] = useState<File | null>(null);
   const [docFichaIptu, setDocFichaIptu] = useState<File | null>(null);
 
@@ -492,12 +493,11 @@ export default function IsencaoPcdPage() {
         return !!(imovelValid && noImovelErrors);
       case 4: // Documentos
         return !!(
-          docCertidaoImovel &&
-          docTaxas &&
-          docRgCpf &&
           docResidencia &&
-          docRendimentos &&
+          docRgCpf &&
           docEscritura &&
+          docRendimentos &&
+          docLaudoMedico &&
           docUnicoImovel &&
           docFichaIptu
         );
@@ -995,7 +995,6 @@ export default function IsencaoPcdPage() {
 
   const handleSubmit = () => {
     if (isSectionValid(9)) {
-      console.log("Formulário enviado com sucesso!");
       toast.success(
         "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
         {
@@ -1051,14 +1050,13 @@ export default function IsencaoPcdPage() {
         setEstadoError("");
         break;
       case 4:
-        setDocCertidaoImovel(dados.documentos?.[0] || null);
-        setDocTaxas(dados.documentos?.[1] || null);
-        setDocRgCpf(dados.documentos?.[0] || null);
-        setDocResidencia(dados.documentos?.[1] || null);
-        setDocRendimentos(dados.documentos?.[0] || null);
-        setDocEscritura(dados.documentos?.[1] || null);
-        setDocUnicoImovel(dados.documentos?.[0] || null);
-        setDocFichaIptu(dados.documentos?.[1] || null);
+        setDocResidencia(dados.documentos?.[0] || null);
+        setDocRgCpf(dados.documentos?.[1] || null);
+        setDocEscritura(dados.documentos?.[0] || null);
+        setDocRendimentos(dados.documentos?.[1] || null);
+        setDocLaudoMedico(dados.documentos?.[0] || null);
+        setDocUnicoImovel(dados.documentos?.[1] || null);
+        setDocFichaIptu(dados.documentos?.[0] || null);
         break;
       case 5:
         setPerfilRequerente("pcd-proprio");
@@ -1694,24 +1692,19 @@ export default function IsencaoPcdPage() {
               <div className={styles.uploadGrid}>
                 {[
                   {
-                    label: "Certidão do Imóvel",
-                    file: docCertidaoImovel,
-                    setFile: setDocCertidaoImovel,
+                    label: "Comprovante de Residência",
+                    file: docResidencia,
+                    setFile: setDocResidencia,
                   },
                   {
-                    label: "Taxas Municipais",
-                    file: docTaxas,
-                    setFile: setDocTaxas,
-                  },
-                  {
-                    label: "RG/CPF e Laudo Médico (PCD)",
+                    label: "RG e CPF do Requerente",
                     file: docRgCpf,
                     setFile: setDocRgCpf,
                   },
                   {
-                    label: "Comprovante de Residência",
-                    file: docResidencia,
-                    setFile: setDocResidencia,
+                    label: "Prova de Propriedade (Escritura/Auto de Imissão)",
+                    file: docEscritura,
+                    setFile: setDocEscritura,
                   },
                   {
                     label: "Comprovante de Rendimentos",
@@ -1719,12 +1712,12 @@ export default function IsencaoPcdPage() {
                     setFile: setDocRendimentos,
                   },
                   {
-                    label: "Escritura/Documento de Posse",
-                    file: docEscritura,
-                    setFile: setDocEscritura,
+                    label: "Laudo Médico (Comprovação de Deficiência)",
+                    file: docLaudoMedico,
+                    setFile: setDocLaudoMedico,
                   },
                   {
-                    label: "Certidão de Único Imóvel",
+                    label: "Comprovante de Único Imóvel",
                     file: docUnicoImovel,
                     setFile: setDocUnicoImovel,
                   },
@@ -3000,10 +2993,9 @@ export default function IsencaoPcdPage() {
                 <AssignmentIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
               </div>
               <div className={styles.infoCardContent}>
-                <h4 className={styles.infoCardTitle}>Análise do Processo</h4>
+                <h4 className={styles.infoCardTitle}>Prazo de Reconhecimento</h4>
                 <p className={styles.infoCardText}>
-                  O prazo para análise é de <strong>15 dias úteis</strong> após
-                  a instrução completa do processo.
+                  Após a comprovação da condição e entrega da documentação, a Secretaria tem até <strong>15 dias</strong> para realizar o reconhecimento do benefício.
                 </p>
               </div>
             </div>
@@ -3013,23 +3005,43 @@ export default function IsencaoPcdPage() {
               </div>
               <div className={styles.infoCardContent}>
                 <h4 className={styles.infoCardTitle}>
-                  Regularização de Débitos
+                  Débitos Municipais
                 </h4>
                 <p className={styles.infoCardText}>
-                  Notificações de débitos devem ser sanadas em até{" "}
-                  <strong>30 dias</strong> corridos.
+                  Se o imóvel possuir débitos, o proprietário será notificado para regularizá-los em <strong>30 dias</strong>, sob pena de indeferimento do pedido.
                 </p>
               </div>
             </div>
             <div className={styles.infoCard}>
               <div className={styles.infoCardIcon}>
-                <GavelIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+                <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
               </div>
               <div className={styles.infoCardContent}>
-                <h4 className={styles.infoCardTitle}>Base Legal</h4>
+                <h4 className={styles.infoCardTitle}>Interrupção de Prazo</h4>
                 <p className={styles.infoCardText}>
-                  Pedido condicionado aos prazos e requisitos do{" "}
-                  <strong>Decreto Municipal vigente</strong>.
+                  O prazo para reconhecimento pode ser <strong>interrompido</strong> caso falte documentação ou existam pendências fiscais.
+                </p>
+              </div>
+            </div>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <RefreshIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+              </div>
+              <div className={styles.infoCardContent}>
+                <h4 className={styles.infoCardTitle}>Renovação</h4>
+                <p className={styles.infoCardText}>
+                  Para renovar a isenção, apresentar a mesma documentação acompanhada do <strong>número do processo original</strong>.
+                </p>
+              </div>
+            </div>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <EventIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+              </div>
+              <div className={styles.infoCardContent}>
+                <h4 className={styles.infoCardTitle}>Calendário</h4>
+                <p className={styles.infoCardText}>
+                  O prazo anual para entrada da solicitação é definido por <strong>Decreto do Poder Executivo</strong>.
                 </p>
               </div>
             </div>
