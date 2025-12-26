@@ -24,6 +24,7 @@ export default function IsencaoImovelCedidoPage() {
   const [activeSection, setActiveSection] = useState(1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [expandedSections, setExpandedSections] = useState<number[]>([1]); // Seção 1 expandida por padrão
+  const [inquilinoExpanded, setInquilinoExpanded] = useState(true); // Controla expansão da subseção do inquilino (começa expandida)
 
   // Estados da Seção 1 - Taxas
   const [guia, setGuia] = useState<File | null>(null);
@@ -1052,7 +1053,7 @@ export default function IsencaoImovelCedidoPage() {
       <Header
         icon={<AccountBalanceIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
         processType="ISENÇÃO"
-        title="Imóveis Locados ou Cedidos à Administração Pública"
+        title="Imóvel Locado a Órgão Público"
         description="Imóvel alugado ou cedido à Administração Pública Municipal."
       />
       <main className={styles.main}>
@@ -1350,7 +1351,7 @@ export default function IsencaoImovelCedidoPage() {
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              03. Informações do Imóvel Cedido
+              03. Informações do Imóvel
             </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
@@ -1560,10 +1561,22 @@ export default function IsencaoImovelCedidoPage() {
 
               {/* Informações do Inquilino */}
               <div className={styles.inquilinoSection}>
-                <h3 className={styles.subTitle}>
-                  Informações do Inquilino/Responsável pelo Imóvel
+                <h3 
+                  className={styles.subTitle} 
+                  onClick={() => setInquilinoExpanded(!inquilinoExpanded)}
+                  style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                >
+                  <span>Informações do Inquilino/Responsável pelo Imóvel</span>
+                  <ExpandMoreIcon
+                    style={{
+                      transition: "transform 0.3s ease",
+                      transform: inquilinoExpanded ? "rotate(180deg)" : "rotate(0deg)"
+                    }}
+                  />
                 </h3>
 
+                {inquilinoExpanded && (
+                  <>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
                     Nome Completo <span className={styles.required}>*</span>
@@ -1686,6 +1699,8 @@ export default function IsencaoImovelCedidoPage() {
                     )}
                   </div>
                 </div>
+                </>
+                )}
               </div>
 
               <button
@@ -1737,32 +1752,32 @@ export default function IsencaoImovelCedidoPage() {
               <div className={styles.uploadGrid}>
                 {[
                   {
-                    label: "I. Ficha de Lançamento do IPTU",
+                    label: "Ficha de Lançamento do IPTU",
                     file: docFichaIptu,
                     setFile: setDocFichaIptu,
                   },
                   {
-                    label: "II. Documentos Pessoais (RG e CPF)",
+                    label: "Documentos Pessoais (RG e CPF)",
                     file: docRgCpf,
                     setFile: setDocRgCpf,
                   },
                   {
-                    label: "III. Comprovante de Propriedade",
+                    label: "Comprovante de Propriedade",
                     file: docPropriedade,
                     setFile: setDocPropriedade,
                   },
                   {
-                    label: "IV. Instrumento Contratual",
+                    label: "Instrumento Contratual",
                     file: docContrato,
                     setFile: setDocContrato,
                   },
                   {
-                    label: "V. Comprovante de Publicidade (D.O.M.)",
+                    label: "Comprovante de Publicidade (D.O.M.)",
                     file: docPublicidade,
                     setFile: setDocPublicidade,
                   },
                   {
-                    label: "VI. Certidão Negativa de Débitos",
+                    label: "Certidão Negativa de Débitos",
                     file: docCertidaoDebitos,
                     setFile: setDocCertidaoDebitos,
                   },
