@@ -2483,6 +2483,12 @@ export default function IsencaoExcombatentePage() {
               </div>
 
               {assinaturaRogo && (
+                <p className={styles.helperText} style={{ marginTop: "12px", marginBottom: "16px" }}>
+                  <strong>Atenção:</strong> São obrigatoriamente necessárias 2 (duas) testemunhas.
+                </p>
+              )}
+
+              {assinaturaRogo && (
                 <>
                   <div className={styles.testemunhaBox}>
                     <h3 className={styles.subTitle}>Testemunha 1</h3>
