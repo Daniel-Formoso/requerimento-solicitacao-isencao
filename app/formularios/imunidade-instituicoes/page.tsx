@@ -53,12 +53,22 @@ export default function ImunidadeInstituicoesPage() {
         <section className={styles.explanationSection}>
           <div className={styles.explanationContent}>
             <div className={styles.explanationImageContainer}>
+              {/* Imagem para Desktop (Vertical) */}
               <Image
                 src="/assets/instituicao sem fins lucrativos/ong.webp"
                 alt="Instituição sem Fins Lucrativos"
                 width={300}
                 height={300}
-                className={styles.explanationImage}
+                className={`${styles.explanationImage} ${styles.explanationImageDesktop}`}
+                priority
+              />
+              {/* Imagem para Mobile (Horizontal) */}
+              <Image
+                src="/assets/instituicao sem fins lucrativos/ong-mobile.webp"
+                alt="Instituição sem Fins Lucrativos"
+                width={800}
+                height={400}
+                className={`${styles.explanationImage} ${styles.explanationImageMobile}`}
                 priority
               />
             </div>
@@ -97,7 +107,7 @@ export default function ImunidadeInstituicoesPage() {
               onClick={handleStartFilling}
             >
               <AssignmentIcon sx={{ fontSize: 24 }} />
-              Preencher Requerimento
+              Solicitar Imunidade
             </button>
           </div>
         </section>

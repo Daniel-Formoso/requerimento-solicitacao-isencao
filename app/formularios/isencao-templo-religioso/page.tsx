@@ -53,12 +53,22 @@ export default function IsencaoTemploReligiosoPage() {
         <section className={styles.explanationSection}>
           <div className={styles.explanationContent}>
             <div className={styles.explanationImageContainer}>
+              {/* Imagem para Desktop (Vertical) */}
               <Image
                 src="/assets/isencao templo religioso/templo.webp"
                 alt="Templo Religioso"
                 width={300}
                 height={300}
-                className={styles.explanationImage}
+                className={`${styles.explanationImage} ${styles.explanationImageDesktop}`}
+                priority
+              />
+              {/* Imagem para Mobile (Horizontal) */}
+              <Image
+                src="/assets/isencao templo religioso/templo-mobile.webp"
+                alt="Templo Religioso"
+                width={800}
+                height={400}
+                className={`${styles.explanationImage} ${styles.explanationImageMobile}`}
                 priority
               />
             </div>
@@ -97,7 +107,7 @@ export default function IsencaoTemploReligiosoPage() {
               onClick={handleStartFilling}
             >
               <AssignmentIcon sx={{ fontSize: 24 }} />
-              Preencher Requerimento
+              Solicitar Isenção
             </button>
           </div>
         </section>

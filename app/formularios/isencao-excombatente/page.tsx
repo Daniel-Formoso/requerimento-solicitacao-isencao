@@ -1160,12 +1160,22 @@ export default function IsencaoExcombatentePage() {
         <section className={styles.explanationSection}>
           <div className={styles.explanationContent}>
             <div className={styles.explanationImageContainer}>
+              {/* Imagem para Desktop (Vertical) */}
               <Image
                 src="/assets/excombatente/ex-combatente-1.webp"
                 alt="Ex-Combatente"
                 width={300}
                 height={300}
-                className={styles.explanationImage}
+                className={`${styles.explanationImage} ${styles.explanationImageDesktop}`}
+                priority
+              />
+              {/* Imagem para Mobile (Horizontal) */}
+              <Image
+                src="/assets/excombatente/ex-combatente-mobile.webp"
+                alt="Ex-Combatente"
+                width={800}
+                height={400}
+                className={`${styles.explanationImage} ${styles.explanationImageMobile}`}
                 priority
               />
             </div>
@@ -1204,7 +1214,7 @@ export default function IsencaoExcombatentePage() {
               onClick={handleStartFilling}
             >
               <AssignmentIcon sx={{ fontSize: 24 }} />
-              Preencher Requerimento
+              Solicitar Isenção
             </button>
           </div>
         </section>
