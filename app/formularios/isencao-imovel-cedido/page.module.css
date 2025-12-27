@@ -64,7 +64,7 @@
 
 .sectionTitle {
   color: #2b2862;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
   margin: 0;
 }
@@ -666,7 +666,7 @@
   }
 
   .sectionTitle {
-    font-size: 20px;
+    font-size: 15px;
   }
 
   .radioGroup {
@@ -832,6 +832,14 @@
   object-fit: cover;
 }
 
+.explanationImageDesktop {
+  display: block;
+}
+
+.explanationImageMobile {
+  display: none;
+}
+
 .explanationTextContainer {
   display: flex;
   flex-direction: column;
@@ -916,8 +924,8 @@
 }
 
 .btnStartFilling {
-  padding: 14px 32px;
-  font-size: 15px;
+  padding: 12px 24px;
+  font-size: 14px;
   font-weight: 600;
   color: #ffffff;
   background-color: #2b2862;
@@ -943,7 +951,7 @@
   box-shadow: 0 2px 8px rgba(235, 95, 26, 0.3);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
   .explanationSection {
     padding: 30px 20px;
   }
@@ -955,10 +963,22 @@
 
   .explanationImageContainer {
     order: -1;
+    max-width: 600px;
+    margin: 0 auto;
   }
 
   .explanationImage {
-    max-width: 300px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .explanationImageDesktop {
+    display: none;
+  }
+
+  .explanationImageMobile {
+    display: block;
   }
 
   .explanationTitle {
@@ -991,7 +1011,7 @@
   }
 
   .btnStartFilling {
-    padding: 12px 28px;
+    padding: 12px 24px;
     font-size: 14px;
   }
 }
