@@ -66,12 +66,22 @@ export default function ImunidadeTemploReligiosoPage() {
         <section className={styles.explanationSection}>
           <div className={styles.explanationContent}>
             <div className={styles.explanationImageContainer}>
+              {/* Imagem para Desktop (Vertical) */}
               <Image
                 src="/assets/imunidade templo religioso/imunidade.webp"
                 alt="Templo Religioso"
                 width={300}
                 height={300}
-                className={styles.explanationImage}
+                className={`${styles.explanationImage} ${styles.explanationImageDesktop}`}
+                priority
+              />
+              {/* Imagem para Mobile (Horizontal) */}
+              <Image
+                src="/assets/imunidade templo religioso/imunidade-mobile.webp"
+                alt="Templo Religioso"
+                width={800}
+                height={400}
+                className={`${styles.explanationImage} ${styles.explanationImageMobile}`}
                 priority
               />
             </div>
@@ -110,7 +120,7 @@ export default function ImunidadeTemploReligiosoPage() {
               onClick={handleStartFilling}
             >
               <AssignmentIcon sx={{ fontSize: 24 }} />
-              Preencher Requerimento
+              Solicitar Imunidade
             </button>
           </div>
         </section>

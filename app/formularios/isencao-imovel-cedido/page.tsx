@@ -1075,18 +1075,28 @@ export default function IsencaoImovelCedidoPage() {
         <section className={styles.explanationSection}>
           <div className={styles.explanationContent}>
             <div className={styles.explanationImageContainer}>
+              {/* Imagem para Desktop (Vertical) */}
               <Image
                 src="/assets/imovel-locado/imovel.webp"
                 alt="Imóvel Cedido"
                 width={300}
                 height={300}
-                className={styles.explanationImage}
+                className={`${styles.explanationImage} ${styles.explanationImageDesktop}`}
+                priority
+              />
+              {/* Imagem para Mobile (Horizontal) */}
+              <Image
+                src="/assets/imovel-locado/imovel-mobile.webp"
+                alt="Imóvel Cedido"
+                width={800}
+                height={400}
+                className={`${styles.explanationImage} ${styles.explanationImageMobile}`}
                 priority
               />
             </div>
             <div className={styles.explanationTextContainer}>
               <h2 className={styles.explanationTitle}>
-                Isenção de IPTU para Imóvel Cedido
+                Isenção de IPTU para Imóvel Locado ou Cedido à Administração Pública
               </h2>
               <div className={styles.explanationText}>
                 <p>
@@ -1119,7 +1129,7 @@ export default function IsencaoImovelCedidoPage() {
               onClick={handleStartFilling}
             >
               <AssignmentIcon sx={{ fontSize: 24 }} />
-              Preencher Requerimento
+              Solicitar Isenção
             </button>
           </div>
         </section>

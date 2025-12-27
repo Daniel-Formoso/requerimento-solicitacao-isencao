@@ -193,7 +193,7 @@ export default function ComprovanteTaxa({ titulo, onContinue, guiaInicial, compr
         className={styles.continueButton}
         onClick={handleSubmit}
       >
-        Avançar
+        Continuar
       </button>
     </div>
   );
