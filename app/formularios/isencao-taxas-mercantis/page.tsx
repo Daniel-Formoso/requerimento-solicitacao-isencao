@@ -56,12 +56,22 @@ export default function IsencaoTaxasMercantisPage() {
         <section className={styles.explanationSection}>
           <div className={styles.explanationContent}>
             <div className={styles.explanationImageContainer}>
+              {/* Imagem para Desktop (Vertical) */}
               <Image
                 src="/assets/taxas mercantis/taxa.webp"
                 alt="Taxas Mercantis"
                 width={300}
                 height={300}
-                className={styles.explanationImage}
+                className={`${styles.explanationImage} ${styles.explanationImageDesktop}`}
+                priority
+              />
+              {/* Imagem para Mobile (Horizontal) */}
+              <Image
+                src="/assets/taxas mercantis/taxa-mobile.webp"
+                alt="Taxas Mercantis"
+                width={800}
+                height={400}
+                className={`${styles.explanationImage} ${styles.explanationImageMobile}`}
                 priority
               />
             </div>
@@ -100,7 +110,7 @@ export default function IsencaoTaxasMercantisPage() {
               onClick={handleStartFilling}
             >
               <AssignmentIcon sx={{ fontSize: 24 }} />
-              Preencher Requerimento
+              Solicitar Isenção
             </button>
           </div>
         </section>
