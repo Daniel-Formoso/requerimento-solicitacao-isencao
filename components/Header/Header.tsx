@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Header.module.css";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -15,6 +15,12 @@ interface HeaderProps {
 
 export default function Header({ icon, processType, title, description }: HeaderProps) {
   const router = useRouter();
+  const [cacheBreaker, setCacheBreaker] = useState("");
+
+  // Set cache breaker only on client side to avoid hydration mismatch
+  useEffect(() => {
+    setCacheBreaker(`?v=${Math.floor(Date.now() / 60000)}`);
+  }, []);
 
   const handleHelpClick = () => {
     router.push("/faq");
@@ -31,7 +37,7 @@ export default function Header({ icon, processType, title, description }: Header
         <div className={styles.topBar}>
           <div className={styles.logo}>
             <a href="/">
-            <img src="/assets/logo.png" alt="Logo da Prefeitura" />
+            <img src={`/assets/logo.png${cacheBreaker}`} alt="Logo da Prefeitura" />
             </a>
           </div>
 
