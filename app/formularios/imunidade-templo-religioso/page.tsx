@@ -68,7 +68,7 @@ export default function ImunidadeTemploReligiosoPage() {
             <div className={styles.explanationImageContainer}>
               {/* Imagem para Desktop (Vertical) */}
               <Image
-                src="/assets/imunidade templo religioso/imunidade.webp"
+                src="/assets/imunidade-templo-religioso/imunidade.webp"
                 alt="Templo Religioso"
                 width={300}
                 height={300}
@@ -77,7 +77,7 @@ export default function ImunidadeTemploReligiosoPage() {
               />
               {/* Imagem para Mobile (Horizontal) */}
               <Image
-                src="/assets/imunidade templo religioso/imunidade-mobile.webp"
+                src="/assets/imunidade-templo-religioso/imunidade-mobile.webp"
                 alt="Templo Religioso"
                 width={800}
                 height={400}
