@@ -414,6 +414,7 @@
   margin-top: 6px;
   color: #2b2862;
   font-size: 14px;
+  font-weight: 400;
   text-align: center;
 }
 
@@ -1096,15 +1097,6 @@
 
 .fileInput {
   display: none;
-}
-
-.fileName {
-  display: flex;
-  align-items: center;
-  color: #4caf50;
-  font-size: 14px;
-  margin-top: 8px;
-  font-weight: 500;
 }
 
 /* Navigation Buttons */
