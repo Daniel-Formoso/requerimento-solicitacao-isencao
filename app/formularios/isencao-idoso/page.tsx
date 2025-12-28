@@ -69,7 +69,7 @@ export default function IsencaoIdosoPage() {
   const [estadoError, setEstadoError] = useState("");
 
   // Estados da Seção 4 - Documentos
-  const [docCertidaoImovel, setDocCertidaoImovel] = useState<File | null>(null);
+  const [docCertidao, setDocCertidao] = useState<File | null>(null);
   const [docTaxas, setDocTaxas] = useState<File | null>(null);
   const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
   const [docResidencia, setDocResidencia] = useState<File | null>(null);
@@ -493,7 +493,7 @@ export default function IsencaoIdosoPage() {
         return !!(imovelValid && noImovelErrors);
       case 4: // Documentos
         return !!(
-          docCertidaoImovel &&
+          docCertidao &&
           docTaxas &&
           docRgCpf &&
           docResidencia &&
@@ -1065,7 +1065,7 @@ export default function IsencaoIdosoPage() {
         setEstadoError("");
         break;
       case 4:
-        setDocCertidaoImovel(dados.documentos?.[0] || null);
+        setDocCertidao(dados.documentos?.[0] || null);
         setDocTaxas(dados.documentos?.[1] || null);
         setDocRgCpf(dados.documentos?.[0] || null);
         setDocResidencia(dados.documentos?.[1] || null);
@@ -1542,7 +1542,7 @@ export default function IsencaoIdosoPage() {
             onClick={() => toggleSection(3)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>03. Informações do Imóvel</h2>
+            <h2 className={styles.sectionTitle}>03. Identificação do Imóvel</h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
                 <CheckCircleIcon className={styles.checkIcon} />
@@ -1797,9 +1797,9 @@ export default function IsencaoIdosoPage() {
               <div className={styles.uploadGrid}>
                 {[
                   {
-                    label: "Certidão do Imóvel",
-                    file: docCertidaoImovel,
-                    setFile: setDocCertidaoImovel,
+                    label: "Cópia da  Certidão",
+                    file: docCertidao,
+                    setFile: setDocCertidao,
                   },
                   {
                     label: "Taxas Municipais",
@@ -1807,7 +1807,7 @@ export default function IsencaoIdosoPage() {
                     setFile: setDocTaxas,
                   },
                   {
-                    label: "RG/CPF (Comprovação 60+)",
+                    label: "RG/CPF",
                     file: docRgCpf,
                     setFile: setDocRgCpf,
                   },
@@ -1822,7 +1822,7 @@ export default function IsencaoIdosoPage() {
                     setFile: setDocRendimentos,
                   },
                   {
-                    label: "Escritura/Documento de Posse",
+                    label: "Comprovante de Propriedade",
                     file: docEscritura,
                     setFile: setDocEscritura,
                   },
@@ -1832,7 +1832,7 @@ export default function IsencaoIdosoPage() {
                     setFile: setDocUnicoImovel,
                   },
                   {
-                    label: "Ficha de Lançamento IPTU",
+                    label: "Ficha de Lançamento do IPTU",
                     file: docFichaIptu,
                     setFile: setDocFichaIptu,
                   },
@@ -1863,7 +1863,6 @@ export default function IsencaoIdosoPage() {
                     {doc.file && (
                       <p className={styles.fileName}>{doc.file.name}</p>
                     )}
-                    {/* Mensagem de erro removida, pois o botão Continuar já está bloqueado até anexar todos os arquivos obrigatórios */}
                   </div>
                 ))}
               </div>
