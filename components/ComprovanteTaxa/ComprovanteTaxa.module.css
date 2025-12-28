@@ -158,9 +158,11 @@
 }
 
 .fileName {
-  margin-top: 8px;
-  color: #666;
+  margin-top: 6px;
+  color: #2b2862;
   font-size: 14px;
+  font-weight: 400;
+  text-align: center;
 }
 
 .fieldError {
