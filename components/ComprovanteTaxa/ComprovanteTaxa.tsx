@@ -94,7 +94,7 @@ export default function ComprovanteTaxa({ titulo, onContinue, guiaInicial, compr
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>{titulo}</h1>
+      {/* <h1 className={styles.title}>{titulo}</h1> */}
 
       <div className={styles.alertBox}>
         <div className={styles.alertContent}>
