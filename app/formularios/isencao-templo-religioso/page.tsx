@@ -712,13 +712,13 @@ export default function IsencaoTemploReligiosoPage() {
         setEstadoError("");
         break;
       case 4:
-        setDocResidencia(dados.documentos?.[0] || null);
-        setDocRgCpf(dados.documentos?.[1] || null);
-        setDocEscritura(dados.documentos?.[0] || null);
-        setDocRendimentos(dados.documentos?.[1] || null);
-        setDocExcombatente(dados.documentos?.[0] || null);
-        setDocUnicoImovel(dados.documentos?.[1] || null);
-        setDocFichaIptu(dados.documentos?.[0] || null);
+        setDocEstatuto(dados.documentos?.[0] || null);
+        setDocAtaDiretoria(dados.documentos?.[1] || null);
+        setDocImovel(dados.documentos?.[0] || null);
+        setDocIptu(dados.documentos?.[1] || null);
+        setDocCroqui(dados.documentos?.[0] || null);
+        setDocCadastro(dados.documentos?.[1] || null);
+        setDocRgCpf(dados.documentos?.[0] || null);
         break;
       case 5:
         setPossuiProcurador(true);
