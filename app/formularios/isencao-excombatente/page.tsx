@@ -1536,7 +1536,7 @@ export default function IsencaoExcombatentePage() {
             onClick={() => toggleSection(3)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>03. Informações do Imóvel</h2>
+            <h2 className={styles.sectionTitle}>03. Identificação do Imóvel</h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
                 <CheckCircleIcon className={styles.checkIcon} />
