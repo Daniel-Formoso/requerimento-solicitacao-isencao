@@ -60,7 +60,9 @@ export default function IsencaoTemploReligiosoPage() {
   const [quadra, setQuadra] = useState("");
 
   // Estados de validação e erro da Seção 3
+  const [inscricaoMercantil, setInscricaoMercantil] = useState("");
   const [inscricaoError, setInscricaoError] = useState("");
+  const [inscricaoMercantilError, setInscricaoMercantilError] = useState("");
   const [cepError, setCepError] = useState("");
   const [ruaError, setRuaError] = useState("");
   const [numeroError, setNumeroError] = useState("");
@@ -68,47 +70,16 @@ export default function IsencaoTemploReligiosoPage() {
   const [cidadeError, setCidadeError] = useState("");
   const [estadoError, setEstadoError] = useState("");
 
-  // Estados da Seção 4 - Documentos
-  const [docCertidaoImovel, setDocCertidaoImovel] = useState<File | null>(null);
-  const [docTaxas, setDocTaxas] = useState<File | null>(null);
+  // Estados da Seção 4 - Documentos (atualizados)
+  const [docEstatuto, setDocEstatuto] = useState<File | null>(null);
+  const [docAtaDiretoria, setDocAtaDiretoria] = useState<File | null>(null);
+  const [docImovel, setDocImovel] = useState<File | null>(null);
+  const [docIptu, setDocIptu] = useState<File | null>(null);
+  const [docCroqui, setDocCroqui] = useState<File | null>(null);
+  const [docCadastro, setDocCadastro] = useState<File | null>(null);
   const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
-  const [docResidencia, setDocResidencia] = useState<File | null>(null);
-  const [docRendimentos, setDocRendimentos] = useState<File | null>(null);
-  const [docEscritura, setDocEscritura] = useState<File | null>(null);
-  const [docUnicoImovel, setDocUnicoImovel] = useState<File | null>(null);
-  const [docFichaIptu, setDocFichaIptu] = useState<File | null>(null);
 
-  // Estados da Seção 5 - Questionário de Elegibilidade
-  const [perfilRequerente, setPerfilRequerente] = useState("");
-  const [estadoCivil, setEstadoCivil] = useState("");
-  const [unicoImovel, setUnicoImovel] = useState(false);
-  const [residenciaPropria, setResidenciaPropria] = useState(false);
-  const [anoInicio, setAnoInicio] = useState("");
-  const [rendaAte2Salarios, setRendaAte2Salarios] = useState(false);
-  const [origemRenda, setOrigemRenda] = useState("");
-  const [origemRendaOutro, setOrigemRendaOutro] = useState("");
-  const [nomeConjuge, setNomeConjuge] = useState("");
-  const [cpfConjuge, setCpfConjuge] = useState("");
-  const [rgConjuge, setRgConjuge] = useState("");
-  const [telefoneConjuge, setTelefoneConjuge] = useState("");
-  const [emailConjuge, setEmailConjuge] = useState("");
-  const [coproprietario, setCoproprietario] = useState(false);
-  const [origemRendaConjuge, setOrigemRendaConjuge] = useState("");
-
-  // Calcula se deve exibir seção de cônjuge baseado no estado civil
-  const temConjuge =
-    estadoCivil === "casado" || estadoCivil === "uniao-estavel";
-
-  // Estados de validação e erro da Seção 5
-  const [perfilRequerenteError, setPerfilRequerenteError] = useState("");
-  const [estadoCivilError, setEstadoCivilError] = useState("");
-  const [anoInicioError, setAnoInicioError] = useState("");
-  const [nomeConjugeError, setNomeConjugeError] = useState("");
-  const [cpfConjugeError, setCpfConjugeError] = useState("");
-  const [telefoneConjugeError, setTelefoneConjugeError] = useState("");
-  const [emailConjugeError, setEmailConjugeError] = useState("");
-
-  // Estados da Seção 6 - Representação
+  // Estados da Seção 5 - Representação (antiga Seção 6)
   const [possuiProcurador, setPossuiProcurador] = useState(false);
   const [nomeProcurador, setNomeProcurador] = useState("");
   const [cpfProcurador, setCpfProcurador] = useState("");
@@ -127,37 +98,12 @@ export default function IsencaoTemploReligiosoPage() {
   const [telefoneProcuradorError, setTelefoneProcuradorError] = useState("");
   const [emailProcuradorError, setEmailProcuradorError] = useState("");
 
-  // Estados da Seção 7 - Assinatura a Rogo
-  const [assinaturaRogo, setAssinaturaRogo] = useState(false);
-  const [testemunha1Nome, setTestemunha1Nome] = useState("");
-  const [testemunha1Cpf, setTestemunha1Cpf] = useState("");
-  const [testemunha1Rg, setTestemunha1Rg] = useState("");
-  const [testemunha1OrgaoEmissor, setTestemunha1OrgaoEmissor] = useState("");
-  const [testemunha1Telefone, setTestemunha1Telefone] = useState("");
-  const [testemunha1Email, setTestemunha1Email] = useState("");
-  const [testemunha2Nome, setTestemunha2Nome] = useState("");
-  const [testemunha2Cpf, setTestemunha2Cpf] = useState("");
-  const [testemunha2Rg, setTestemunha2Rg] = useState("");
-  const [testemunha2OrgaoEmissor, setTestemunha2OrgaoEmissor] = useState("");
-  const [testemunha2Telefone, setTestemunha2Telefone] = useState("");
-  const [testemunha2Email, setTestemunha2Email] = useState("");
-
-  // Estados de validação e erro da Seção 7
-  const [testemunha1NomeError, setTestemunha1NomeError] = useState("");
-  const [testemunha1CpfError, setTestemunha1CpfError] = useState("");
-  const [testemunha1TelefoneError, setTestemunha1TelefoneError] = useState("");
-  const [testemunha1EmailError, setTestemunha1EmailError] = useState("");
-  const [testemunha2NomeError, setTestemunha2NomeError] = useState("");
-  const [testemunha2CpfError, setTestemunha2CpfError] = useState("");
-  const [testemunha2TelefoneError, setTestemunha2TelefoneError] = useState("");
-  const [testemunha2EmailError, setTestemunha2EmailError] = useState("");
-
-  // Estados da Seção 8 - Preferências de Comunicação
+  // Estados da Seção 6 - Preferências de Comunicação (antiga Seção 8)
   const [preferenciaAR, setPreferenciaAR] = useState(false);
   const [preferenciaWhatsapp, setPreferenciaWhatsapp] = useState(false);
   const [preferenciaEmail, setPreferenciaEmail] = useState(false);
 
-  // Estados da Seção 9 - Finalização
+  // Estados da Seção 7 - Finalização (antiga Seção 9)
   const [observacoes, setObservacoes] = useState("");
   const [docPeticao, setDocPeticao] = useState<File | null>(null);
   const [aceiteTermo, setAceiteTermo] = useState(false);
@@ -387,6 +333,16 @@ export default function IsencaoTemploReligiosoPage() {
     }
   };
 
+  const handleInscricaoMercantilChange = (valor: string) => {
+    const apenasNumeros = valor.replace(/\D/g, "");
+    setInscricaoMercantil(apenasNumeros);
+    if (apenasNumeros.length > 0 && apenasNumeros.length < 3) {
+      setInscricaoMercantilError("Inscrição mercantil muito curta");
+    } else {
+      setInscricaoMercantilError("");
+    }
+  };
+
   const handleCepChange = (valor: string) => {
     const cepFormatado = formatarCEP(valor);
     setCep(cepFormatado);
@@ -474,8 +430,9 @@ export default function IsencaoTemploReligiosoPage() {
         }
         return !!(baseValid && noErrors);
       case 3: // Localização
+        const temInscricao = inscricaoImobiliaria || inscricaoMercantil;
         const imovelValid =
-          inscricaoImobiliaria &&
+          temInscricao &&
           cep &&
           rua &&
           numero &&
@@ -484,6 +441,7 @@ export default function IsencaoTemploReligiosoPage() {
           estado;
         const noImovelErrors =
           !inscricaoError &&
+          !inscricaoMercantilError &&
           !cepError &&
           !ruaError &&
           !numeroError &&
@@ -491,43 +449,17 @@ export default function IsencaoTemploReligiosoPage() {
           !cidadeError &&
           !estadoError;
         return !!(imovelValid && noImovelErrors);
-      case 4: // Documentos
+      case 4: // Documentos (atualizados)
         return !!(
-          docCertidaoImovel &&
-          docTaxas &&
-          docRgCpf &&
-          docResidencia &&
-          docRendimentos &&
-          docEscritura &&
-          docUnicoImovel &&
-          docFichaIptu
+          docEstatuto &&
+          docAtaDiretoria &&
+          docImovel &&
+          docIptu &&
+          docCroqui &&
+          docCadastro &&
+          docRgCpf
         );
-      case 5: // Questionário de Elegibilidade
-        // Perfil do Requerente e Estado Civil são obrigatórios
-        if (!perfilRequerente || !estadoCivil) {
-          return false;
-        }
-        // Se marcou residência própria, precisa informar o ano
-        if (residenciaPropria && !anoInicio) {
-          return false;
-        }
-        // Verificar se não há erros
-        if (perfilRequerenteError || estadoCivilError || anoInicioError) {
-          return false;
-        }
-        // Se tem cônjuge, validar dados do cônjuge (RG não é obrigatório)
-        if (temConjuge) {
-          const conjugeValid =
-            nomeConjuge && cpfConjuge && telefoneConjuge && emailConjuge;
-          const noConjugeErrors =
-            !nomeConjugeError &&
-            !cpfConjugeError &&
-            !telefoneConjugeError &&
-            !emailConjugeError;
-          return !!(conjugeValid && noConjugeErrors);
-        }
-        return true;
-      case 6: // Representação
+      case 5: // Representação (antiga Seção 6)
         if (possuiProcurador) {
           const procuradorValid =
             nomeProcurador &&
@@ -544,44 +476,14 @@ export default function IsencaoTemploReligiosoPage() {
           return !!(procuradorValid && docsValid && noErrors);
         }
         return true;
-      case 7: // Assinatura a Rogo
-        if (assinaturaRogo) {
-          const testemunha1Valid =
-            testemunha1Nome &&
-            testemunha1Cpf &&
-            testemunha1Telefone &&
-            testemunha1Email;
-          const testemunha2Valid =
-            testemunha2Nome &&
-            testemunha2Cpf &&
-            testemunha2Telefone &&
-            testemunha2Email;
-          const noTestemunha1Errors =
-            !testemunha1NomeError &&
-            !testemunha1CpfError &&
-            !testemunha1TelefoneError &&
-            !testemunha1EmailError;
-          const noTestemunha2Errors =
-            !testemunha2NomeError &&
-            !testemunha2CpfError &&
-            !testemunha2TelefoneError &&
-            !testemunha2EmailError;
-          return !!(
-            testemunha1Valid &&
-            testemunha2Valid &&
-            noTestemunha1Errors &&
-            noTestemunha2Errors
-          );
-        }
-        return true;
-      case 8: // Preferências
+      case 6: // Preferências (antiga Seção 8)
         const selectedCount = [
           preferenciaAR,
           preferenciaWhatsapp,
           preferenciaEmail,
         ].filter(Boolean).length;
         return selectedCount >= 2;
-      case 9: // Finalização
+      case 7: // Finalização (antiga Seção 9)
         return aceiteTermo;
       default:
         return false;
@@ -669,124 +571,6 @@ export default function IsencaoTemploReligiosoPage() {
     }
   };
 
-  // Handlers da Seção 5
-  const handlePerfilRequerenteChange = (valor: string) => {
-    setPerfilRequerente(valor);
-    if (valor) {
-      setPerfilRequerenteError("");
-    } else {
-      setPerfilRequerenteError("Por favor, selecione o perfil do requerente");
-    }
-  };
-
-  const handleEstadoCivilChange = (valor: string) => {
-    setEstadoCivil(valor);
-    if (valor) {
-      setEstadoCivilError("");
-      // Limpar dados do cônjuge se não for casado/união estável
-      if (valor !== "casado" && valor !== "uniao-estavel") {
-        setNomeConjuge("");
-        setCpfConjuge("");
-        setRgConjuge("");
-        setTelefoneConjuge("");
-        setEmailConjuge("");
-        setCoproprietario(false);
-        setOrigemRendaConjuge("");
-        setNomeConjugeError("");
-        setCpfConjugeError("");
-        setTelefoneConjugeError("");
-        setEmailConjugeError("");
-      }
-    } else {
-      setEstadoCivilError("Por favor, selecione o estado civil");
-    }
-  };
-
-  const handleAnoInicioChange = (valor: string) => {
-    setAnoInicio(valor);
-    const anoAtual = new Date().getFullYear();
-    const ano = parseInt(valor);
-
-    if (!valor) {
-      setAnoInicioError("Por favor, informe o ano de início da residência");
-    } else if (ano < 1900 || ano > anoAtual) {
-      setAnoInicioError(`Ano deve estar entre 1900 e ${anoAtual}`);
-    } else {
-      setAnoInicioError("");
-    }
-  };
-
-  // Handlers para campos do cônjuge
-  const handleNomeConjugeChange = (valor: string) => {
-    // Remove números e caracteres especiais (exceto espaço, hífen e apóstrofo)
-    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
-    setNomeConjuge(nomeFormatado);
-
-    if (nomeFormatado.trim().length === 0) {
-      setNomeConjugeError("Por favor, insira o nome do cônjuge");
-    } else if (!validarNome(nomeFormatado)) {
-      setNomeConjugeError("Nome deve conter apenas letras");
-    } else if (nomeFormatado.trim().length < 3) {
-      setNomeConjugeError("Nome deve ter pelo menos 3 caracteres");
-    } else {
-      setNomeConjugeError("");
-    }
-  };
-
-  const handleCpfConjugeChange = (valor: string) => {
-    const cpfFormatado = formatarCPF(valor);
-    setCpfConjuge(cpfFormatado);
-
-    const numeros = cpfFormatado.replace(/\D/g, "");
-    if (numeros.length === 0) {
-      setCpfConjugeError("Por favor, insira o CPF do cônjuge");
-    } else if (numeros.length === 11) {
-      if (!validarCPF(cpfFormatado)) {
-        setCpfConjugeError("CPF inválido");
-      } else {
-        setCpfConjugeError("");
-      }
-    } else {
-      setCpfConjugeError("CPF incompleto");
-    }
-  };
-
-  const handleTelefoneConjugeChange = (valor: string) => {
-    const telefoneFormatado = formatarTelefone(valor);
-    setTelefoneConjuge(telefoneFormatado);
-
-    const numeros = telefoneFormatado.replace(/\D/g, "");
-    if (numeros.length === 0) {
-      setTelefoneConjugeError("");
-    } else if (numeros.length < 10) {
-      setTelefoneConjugeError("Telefone incompleto");
-    } else if (numeros.length === 10 || numeros.length === 11) {
-      setTelefoneConjugeError("");
-    }
-  };
-
-  const handleEmailConjugeChange = (valor: string) => {
-    setEmailConjuge(valor.trim().toLowerCase());
-
-    if (valor.trim().length === 0) {
-      setEmailConjugeError("");
-    } else if (!validarEmail(valor.trim())) {
-      if (!valor.includes("@")) {
-        setEmailConjugeError("Email deve conter @");
-      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
-        setEmailConjugeError("Email deve conter um domínio válido");
-      } else if (valor.includes("..")) {
-        setEmailConjugeError("Email não pode conter pontos consecutivos");
-      } else if (valor.split("@").length > 2) {
-        setEmailConjugeError("Email deve conter apenas um @");
-      } else {
-        setEmailConjugeError("Email inválido");
-      }
-    } else {
-      setEmailConjugeError("");
-    }
-  };
-
   // Handlers para campos do procurador
   const handleNomeProcuradorChange = (valor: string) => {
     const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
@@ -857,145 +641,6 @@ export default function IsencaoTemploReligiosoPage() {
     }
   };
 
-  // Handlers para campos das testemunhas
-  const handleTestemunha1NomeChange = (valor: string) => {
-    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
-    setTestemunha1Nome(nomeFormatado);
-
-    if (nomeFormatado.trim().length === 0) {
-      setTestemunha1NomeError("Por favor, insira o nome da testemunha");
-    } else if (!validarNome(nomeFormatado)) {
-      setTestemunha1NomeError("Nome deve conter apenas letras");
-    } else if (nomeFormatado.trim().length < 3) {
-      setTestemunha1NomeError("Nome deve ter pelo menos 3 caracteres");
-    } else {
-      setTestemunha1NomeError("");
-    }
-  };
-
-  const handleTestemunha1CpfChange = (valor: string) => {
-    const cpfFormatado = formatarCPF(valor);
-    setTestemunha1Cpf(cpfFormatado);
-
-    const numeros = cpfFormatado.replace(/\D/g, "");
-    if (numeros.length === 0) {
-      setTestemunha1CpfError("Por favor, insira o CPF da testemunha");
-    } else if (numeros.length === 11) {
-      if (!validarCPF(cpfFormatado)) {
-        setTestemunha1CpfError("CPF inválido");
-      } else {
-        setTestemunha1CpfError("");
-      }
-    } else {
-      setTestemunha1CpfError("CPF incompleto");
-    }
-  };
-
-  const handleTestemunha1TelefoneChange = (valor: string) => {
-    const telefoneFormatado = formatarTelefone(valor);
-    setTestemunha1Telefone(telefoneFormatado);
-
-    const numeros = telefoneFormatado.replace(/\D/g, "");
-    if (numeros.length === 0) {
-      setTestemunha1TelefoneError("Por favor, insira o telefone da testemunha");
-    } else if (numeros.length < 10) {
-      setTestemunha1TelefoneError("Telefone incompleto");
-    } else if (numeros.length === 10 || numeros.length === 11) {
-      setTestemunha1TelefoneError("");
-    }
-  };
-
-  const handleTestemunha1EmailChange = (valor: string) => {
-    setTestemunha1Email(valor.trim().toLowerCase());
-
-    if (valor.trim().length === 0) {
-      setTestemunha1EmailError("Por favor, insira o email da testemunha");
-    } else if (!validarEmail(valor.trim())) {
-      if (!valor.includes("@")) {
-        setTestemunha1EmailError("Email deve conter @");
-      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
-        setTestemunha1EmailError("Email deve conter um domínio válido");
-      } else if (valor.includes("..")) {
-        setTestemunha1EmailError("Email não pode conter pontos consecutivos");
-      } else if (valor.split("@").length > 2) {
-        setTestemunha1EmailError("Email deve conter apenas um @");
-      } else {
-        setTestemunha1EmailError("Email inválido");
-      }
-    } else {
-      setTestemunha1EmailError("");
-    }
-  };
-
-  const handleTestemunha2NomeChange = (valor: string) => {
-    const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
-    setTestemunha2Nome(nomeFormatado);
-
-    if (nomeFormatado.trim().length === 0) {
-      setTestemunha2NomeError("Por favor, insira o nome da testemunha");
-    } else if (!validarNome(nomeFormatado)) {
-      setTestemunha2NomeError("Nome deve conter apenas letras");
-    } else if (nomeFormatado.trim().length < 3) {
-      setTestemunha2NomeError("Nome deve ter pelo menos 3 caracteres");
-    } else {
-      setTestemunha2NomeError("");
-    }
-  };
-
-  const handleTestemunha2CpfChange = (valor: string) => {
-    const cpfFormatado = formatarCPF(valor);
-    setTestemunha2Cpf(cpfFormatado);
-
-    const numeros = cpfFormatado.replace(/\D/g, "");
-    if (numeros.length === 0) {
-      setTestemunha2CpfError("Por favor, insira o CPF da testemunha");
-    } else if (numeros.length === 11) {
-      if (!validarCPF(cpfFormatado)) {
-        setTestemunha2CpfError("CPF inválido");
-      } else {
-        setTestemunha2CpfError("");
-      }
-    } else {
-      setTestemunha2CpfError("CPF incompleto");
-    }
-  };
-
-  const handleTestemunha2TelefoneChange = (valor: string) => {
-    const telefoneFormatado = formatarTelefone(valor);
-    setTestemunha2Telefone(telefoneFormatado);
-
-    const numeros = telefoneFormatado.replace(/\D/g, "");
-    if (numeros.length === 0) {
-      setTestemunha2TelefoneError("Por favor, insira o telefone da testemunha");
-    } else if (numeros.length < 10) {
-      setTestemunha2TelefoneError("Telefone incompleto");
-    } else if (numeros.length === 10 || numeros.length === 11) {
-      setTestemunha2TelefoneError("");
-    }
-  };
-
-  const handleTestemunha2EmailChange = (valor: string) => {
-    setTestemunha2Email(valor.trim().toLowerCase());
-
-    if (valor.trim().length === 0) {
-      setTestemunha2EmailError("Por favor, insira o email da testemunha");
-    } else if (!validarEmail(valor.trim())) {
-      if (!valor.includes("@")) {
-        setTestemunha2EmailError("Email deve conter @");
-      } else if (valor.split("@")[1] && !valor.split("@")[1].includes(".")) {
-        setTestemunha2EmailError("Email deve conter um domínio válido");
-      } else if (valor.includes("..")) {
-        setTestemunha2EmailError("Email não pode conter pontos consecutivos");
-      } else if (valor.split("@").length > 2) {
-        setTestemunha2EmailError("Email deve conter apenas um @");
-      } else {
-        setTestemunha2EmailError("Email inválido");
-      }
-    } else {
-      setTestemunha2EmailError("");
-    }
-  };
-
   const handleContinueTaxas = (
     guiaFile: File | null,
     comprovanteFile: File | null
@@ -1048,6 +693,7 @@ export default function IsencaoTemploReligiosoPage() {
         break;
       case 3:
         setInscricaoImobiliaria("1234567-8");
+        setInscricaoMercantil("123456");
         setCep("01001-000");
         setRua("Rua das Flores");
         setNumero("123");
@@ -1057,6 +703,7 @@ export default function IsencaoTemploReligiosoPage() {
         setLote("1");
         setQuadra("A");
         setInscricaoError("");
+        setInscricaoMercantilError("");
         setCepError("");
         setRuaError("");
         setNumeroError("");
@@ -1065,41 +712,15 @@ export default function IsencaoTemploReligiosoPage() {
         setEstadoError("");
         break;
       case 4:
-        setDocCertidaoImovel(dados.documentos?.[0] || null);
-        setDocTaxas(dados.documentos?.[1] || null);
-        setDocRgCpf(dados.documentos?.[0] || null);
-        setDocResidencia(dados.documentos?.[1] || null);
-        setDocRendimentos(dados.documentos?.[0] || null);
-        setDocEscritura(dados.documentos?.[1] || null);
-        setDocUnicoImovel(dados.documentos?.[0] || null);
-        setDocFichaIptu(dados.documentos?.[1] || null);
+        setDocResidencia(dados.documentos?.[0] || null);
+        setDocRgCpf(dados.documentos?.[1] || null);
+        setDocEscritura(dados.documentos?.[0] || null);
+        setDocRendimentos(dados.documentos?.[1] || null);
+        setDocExcombatente(dados.documentos?.[0] || null);
+        setDocUnicoImovel(dados.documentos?.[1] || null);
+        setDocFichaIptu(dados.documentos?.[0] || null);
         break;
       case 5:
-        setPerfilRequerente("aposentado");
-        setEstadoCivil("casado");
-        setUnicoImovel(true);
-        setResidenciaPropria(true);
-        setAnoInicio("2010");
-        setRendaAte2Salarios(true);
-        setOrigemRenda("aposentadoria");
-        // Dados do cônjuge
-        const conjugeData = gerarDadosAleatorios({});
-        setNomeConjuge(conjugeData.nome);
-        setCpfConjuge(conjugeData.cpf);
-        setRgConjuge(conjugeData.rg);
-        setTelefoneConjuge(conjugeData.telefone);
-        setEmailConjuge(conjugeData.email);
-        setCoproprietario(true);
-        setOrigemRendaConjuge("Pensão");
-        setPerfilRequerenteError("");
-        setEstadoCivilError("");
-        setAnoInicioError("");
-        setNomeConjugeError("");
-        setCpfConjugeError("");
-        setTelefoneConjugeError("");
-        setEmailConjugeError("");
-        break;
-      case 6:
         setPossuiProcurador(true);
         if (dados.procurador) {
           setNomeProcurador(dados.procurador.nome);
@@ -1112,39 +733,12 @@ export default function IsencaoTemploReligiosoPage() {
           setDocIdentidadeProcurador(dados.procurador.documentos?.[2] || null);
         }
         break;
-      case 7:
-        setAssinaturaRogo(true);
-        // Testemunha 1
-        const testemunha1Data = gerarDadosAleatorios({});
-        setTestemunha1Nome(testemunha1Data.nome);
-        setTestemunha1Cpf(testemunha1Data.cpf);
-        setTestemunha1Rg(testemunha1Data.rg);
-        setTestemunha1OrgaoEmissor("SSP/RJ");
-        setTestemunha1Telefone(testemunha1Data.telefone);
-        setTestemunha1Email(testemunha1Data.email);
-        setTestemunha1NomeError("");
-        setTestemunha1CpfError("");
-        setTestemunha1TelefoneError("");
-        setTestemunha1EmailError("");
-        // Testemunha 2
-        const testemunha2Data = gerarDadosAleatorios({});
-        setTestemunha2Nome(testemunha2Data.nome);
-        setTestemunha2Cpf(testemunha2Data.cpf);
-        setTestemunha2Rg(testemunha2Data.rg);
-        setTestemunha2OrgaoEmissor("SSP/SP");
-        setTestemunha2Telefone(testemunha2Data.telefone);
-        setTestemunha2Email(testemunha2Data.email);
-        setTestemunha2NomeError("");
-        setTestemunha2CpfError("");
-        setTestemunha2TelefoneError("");
-        setTestemunha2EmailError("");
-        break;
-      case 8:
+      case 6:
         setPreferenciaAR(true);
         setPreferenciaWhatsapp(true);
         setPreferenciaEmail(false);
         break;
-      case 9:
+      case 7:
         setObservacoes(
           "Observações de teste geradas automaticamente para facilitar o preenchimento do formulário."
         );
@@ -1542,7 +1136,7 @@ export default function IsencaoTemploReligiosoPage() {
             onClick={() => toggleSection(3)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>03. Informações do Imóvel</h2>
+            <h2 className={styles.sectionTitle}>03. Identificação do Imóvel</h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
                 <CheckCircleIcon className={styles.checkIcon} />
@@ -1564,26 +1158,47 @@ export default function IsencaoTemploReligiosoPage() {
                 Preencha todos os dados do imóvel conforme solicitado abaixo.
               </p>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Inscrição Imobiliária{" "}
-                  <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={inscricaoImobiliaria}
-                  onChange={(e) => handleInscricaoChange(e.target.value)}
-                  className={`${styles.input} ${
-                    inscricaoError ? styles.inputError : ""
-                  }`}
-                  placeholder="000000-0"
-                />
-                {inscricaoError && (
-                  <p className={styles.fieldError}>
-                    <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                    {inscricaoError}
-                  </p>
-                )}
+              <div className={styles.gridTwo}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Inscrição Imobiliária
+                  </label>
+                  <input
+                    type="text"
+                    value={inscricaoImobiliaria}
+                    onChange={(e) => handleInscricaoChange(e.target.value)}
+                    className={`${styles.input} ${
+                      inscricaoError ? styles.inputError : ""
+                    }`}
+                    placeholder="000000-0"
+                  />
+                  {inscricaoError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {inscricaoError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Inscrição Mercantil
+                  </label>
+                  <input
+                    type="text"
+                    value={inscricaoMercantil}
+                    onChange={(e) => handleInscricaoMercantilChange(e.target.value)}
+                    className={`${styles.input} ${
+                      inscricaoMercantilError ? styles.inputError : ""
+                    }`}
+                    placeholder="000000"
+                  />
+                  {inscricaoMercantilError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {inscricaoMercantilError}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className={styles.gridTwo}>
@@ -1797,44 +1412,39 @@ export default function IsencaoTemploReligiosoPage() {
               <div className={styles.uploadGrid}>
                 {[
                   {
-                    label: "Certidão do Imóvel",
-                    file: docCertidaoImovel,
-                    setFile: setDocCertidaoImovel,
+                    label: "Estatuto Social e alterações",
+                    file: docEstatuto,
+                    setFile: setDocEstatuto,
                   },
                   {
-                    label: "Taxas Municipais",
-                    file: docTaxas,
-                    setFile: setDocTaxas,
+                    label: "Ata de Eleição da diretoria (atualizada)",
+                    file: docAtaDiretoria,
+                    setFile: setDocAtaDiretoria,
                   },
                   {
-                    label: "RG/CPF (Comprovação 60+)",
+                    label: "Documento do imóvel (RGI ou Promessa de compra e venda)",
+                    file: docImovel,
+                    setFile: setDocImovel,
+                  },
+                  {
+                    label: "Registro de IPTU do imóvel",
+                    file: docIptu,
+                    setFile: setDocIptu,
+                  },
+                  {
+                    label: "Croqui de localização",
+                    file: docCroqui,
+                    setFile: setDocCroqui,
+                  },
+                  {
+                    label: "Registro de cadastro mobiliário e imobiliário",
+                    file: docCadastro,
+                    setFile: setDocCadastro,
+                  },
+                  {
+                    label: "Identificação do requerente (RG/CPF)",
                     file: docRgCpf,
                     setFile: setDocRgCpf,
-                  },
-                  {
-                    label: "Comprovante de Residência",
-                    file: docResidencia,
-                    setFile: setDocResidencia,
-                  },
-                  {
-                    label: "Comprovante de Rendimentos",
-                    file: docRendimentos,
-                    setFile: setDocRendimentos,
-                  },
-                  {
-                    label: "Escritura/Documento de Posse",
-                    file: docEscritura,
-                    setFile: setDocEscritura,
-                  },
-                  {
-                    label: "Certidão de Único Imóvel",
-                    file: docUnicoImovel,
-                    setFile: setDocUnicoImovel,
-                  },
-                  {
-                    label: "Ficha de Lançamento IPTU",
-                    file: docFichaIptu,
-                    setFile: setDocFichaIptu,
                   },
                 ].map((doc, index) => (
                   <div key={index} className={styles.uploadField}>
@@ -1863,7 +1473,6 @@ export default function IsencaoTemploReligiosoPage() {
                     {doc.file && (
                       <p className={styles.fileName}>{doc.file.name}</p>
                     )}
-                    {/* Mensagem de erro removida, pois o botão Continuar já está bloqueado até anexar todos os arquivos obrigatórios */}
                   </div>
                 ))}
               </div>
@@ -1879,7 +1488,7 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 5 - Questionário de Elegibilidade */}
+        {/* Seção 5 - Informações do Procurador */}
         <section
           data-section="5"
           className={`${styles.section} ${
@@ -1893,7 +1502,7 @@ export default function IsencaoTemploReligiosoPage() {
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              05. Questionário de Elegibilidade
+              05. Informações do Procurador
             </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(5) && (
@@ -1911,381 +1520,6 @@ export default function IsencaoTemploReligiosoPage() {
             <div
               className={styles.sectionContent}
               style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
-            >
-              <div className={styles.gridTwo}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Perfil do Requerente{" "}
-                    <span className={styles.required}>*</span>
-                  </label>
-                  <select
-                    value={perfilRequerente}
-                    onChange={(e) =>
-                      handlePerfilRequerenteChange(e.target.value)
-                    }
-                    className={`${styles.select} ${
-                      perfilRequerenteError ? styles.inputError : ""
-                    }`}
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="aposentado">Aposentado</option>
-                    <option value="pensionista">Pensionista</option>
-                    <option value="ambos">Aposentado e Pensionista</option>
-                  </select>
-                  {perfilRequerenteError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {perfilRequerenteError}
-                    </p>
-                  )}
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Estado Civil <span className={styles.required}>*</span>
-                  </label>
-                  <select
-                    value={estadoCivil}
-                    onChange={(e) => handleEstadoCivilChange(e.target.value)}
-                    className={`${styles.select} ${
-                      estadoCivilError ? styles.inputError : ""
-                    }`}
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="solteiro">Solteiro(a)</option>
-                    <option value="casado">Casado(a)</option>
-                    <option value="viuvo">Viúvo(a)</option>
-                    <option value="divorciado">Divorciado(a)</option>
-                    <option value="uniao-estavel">União Estável</option>
-                  </select>
-                  {estadoCivilError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {estadoCivilError}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={unicoImovel}
-                    onChange={(e) => setUnicoImovel(e.target.checked)}
-                    className={styles.checkbox}
-                  />
-                  <span className={styles.checkboxCustom}></span>
-                  Único imóvel de propriedade
-                </label>
-              </div>
-
-              <div className={styles.gridTwo}>
-                <div className={styles.formGroup}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={residenciaPropria}
-                      onChange={(e) => setResidenciaPropria(e.target.checked)}
-                      className={styles.checkbox}
-                    />
-                    <span className={styles.checkboxCustom}></span>
-                    Reside no imóvel
-                  </label>
-                </div>
-
-                {residenciaPropria && (
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      Desde o ano <span className={styles.required}>*</span>
-                    </label>
-                    <input
-                      type="number"
-                      value={anoInicio}
-                      onChange={(e) => handleAnoInicioChange(e.target.value)}
-                      className={`${styles.input} ${
-                        anoInicioError ? styles.inputError : ""
-                      }`}
-                      placeholder="Ex: 2010"
-                      min="1900"
-                      max={new Date().getFullYear()}
-                    />
-                    {anoInicioError && (
-                      <p className={styles.fieldError}>
-                        <WarningIcon
-                          sx={{ fontSize: 16, marginRight: "4px" }}
-                        />
-                        {anoInicioError}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={rendaAte2Salarios}
-                    onChange={(e) => setRendaAte2Salarios(e.target.checked)}
-                    className={styles.checkbox}
-                  />
-                  <span className={styles.checkboxCustom}></span>
-                  Confirmo que minha renda familiar não ultrapassa 2 salários
-                  mínimos
-                </label>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Origem da Renda</label>
-                <div className={styles.radioGroup}>
-                  <label className={styles.radioLabel}>
-                    <input
-                      type="radio"
-                      name="origemRenda"
-                      value="pensao"
-                      checked={origemRenda === "pensao"}
-                      onChange={(e) => setOrigemRenda(e.target.value)}
-                      className={styles.radioInput}
-                    />
-                    <span className={styles.radioCustom}></span>
-                    Pensão
-                  </label>
-                  <label className={styles.radioLabel}>
-                    <input
-                      type="radio"
-                      name="origemRenda"
-                      value="aposentadoria"
-                      checked={origemRenda === "aposentadoria"}
-                      onChange={(e) => setOrigemRenda(e.target.value)}
-                      className={styles.radioInput}
-                    />
-                    <span className={styles.radioCustom}></span>
-                    Aposentadoria
-                  </label>
-                  <label className={styles.radioLabel}>
-                    <input
-                      type="radio"
-                      name="origemRenda"
-                      value="outro"
-                      checked={origemRenda === "outro"}
-                      onChange={(e) => setOrigemRenda(e.target.value)}
-                      className={styles.radioInput}
-                    />
-                    <span className={styles.radioCustom}></span>
-                    Outro
-                  </label>
-                </div>
-              </div>
-
-              {origemRenda === "outro" && (
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Especifique a origem da renda
-                  </label>
-                  <input
-                    type="text"
-                    value={origemRendaOutro}
-                    onChange={(e) => setOrigemRendaOutro(e.target.value)}
-                    className={styles.input}
-                    placeholder="Descreva a origem da renda"
-                  />
-                </div>
-              )}
-
-              {temConjuge && (
-                <div className={styles.conjugeSection}>
-                  <h3 className={styles.subTitle}>
-                    Dados do Cônjuge/Companheiro(a)
-                  </h3>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      Nome Completo <span className={styles.required}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={nomeConjuge}
-                      onChange={(e) => handleNomeConjugeChange(e.target.value)}
-                      className={`${styles.input} ${
-                        nomeConjugeError ? styles.inputError : ""
-                      }`}
-                      placeholder="Nome completo do cônjuge"
-                    />
-                    {nomeConjugeError && (
-                      <p className={styles.fieldError}>
-                        <WarningIcon
-                          sx={{ fontSize: 16, marginRight: "4px" }}
-                        />
-                        {nomeConjugeError}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className={styles.gridTwo}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        CPF <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={cpfConjuge}
-                        onChange={(e) => handleCpfConjugeChange(e.target.value)}
-                        className={`${styles.input} ${
-                          cpfConjugeError ? styles.inputError : ""
-                        }`}
-                        placeholder="000.000.000-00"
-                      />
-                      {cpfConjugeError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {cpfConjugeError}
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>RG</label>
-                      <input
-                        type="text"
-                        value={rgConjuge}
-                        onChange={(e) => {
-                          // Permite números, letras, pontos, hífens e espaços
-                          const rgFormatado = e.target.value.replace(
-                            /[^0-9a-zA-Z.\-\s]/g,
-                            ""
-                          );
-                          setRgConjuge(rgFormatado);
-                        }}
-                        className={styles.input}
-                        placeholder="00.000.000-0"
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.gridTwo}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        Telefone <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        value={telefoneConjuge}
-                        onChange={(e) =>
-                          handleTelefoneConjugeChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          telefoneConjugeError ? styles.inputError : ""
-                        }`}
-                        placeholder="(00) 00000-0000"
-                      />
-                      {telefoneConjugeError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {telefoneConjugeError}
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        E-mail <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="email"
-                        value={emailConjuge}
-                        onChange={(e) =>
-                          handleEmailConjugeChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          emailConjugeError ? styles.inputError : ""
-                        }`}
-                        placeholder="email@exemplo.com"
-                      />
-                      {emailConjugeError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {emailConjugeError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={coproprietario}
-                        onChange={(e) => setCoproprietario(e.target.checked)}
-                        className={styles.checkbox}
-                      />
-                      <span className={styles.checkboxCustom}></span>É
-                      coproprietário do imóvel?
-                    </label>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      Origem da renda do cônjuge
-                    </label>
-                    <input
-                      type="text"
-                      value={origemRendaConjuge}
-                      onChange={(e) => setOrigemRendaConjuge(e.target.value)}
-                      className={styles.input}
-                      placeholder="Ex: Aposentadoria, Pensão, etc."
-                    />
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={() => handleNextSection(5)}
-                disabled={!isSectionValid(5)}
-                className={styles.btnContinue}
-              >
-                Continuar
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* Seção 6 - Representação */}
-        <section
-          data-section="6"
-          className={`${styles.section} ${
-            activeSection === 6 ? styles.sectionActive : ""
-          } ${completedSections.includes(6) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 6 ? 1 : 0.5 }}
-        >
-          <div
-            className={styles.sectionHeader}
-            onClick={() => toggleSection(6)}
-            style={{ cursor: "pointer" }}
-          >
-            <h2 className={styles.sectionTitle}>
-              06. Informações do Procurador
-            </h2>
-            <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(6) && (
-                <CheckCircleIcon className={styles.checkIcon} />
-              )}
-              <ExpandMoreIcon
-                className={`${styles.expandIcon} ${
-                  expandedSections.includes(6) ? styles.expandIconOpen : ""
-                }`}
-              />
-            </div>
-          </div>
-
-          {expandedSections.includes(6) && (
-            <div
-              className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 6 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Preencha com os dados do procurador responsável, caso exista.
@@ -2536,8 +1770,8 @@ export default function IsencaoTemploReligiosoPage() {
               )}
 
               <button
-                onClick={() => handleNextSection(6)}
-                disabled={!isSectionValid(6)}
+                onClick={() => handleNextSection(5)}
+                disabled={!isSectionValid(5)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -2546,374 +1780,38 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 7 - Assinatura a Rogo */}
+        {/* Seção 6 - Preferências de Comunicação */}
         <section
-          data-section="7"
+          data-section="6"
           className={`${styles.section} ${
-            activeSection === 7 ? styles.sectionActive : ""
-          } ${completedSections.includes(7) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 7 ? 1 : 0.5 }}
+            activeSection === 6 ? styles.sectionActive : ""
+          } ${completedSections.includes(6) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 6 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(7)}
+            onClick={() => toggleSection(6)}
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              07. Testemunhas (Assinatura a Rogo)
+              06. Como deseja receber o nosso contato?
             </h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(7) && (
+              {completedSections.includes(6) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(7) ? styles.expandIconOpen : ""
+                  expandedSections.includes(6) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(7) && (
+          {expandedSections.includes(6) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 7 ? "auto" : "none" }}
-            >
-              <p className={styles.helperText}>
-                Exclusivo para requerentes analfabetos ou impossibilitados de
-                assinar
-              </p>
-
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={assinaturaRogo}
-                    onChange={(e) => setAssinaturaRogo(e.target.checked)}
-                    className={styles.checkbox}
-                  />
-                  <span className={styles.checkboxCustom}></span>
-                  Necessito de assinatura a rogo
-                </label>
-              </div>
-
-              {assinaturaRogo && (
-                <p className={styles.helperText} style={{ marginTop: "12px", marginBottom: "16px" }}>
-                  <strong>Atenção:</strong> São obrigatoriamente necessárias 2 (duas) testemunhas.
-                </p>
-              )}
-
-              {assinaturaRogo && (
-                <>
-                  <div className={styles.testemunhaBox}>
-                    <h3 className={styles.subTitle}>Testemunha 1</h3>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        Nome Completo <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={testemunha1Nome}
-                        onChange={(e) =>
-                          handleTestemunha1NomeChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          testemunha1NomeError ? styles.inputError : ""
-                        }`}
-                        placeholder="Nome da testemunha"
-                      />
-                      {testemunha1NomeError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {testemunha1NomeError}
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.gridThree}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          CPF <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={testemunha1Cpf}
-                          onChange={(e) =>
-                            handleTestemunha1CpfChange(e.target.value)
-                          }
-                          className={`${styles.input} ${
-                            testemunha1CpfError ? styles.inputError : ""
-                          }`}
-                          placeholder="000.000.000-00"
-                        />
-                        {testemunha1CpfError && (
-                          <p className={styles.fieldError}>
-                            <WarningIcon
-                              sx={{ fontSize: 16, marginRight: "4px" }}
-                            />
-                            {testemunha1CpfError}
-                          </p>
-                        )}
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>RG</label>
-                        <input
-                          type="text"
-                          value={testemunha1Rg}
-                          onChange={(e) => {
-                            const rgFormatado = e.target.value.replace(
-                              /[^0-9a-zA-Z.\-\s]/g,
-                              ""
-                            );
-                            setTestemunha1Rg(rgFormatado);
-                          }}
-                          className={styles.input}
-                          placeholder="00.000.000-0"
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>Órgão Emissor</label>
-                        <input
-                          type="text"
-                          value={testemunha1OrgaoEmissor}
-                          onChange={(e) =>
-                            setTestemunha1OrgaoEmissor(e.target.value)
-                          }
-                          className={styles.input}
-                          placeholder="Ex: SSP/RJ"
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.gridTwo}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          Telefone <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          value={testemunha1Telefone}
-                          onChange={(e) =>
-                            handleTestemunha1TelefoneChange(e.target.value)
-                          }
-                          className={`${styles.input} ${
-                            testemunha1TelefoneError ? styles.inputError : ""
-                          }`}
-                          placeholder="(00) 00000-0000"
-                        />
-                        {testemunha1TelefoneError && (
-                          <p className={styles.fieldError}>
-                            <WarningIcon
-                              sx={{ fontSize: 16, marginRight: "4px" }}
-                            />
-                            {testemunha1TelefoneError}
-                          </p>
-                        )}
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          E-mail <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                          type="email"
-                          value={testemunha1Email}
-                          onChange={(e) =>
-                            handleTestemunha1EmailChange(e.target.value)
-                          }
-                          className={`${styles.input} ${
-                            testemunha1EmailError ? styles.inputError : ""
-                          }`}
-                          placeholder="email@exemplo.com"
-                        />
-                        {testemunha1EmailError && (
-                          <p className={styles.fieldError}>
-                            <WarningIcon
-                              sx={{ fontSize: 16, marginRight: "4px" }}
-                            />
-                            {testemunha1EmailError}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.testemunhaBox}>
-                    <h3 className={styles.subTitle}>Testemunha 2</h3>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        Nome Completo <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={testemunha2Nome}
-                        onChange={(e) =>
-                          handleTestemunha2NomeChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          testemunha2NomeError ? styles.inputError : ""
-                        }`}
-                        placeholder="Nome da testemunha"
-                      />
-                      {testemunha2NomeError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {testemunha2NomeError}
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.gridThree}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          CPF <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={testemunha2Cpf}
-                          onChange={(e) =>
-                            handleTestemunha2CpfChange(e.target.value)
-                          }
-                          className={`${styles.input} ${
-                            testemunha2CpfError ? styles.inputError : ""
-                          }`}
-                          placeholder="000.000.000-00"
-                        />
-                        {testemunha2CpfError && (
-                          <p className={styles.fieldError}>
-                            <WarningIcon
-                              sx={{ fontSize: 16, marginRight: "4px" }}
-                            />
-                            {testemunha2CpfError}
-                          </p>
-                        )}
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>RG</label>
-                        <input
-                          type="text"
-                          value={testemunha2Rg}
-                          onChange={(e) => {
-                            const rgFormatado = e.target.value.replace(
-                              /[^0-9a-zA-Z.\-\s]/g,
-                              ""
-                            );
-                            setTestemunha2Rg(rgFormatado);
-                          }}
-                          className={styles.input}
-                          placeholder="00.000.000-0"
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>Órgão Emissor</label>
-                        <input
-                          type="text"
-                          value={testemunha2OrgaoEmissor}
-                          onChange={(e) =>
-                            setTestemunha2OrgaoEmissor(e.target.value)
-                          }
-                          className={styles.input}
-                          placeholder="Ex: SSP/RJ"
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.gridTwo}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          Telefone <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          value={testemunha2Telefone}
-                          onChange={(e) =>
-                            handleTestemunha2TelefoneChange(e.target.value)
-                          }
-                          className={`${styles.input} ${
-                            testemunha2TelefoneError ? styles.inputError : ""
-                          }`}
-                          placeholder="(00) 00000-0000"
-                        />
-                        {testemunha2TelefoneError && (
-                          <p className={styles.fieldError}>
-                            <WarningIcon
-                              sx={{ fontSize: 16, marginRight: "4px" }}
-                            />
-                            {testemunha2TelefoneError}
-                          </p>
-                        )}
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          E-mail <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                          type="email"
-                          value={testemunha2Email}
-                          onChange={(e) =>
-                            handleTestemunha2EmailChange(e.target.value)
-                          }
-                          className={`${styles.input} ${
-                            testemunha2EmailError ? styles.inputError : ""
-                          }`}
-                          placeholder="email@exemplo.com"
-                        />
-                        {testemunha2EmailError && (
-                          <p className={styles.fieldError}>
-                            <WarningIcon
-                              sx={{ fontSize: 16, marginRight: "4px" }}
-                            />
-                            {testemunha2EmailError}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <button
-                onClick={() => handleNextSection(7)}
-                disabled={!isSectionValid(7)}
-                className={styles.btnContinue}
-              >
-                Continuar
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* Seção 8 - Preferências de Comunicação */}
-        <section
-          data-section="8"
-          className={`${styles.section} ${
-            activeSection === 8 ? styles.sectionActive : ""
-          } ${completedSections.includes(8) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 8 ? 1 : 0.5 }}
-        >
-          <div
-            className={styles.sectionHeader}
-            onClick={() => toggleSection(8)}
-            style={{ cursor: "pointer" }}
-          >
-            <h2 className={styles.sectionTitle}>
-              08. Como deseja receber o nosso contato?
-            </h2>
-            <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(8) && (
-                <CheckCircleIcon className={styles.checkIcon} />
-              )}
-              <ExpandMoreIcon
-                className={`${styles.expandIcon} ${
-                  expandedSections.includes(8) ? styles.expandIconOpen : ""
-                }`}
-              />
-            </div>
-          </div>
-
-          {expandedSections.includes(8) && (
-            <div
-              className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 8 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 6 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Escolha a melhor forma para receber atualizações sobre seu
@@ -2956,8 +1854,8 @@ export default function IsencaoTemploReligiosoPage() {
               </div>
 
               <button
-                onClick={() => handleNextSection(8)}
-                disabled={!isSectionValid(8)}
+                onClick={() => handleNextSection(6)}
+                disabled={!isSectionValid(6)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -2966,36 +1864,36 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 9 - Finalização */}
+        {/* Seção 7 - Finalização */}
         <section
-          data-section="9"
+          data-section="7"
           className={`${styles.section} ${
-            activeSection === 9 ? styles.sectionActive : ""
-          } ${completedSections.includes(9) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 9 ? 1 : 0.5 }}
+            activeSection === 7 ? styles.sectionActive : ""
+          } ${completedSections.includes(7) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 7 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(9)}
+            onClick={() => toggleSection(7)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>09. Observações Finais</h2>
+            <h2 className={styles.sectionTitle}>07. Observações Finais</h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(9) && (
+              {completedSections.includes(7) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(9) ? styles.expandIconOpen : ""
+                  expandedSections.includes(7) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(9) && (
+          {expandedSections.includes(7) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 9 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 7 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Inclua informações adicionais que possam ser relevantes para o
@@ -3083,7 +1981,7 @@ export default function IsencaoTemploReligiosoPage() {
 
               <button
                 onClick={handleSubmit}
-                disabled={!isSectionValid(9)}
+                disabled={!isSectionValid(7)}
                 className={styles.btnSubmit}
               >
                 ENVIAR REQUERIMENTO
@@ -3103,10 +2001,9 @@ export default function IsencaoTemploReligiosoPage() {
                 <AssignmentIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
               </div>
               <div className={styles.infoCardContent}>
-                <h4 className={styles.infoCardTitle}>Análise do Processo</h4>
+                <h4 className={styles.infoCardTitle}>CNPJ Próprio</h4>
                 <p className={styles.infoCardText}>
-                  O prazo para análise é de <strong>15 dias úteis</strong> após
-                  a instrução completa do processo.
+                  Se algum templo não tiver CNPJ individualizado, a prefeitura solicitará que a instituição providencie essa inscrição (§ 2º).
                 </p>
               </div>
             </div>
@@ -3116,11 +2013,10 @@ export default function IsencaoTemploReligiosoPage() {
               </div>
               <div className={styles.infoCardContent}>
                 <h4 className={styles.infoCardTitle}>
-                  Regularização de Débitos
+                  Inscrição Municipal (CAMOB)
                 </h4>
                 <p className={styles.infoCardText}>
-                  Notificações de débitos devem ser sanadas em até{" "}
-                  <strong>30 dias</strong> corridos.
+                  Se o templo não tiver cadastro mobiliário, a Secretaria de Finanças fará essa inscrição de forma automática (“de ofício”) durante o processo (§ 1º).
                 </p>
               </div>
             </div>
@@ -3129,10 +2025,20 @@ export default function IsencaoTemploReligiosoPage() {
                 <GavelIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
               </div>
               <div className={styles.infoCardContent}>
-                <h4 className={styles.infoCardTitle}>Base Legal</h4>
+                <h4 className={styles.infoCardTitle}>Apenas para “Atividade Fim”</h4>
                 <p className={styles.infoCardText}>
-                  Pedido condicionado aos prazos e requisitos do{" "}
-                  <strong>Decreto Municipal vigente</strong>.
+                  A isenção só vale para os imóveis (ou partes deles) utilizados efetivamente para as atividades religiosas. Prédios usados para fins comerciais pela igreja, por exemplo, podem não ser isentos (§ 3º).
+                </p>
+              </div>
+            </div>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}>
+                <WarningIcon sx={{ fontSize: 28, color: "#EB5F1A" }} />
+              </div>
+              <div className={styles.infoCardContent}>
+                <h4 className={styles.infoCardTitle}>Imunidade vs. Isenção</h4>
+                <p className={styles.infoCardText}>
+                  Embora o texto fale em “isenção”, templos de qualquer culto possuem imunidade tributária garantida pela Constituição Federal. O processo descrito no Art. 12 serve para que a prefeitura reconheça oficialmente esse direito e pare de gerar as cobranças.
                 </p>
               </div>
             </div>

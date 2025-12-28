@@ -1190,7 +1190,7 @@ export default function IsencaoImovelCedidoPage() {
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              02. Identificação do Proprietário
+              02. Identificação do Requerente
             </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(2) && (
@@ -1454,7 +1454,7 @@ export default function IsencaoImovelCedidoPage() {
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              03. Informações do Imóvel
+              03. Identificação do Imóvel
             </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
