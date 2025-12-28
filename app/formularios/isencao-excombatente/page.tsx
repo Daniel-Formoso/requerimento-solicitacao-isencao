@@ -472,7 +472,24 @@ export default function IsencaoExcombatentePage() {
           );
         }
         return !!(baseValid && noErrors);
-      case 3: // Localização
+      case 3: // Procurador (moved from section 6)
+        if (possuiProcurador) {
+          const procuradorValid =
+            nomeProcurador &&
+            cpfProcurador &&
+            telefoneProcurador &&
+            emailProcurador;
+          const docsValid =
+            docProcuracao && docCpfProcurador && docIdentidadeProcurador;
+          const noErrors =
+            !nomeProcuradorError &&
+            !cpfProcuradorError &&
+            !telefoneProcuradorError &&
+            !emailProcuradorError;
+          return !!(procuradorValid && docsValid && noErrors);
+        }
+        return true;
+      case 4: // Localização (moved from section 3)
         const imovelValid =
           inscricaoImobiliaria &&
           cep &&
@@ -490,7 +507,7 @@ export default function IsencaoExcombatentePage() {
           !cidadeError &&
           !estadoError;
         return !!(imovelValid && noImovelErrors);
-      case 4: // Documentos
+      case 5: // Documentos (moved from section 4)
         return !!(
           docResidencia &&
           docRgCpf &&
@@ -500,7 +517,7 @@ export default function IsencaoExcombatentePage() {
           docUnicoImovel &&
           docFichaIptu
         );
-      case 5: // Questionário
+      case 6: // Questionário (moved from section 5)
         // Perfil e Estado Civil são obrigatórios
         if (!perfilRequerente || !estadoCivil) {
           return false;
@@ -523,23 +540,6 @@ export default function IsencaoExcombatentePage() {
             !telefoneConjugeError &&
             !emailConjugeError;
           return !!(conjugeValid && noConjugeErrors);
-        }
-        return true;
-      case 6: // Representação
-        if (possuiProcurador) {
-          const procuradorValid =
-            nomeProcurador &&
-            cpfProcurador &&
-            telefoneProcurador &&
-            emailProcurador;
-          const docsValid =
-            docProcuracao && docCpfProcurador && docIdentidadeProcurador;
-          const noErrors =
-            !nomeProcuradorError &&
-            !cpfProcuradorError &&
-            !telefoneProcuradorError &&
-            !emailProcuradorError;
-          return !!(procuradorValid && docsValid && noErrors);
         }
         return true;
       case 7: // Assinatura a Rogo
@@ -1041,6 +1041,20 @@ export default function IsencaoExcombatentePage() {
         setNomeError("");
         break;
       case 3:
+        setPossuiProcurador(true);
+        if (dados.procurador) {
+          setNomeProcurador(dados.procurador.nome);
+          setCpfProcurador(dados.procurador.cpf);
+          setRgProcurador(dados.procurador.rg);
+          setOrgaoEmissorProcurador("SSP/SP");
+          setTelefoneProcurador(dados.procurador.telefone);
+          setEmailProcurador(dados.procurador.email);
+          setDocProcuracao(dados.procurador.documentos?.[0] || null);
+          setDocCpfProcurador(dados.procurador.documentos?.[1] || null);
+          setDocIdentidadeProcurador(dados.procurador.documentos?.[2] || null);
+        }
+        break;
+      case 4:
         setInscricaoImobiliaria("1234567-8");
         setCep("01001-000");
         setRua("Rua das Flores");
@@ -1059,7 +1073,7 @@ export default function IsencaoExcombatentePage() {
         setCidadeError("");
         setEstadoError("");
         break;
-      case 4:
+      case 5:
         setDocResidencia(dados.documentos?.[0] || null);
         setDocRgCpf(dados.documentos?.[1] || null);
         setDocEscritura(dados.documentos?.[0] || null);
@@ -1068,7 +1082,7 @@ export default function IsencaoExcombatentePage() {
         setDocUnicoImovel(dados.documentos?.[1] || null);
         setDocFichaIptu(dados.documentos?.[0] || null);
         break;
-      case 5:
+      case 6:
         setPerfilRequerente("aposentado");
         setEstadoCivil("solteiro");
         setUnicoImovel(true);
@@ -1093,8 +1107,8 @@ export default function IsencaoExcombatentePage() {
           setEmailConjugeError("");
         }
         break;
-      case 6:
-        setPossuiProcurador(true);
+      case 7:
+        setAssinaturaRogo(true);
         if (dados.procurador) {
           setNomeProcurador(dados.procurador.nome);
           setCpfProcurador(dados.procurador.cpf);
@@ -1523,7 +1537,7 @@ export default function IsencaoExcombatentePage() {
           )}
         </section>
 
-        {/* Seção 3 - Localização do Imóvel */}
+        {/* Seção 3 - Procurador (movida da seção 6) */}
         <section
           data-section="3"
           className={`${styles.section} ${
@@ -1536,7 +1550,9 @@ export default function IsencaoExcombatentePage() {
             onClick={() => toggleSection(3)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>03. Identificação do Imóvel</h2>
+            <h2 className={styles.sectionTitle}>
+              03. Informações do Procurador
+            </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
                 <CheckCircleIcon className={styles.checkIcon} />
@@ -1553,6 +1569,296 @@ export default function IsencaoExcombatentePage() {
             <div
               className={styles.sectionContent}
               style={{ pointerEvents: activeSection >= 3 ? "auto" : "none" }}
+            >
+              <p className={styles.sectionDescription}>
+                Preencha com os dados do procurador responsável, caso exista.
+              </p>
+
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={possuiProcurador}
+                    onChange={(e) => setPossuiProcurador(e.target.checked)}
+                    className={styles.checkbox}
+                  />
+                  <span className={styles.checkboxCustom}></span>
+                  Sou um procurador ou possuo uma procuração.
+                </label>
+              </div>
+
+              {possuiProcurador && (
+                <div className={styles.procuradorSection}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Nome do Procurador{" "}
+                      <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={nomeProcurador}
+                      onChange={(e) =>
+                        handleNomeProcuradorChange(e.target.value)
+                      }
+                      className={`${styles.input} ${
+                        nomeProcuradorError ? styles.inputError : ""
+                      }`}
+                      placeholder="Nome completo do procurador"
+                    />
+                    {nomeProcuradorError && (
+                      <p className={styles.fieldError}>
+                        <WarningIcon
+                          sx={{ fontSize: 16, marginRight: "4px" }}
+                        />
+                        {nomeProcuradorError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className={styles.gridThree}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        CPF <span className={styles.required}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={cpfProcurador}
+                        onChange={(e) =>
+                          handleCpfProcuradorChange(e.target.value)
+                        }
+                        className={`${styles.input} ${
+                          cpfProcuradorError ? styles.inputError : ""
+                        }`}
+                        placeholder="000.000.000-00"
+                      />
+                      {cpfProcuradorError && (
+                        <p className={styles.fieldError}>
+                          <WarningIcon
+                            sx={{ fontSize: 16, marginRight: "4px" }}
+                          />
+                          {cpfProcuradorError}
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>RG</label>
+                      <input
+                        type="text"
+                        value={rgProcurador}
+                        onChange={(e) => {
+                          const rgFormatado = e.target.value.replace(
+                            /[^0-9a-zA-Z.\-\s]/g,
+                            ""
+                          );
+                          setRgProcurador(rgFormatado);
+                        }}
+                        className={styles.input}
+                        placeholder="00.000.000-0"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Órgão Emissor</label>
+                      <input
+                        type="text"
+                        value={orgaoEmissorProcurador}
+                        onChange={(e) =>
+                          setOrgaoEmissorProcurador(e.target.value)
+                        }
+                        className={styles.input}
+                        placeholder="Ex: SSP/SP"
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.gridTwo}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        Telefone <span className={styles.required}>*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={telefoneProcurador}
+                        onChange={(e) =>
+                          handleTelefoneProcuradorChange(e.target.value)
+                        }
+                        className={`${styles.input} ${
+                          telefoneProcuradorError ? styles.inputError : ""
+                        }`}
+                        placeholder="(00) 00000-0000"
+                      />
+                      {telefoneProcuradorError && (
+                        <p className={styles.fieldError}>
+                          <WarningIcon
+                            sx={{ fontSize: 16, marginRight: "4px" }}
+                          />
+                          {telefoneProcuradorError}
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        E-mail <span className={styles.required}>*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={emailProcurador}
+                        onChange={(e) =>
+                          handleEmailProcuradorChange(e.target.value)
+                        }
+                        className={`${styles.input} ${
+                          emailProcuradorError ? styles.inputError : ""
+                        }`}
+                        placeholder="email@exemplo.com"
+                      />
+                      {emailProcuradorError && (
+                        <p className={styles.fieldError}>
+                          <WarningIcon
+                            sx={{ fontSize: 16, marginRight: "4px" }}
+                          />
+                          {emailProcuradorError}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className={styles.subTitle}>Documentos do Procurador</h3>
+
+                  <div className={styles.uploadGrid}>
+                    <div className={styles.uploadField}>
+                      <label className={styles.labelDoc}>
+                        Procuração Autenticada{" "}
+                        <span className={styles.required}>*</span>
+                      </label>
+                      <label className={styles.uploadButton}>
+                        <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                        Anexar arquivo
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              if (validarTamanhoArquivo(file)) {
+                                setDocProcuracao(file);
+                              } else {
+                                e.target.value = "";
+                              }
+                            }
+                          }}
+                          className={styles.fileInput}
+                        />
+                      </label>
+                      {docProcuracao && (
+                        <p className={styles.fileName}>{docProcuracao.name}</p>
+                      )}
+                    </div>
+
+                    <div className={styles.uploadField}>
+                      <label className={styles.labelDoc}>
+                        CPF do Procurador{" "}
+                        <span className={styles.required}>*</span>
+                      </label>
+                      <label className={styles.uploadButton}>
+                        <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                        Anexar arquivo
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              if (validarTamanhoArquivo(file)) {
+                                setDocCpfProcurador(file);
+                              } else {
+                                e.target.value = "";
+                              }
+                            }
+                          }}
+                          className={styles.fileInput}
+                        />
+                      </label>
+                      {docCpfProcurador && (
+                        <p className={styles.fileName}>
+                          {docCpfProcurador.name}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className={styles.uploadField}>
+                      <label className={styles.labelDoc}>
+                        Identidade do Procurador{" "}
+                        <span className={styles.required}>*</span>
+                      </label>
+                      <label className={styles.uploadButton}>
+                        <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                        Anexar arquivo
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              if (validarTamanhoArquivo(file)) {
+                                setDocIdentidadeProcurador(file);
+                              } else {
+                                e.target.value = "";
+                              }
+                            }
+                          }}
+                          className={styles.fileInput}
+                        />
+                      </label>
+                      {docIdentidadeProcurador && (
+                        <p className={styles.fileName}>
+                          {docIdentidadeProcurador.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => handleNextSection(3)}
+                disabled={!isSectionValid(3)}
+                className={styles.btnContinue}
+              >
+                Continuar
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Seção 4 - Localização do Imóvel (movida da seção 3) */}
+        <section
+          data-section="4"
+          className={`${styles.section} ${
+            activeSection === 4 ? styles.sectionActive : ""
+          } ${completedSections.includes(4) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 4 ? 1 : 0.5 }}
+        >
+          <div
+            className={styles.sectionHeader}
+            onClick={() => toggleSection(4)}
+            style={{ cursor: "pointer" }}
+          >
+            <h2 className={styles.sectionTitle}>04. Identificação do Imóvel</h2>
+            <div className={styles.sectionHeaderIcons}>
+              {completedSections.includes(4) && (
+                <CheckCircleIcon className={styles.checkIcon} />
+              )}
+              <ExpandMoreIcon
+                className={`${styles.expandIcon} ${
+                  expandedSections.includes(4) ? styles.expandIconOpen : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          {expandedSections.includes(4) && (
+            <div
+              className={styles.sectionContent}
+              style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Preencha todos os dados do imóvel conforme solicitado abaixo.
@@ -1743,8 +2049,8 @@ export default function IsencaoExcombatentePage() {
               </div>
 
               <button
-                onClick={() => handleNextSection(3)}
-                disabled={!isSectionValid(3)}
+                onClick={() => handleNextSection(4)}
+                disabled={!isSectionValid(4)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -1753,36 +2059,36 @@ export default function IsencaoExcombatentePage() {
           )}
         </section>
 
-        {/* Seção 4 - Documentação */}
+        {/* Seção 5 - Documentação (movida da seção 4) */}
         <section
-          data-section="4"
+          data-section="5"
           className={`${styles.section} ${
-            activeSection === 4 ? styles.sectionActive : ""
-          } ${completedSections.includes(4) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 4 ? 1 : 0.5 }}
+            activeSection === 5 ? styles.sectionActive : ""
+          } ${completedSections.includes(5) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 5 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(4)}
+            onClick={() => toggleSection(5)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>04. Documentação Necessária</h2>
+            <h2 className={styles.sectionTitle}>05. Documentação Necessária</h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(4) && (
+              {completedSections.includes(5) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(4) ? styles.expandIconOpen : ""
+                  expandedSections.includes(5) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(4) && (
+          {expandedSections.includes(5) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Anexe todos os documentos obrigatórios ao processo.
@@ -1857,8 +2163,8 @@ export default function IsencaoExcombatentePage() {
               </div>
 
               <button
-                onClick={() => handleNextSection(4)}
-                disabled={!isSectionValid(4)}
+                onClick={() => handleNextSection(5)}
+                disabled={!isSectionValid(5)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -1867,38 +2173,38 @@ export default function IsencaoExcombatentePage() {
           )}
         </section>
 
-        {/* Seção 5 - Questionário de Elegibilidade */}
+        {/* Seção 6 - Questionário de Elegibilidade (movida da seção 5) */}
         <section
-          data-section="5"
+          data-section="6"
           className={`${styles.section} ${
-            activeSection === 5 ? styles.sectionActive : ""
-          } ${completedSections.includes(5) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 5 ? 1 : 0.5 }}
+            activeSection === 6 ? styles.sectionActive : ""
+          } ${completedSections.includes(6) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 6 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(5)}
+            onClick={() => toggleSection(6)}
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              05. Questionário de Elegibilidade
+              06. Questionário de Elegibilidade
             </h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(5) && (
+              {completedSections.includes(6) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(5) ? styles.expandIconOpen : ""
+                  expandedSections.includes(6) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(5) && (
+          {expandedSections.includes(6) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 6 ? "auto" : "none" }}
             >
               <div className={styles.gridTwo}>
                 <div className={styles.formGroup}>
@@ -2227,298 +2533,6 @@ export default function IsencaoExcombatentePage() {
                       className={styles.input}
                       placeholder="Ex: Aposentadoria, Pensão, etc."
                     />
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={() => handleNextSection(5)}
-                disabled={!isSectionValid(5)}
-                className={styles.btnContinue}
-              >
-                Continuar
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* Seção 6 - Representação */}
-        <section
-          data-section="6"
-          className={`${styles.section} ${
-            activeSection === 6 ? styles.sectionActive : ""
-          } ${completedSections.includes(6) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 6 ? 1 : 0.5 }}
-        >
-          <div
-            className={styles.sectionHeader}
-            onClick={() => toggleSection(6)}
-            style={{ cursor: "pointer" }}
-          >
-            <h2 className={styles.sectionTitle}>
-              06. Informações do Procurador
-            </h2>
-            <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(6) && (
-                <CheckCircleIcon className={styles.checkIcon} />
-              )}
-              <ExpandMoreIcon
-                className={`${styles.expandIcon} ${
-                  expandedSections.includes(6) ? styles.expandIconOpen : ""
-                }`}
-              />
-            </div>
-          </div>
-
-          {expandedSections.includes(6) && (
-            <div
-              className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 6 ? "auto" : "none" }}
-            >
-              <p className={styles.sectionDescription}>
-                Preencha com os dados do procurador responsável, caso exista.
-              </p>
-
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={possuiProcurador}
-                    onChange={(e) => setPossuiProcurador(e.target.checked)}
-                    className={styles.checkbox}
-                  />
-                  <span className={styles.checkboxCustom}></span>
-                  Sou um procurador ou possuo uma procuração.
-                </label>
-              </div>
-
-              {possuiProcurador && (
-                <div className={styles.procuradorSection}>
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      Nome do Procurador{" "}
-                      <span className={styles.required}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={nomeProcurador}
-                      onChange={(e) =>
-                        handleNomeProcuradorChange(e.target.value)
-                      }
-                      className={`${styles.input} ${
-                        nomeProcuradorError ? styles.inputError : ""
-                      }`}
-                      placeholder="Nome completo do procurador"
-                    />
-                    {nomeProcuradorError && (
-                      <p className={styles.fieldError}>
-                        <WarningIcon
-                          sx={{ fontSize: 16, marginRight: "4px" }}
-                        />
-                        {nomeProcuradorError}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className={styles.gridThree}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        CPF <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={cpfProcurador}
-                        onChange={(e) =>
-                          handleCpfProcuradorChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          cpfProcuradorError ? styles.inputError : ""
-                        }`}
-                        placeholder="000.000.000-00"
-                      />
-                      {cpfProcuradorError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {cpfProcuradorError}
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>RG</label>
-                      <input
-                        type="text"
-                        value={rgProcurador}
-                        onChange={(e) => {
-                          const rgFormatado = e.target.value.replace(
-                            /[^0-9a-zA-Z.\-\s]/g,
-                            ""
-                          );
-                          setRgProcurador(rgFormatado);
-                        }}
-                        className={styles.input}
-                        placeholder="00.000.000-0"
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Órgão Emissor</label>
-                      <input
-                        type="text"
-                        value={orgaoEmissorProcurador}
-                        onChange={(e) =>
-                          setOrgaoEmissorProcurador(e.target.value)
-                        }
-                        className={styles.input}
-                        placeholder="Ex: SSP/SP"
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.gridTwo}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        Telefone <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        value={telefoneProcurador}
-                        onChange={(e) =>
-                          handleTelefoneProcuradorChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          telefoneProcuradorError ? styles.inputError : ""
-                        }`}
-                        placeholder="(00) 00000-0000"
-                      />
-                      {telefoneProcuradorError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {telefoneProcuradorError}
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        E-mail <span className={styles.required}>*</span>
-                      </label>
-                      <input
-                        type="email"
-                        value={emailProcurador}
-                        onChange={(e) =>
-                          handleEmailProcuradorChange(e.target.value)
-                        }
-                        className={`${styles.input} ${
-                          emailProcuradorError ? styles.inputError : ""
-                        }`}
-                        placeholder="email@exemplo.com"
-                      />
-                      {emailProcuradorError && (
-                        <p className={styles.fieldError}>
-                          <WarningIcon
-                            sx={{ fontSize: 16, marginRight: "4px" }}
-                          />
-                          {emailProcuradorError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <h3 className={styles.subTitle}>Documentos do Procurador</h3>
-
-                  <div className={styles.uploadGrid}>
-                    <div className={styles.uploadField}>
-                      <label className={styles.labelDoc}>
-                        Procuração Autenticada{" "}
-                        <span className={styles.required}>*</span>
-                      </label>
-                      <label className={styles.uploadButton}>
-                        <CloudUploadIcon sx={{ marginRight: "8px" }} />
-                        Anexar arquivo
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              if (validarTamanhoArquivo(file)) {
-                                setDocProcuracao(file);
-                              } else {
-                                e.target.value = "";
-                              }
-                            }
-                          }}
-                          className={styles.fileInput}
-                        />
-                      </label>
-                      {docProcuracao && (
-                        <p className={styles.fileName}>{docProcuracao.name}</p>
-                      )}
-                    </div>
-
-                    <div className={styles.uploadField}>
-                      <label className={styles.labelDoc}>
-                        CPF do Procurador{" "}
-                        <span className={styles.required}>*</span>
-                      </label>
-                      <label className={styles.uploadButton}>
-                        <CloudUploadIcon sx={{ marginRight: "8px" }} />
-                        Anexar arquivo
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              if (validarTamanhoArquivo(file)) {
-                                setDocCpfProcurador(file);
-                              } else {
-                                e.target.value = "";
-                              }
-                            }
-                          }}
-                          className={styles.fileInput}
-                        />
-                      </label>
-                      {docCpfProcurador && (
-                        <p className={styles.fileName}>
-                          {docCpfProcurador.name}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className={styles.uploadField}>
-                      <label className={styles.labelDoc}>
-                        Identidade do Procurador{" "}
-                        <span className={styles.required}>*</span>
-                      </label>
-                      <label className={styles.uploadButton}>
-                        <CloudUploadIcon sx={{ marginRight: "8px" }} />
-                        Anexar arquivo
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              if (validarTamanhoArquivo(file)) {
-                                setDocIdentidadeProcurador(file);
-                              } else {
-                                e.target.value = "";
-                              }
-                            }
-                          }}
-                          className={styles.fileInput}
-                        />
-                      </label>
-                      {docIdentidadeProcurador && (
-                        <p className={styles.fileName}>
-                          {docIdentidadeProcurador.name}
-                        </p>
-                      )}
-                    </div>
                   </div>
                 </div>
               )}

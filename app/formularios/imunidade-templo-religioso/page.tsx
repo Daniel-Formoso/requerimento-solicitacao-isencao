@@ -47,39 +47,7 @@ export default function ImunidadeTemploReligiosoPage() {
   const [processoAnteriorError, setProcessoAnteriorError] = useState("");
   const [certidaoAnteriorError, setCertidaoAnteriorError] = useState("");
 
-  // Estados da Seção 3 - Localização do Imóvel
-  const [inscricaoImobiliaria, setInscricaoImobiliaria] = useState("");
-  const [inscricaoMercantil, setInscricaoMercantil] = useState("");
-  const [cep, setCep] = useState("");
-  const [rua, setRua] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [estado, setEstado] = useState("");
-  const [lote, setLote] = useState("");
-  const [quadra, setQuadra] = useState("");
-
-  // Estados de validação e erro da Seção 3
-  const [inscricaoError, setInscricaoError] = useState("");
-  const [inscricaoMercantilError, setInscricaoMercantilError] = useState("");
-  const [cepError, setCepError] = useState("");
-  const [ruaError, setRuaError] = useState("");
-  const [numeroError, setNumeroError] = useState("");
-  const [bairroError, setBairroError] = useState("");
-  const [cidadeError, setCidadeError] = useState("");
-  const [estadoError, setEstadoError] = useState("");
-
-  // Estados da Seção 4 - Documentos (atualizados)
-  const [docEstatuto, setDocEstatuto] = useState<File | null>(null);
-  const [docAtaDiretoria, setDocAtaDiretoria] = useState<File | null>(null);
-  const [docImovel, setDocImovel] = useState<File | null>(null);
-  const [docIptu, setDocIptu] = useState<File | null>(null);
-  const [docCroqui, setDocCroqui] = useState<File | null>(null);
-  const [docCadastro, setDocCadastro] = useState<File | null>(null);
-  const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
-
-  // Estados da Seção 5 - Representação
+  // Estados da Seção 3 - Procurador/Representação
   const [possuiProcurador, setPossuiProcurador] = useState(false);
   const [nomeProcurador, setNomeProcurador] = useState("");
   const [cpfProcurador, setCpfProcurador] = useState("");
@@ -92,11 +60,43 @@ export default function ImunidadeTemploReligiosoPage() {
   const [docIdentidadeProcurador, setDocIdentidadeProcurador] =
     useState<File | null>(null);
 
-  // Estados de validação e erro da Seção 5
+  // Estados de validação e erro da Seção 3
   const [nomeProcuradorError, setNomeProcuradorError] = useState("");
   const [cpfProcuradorError, setCpfProcuradorError] = useState("");
   const [telefoneProcuradorError, setTelefoneProcuradorError] = useState("");
   const [emailProcuradorError, setEmailProcuradorError] = useState("");
+
+  // Estados da Seção 4 - Localização do Imóvel
+  const [inscricaoImobiliaria, setInscricaoImobiliaria] = useState("");
+  const [inscricaoMercantil, setInscricaoMercantil] = useState("");
+  const [cep, setCep] = useState("");
+  const [rua, setRua] = useState("");
+  const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [estado, setEstado] = useState("");
+  const [lote, setLote] = useState("");
+  const [quadra, setQuadra] = useState("");
+
+  // Estados de validação e erro da Seção 4
+  const [inscricaoError, setInscricaoError] = useState("");
+  const [inscricaoMercantilError, setInscricaoMercantilError] = useState("");
+  const [cepError, setCepError] = useState("");
+  const [ruaError, setRuaError] = useState("");
+  const [numeroError, setNumeroError] = useState("");
+  const [bairroError, setBairroError] = useState("");
+  const [cidadeError, setCidadeError] = useState("");
+  const [estadoError, setEstadoError] = useState("");
+
+  // Estados da Seção 5 - Documentos (atualizados)
+  const [docEstatuto, setDocEstatuto] = useState<File | null>(null);
+  const [docAtaDiretoria, setDocAtaDiretoria] = useState<File | null>(null);
+  const [docImovel, setDocImovel] = useState<File | null>(null);
+  const [docIptu, setDocIptu] = useState<File | null>(null);
+  const [docCroqui, setDocCroqui] = useState<File | null>(null);
+  const [docCadastro, setDocCadastro] = useState<File | null>(null);
+  const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
 
   // Estados da Seção 6 - Preferências de Comunicação
   const [preferenciaAR, setPreferenciaAR] = useState(false);
@@ -313,7 +313,7 @@ export default function ImunidadeTemploReligiosoPage() {
     }
   };
 
-  // Funções de validação e formatação da Seção 3
+  // Funções de validação e formatação da Seção 4
   const formatarInscricao = (valor: string): string => {
     const numeros = valor.replace(/\D/g, "");
     if (numeros.length <= 7) {
@@ -430,7 +430,24 @@ export default function ImunidadeTemploReligiosoPage() {
           );
         }
         return !!(baseValid && noErrors);
-      case 3: // Localização
+      case 3: // Procurador/Representação
+        if (possuiProcurador) {
+          const procuradorValid =
+            nomeProcurador &&
+            cpfProcurador &&
+            telefoneProcurador &&
+            emailProcurador;
+          const docsValid =
+            docProcuracao && docCpfProcurador && docIdentidadeProcurador;
+          const noErrors =
+            !nomeProcuradorError &&
+            !cpfProcuradorError &&
+            !telefoneProcuradorError &&
+            !emailProcuradorError;
+          return !!(procuradorValid && docsValid && noErrors);
+        }
+        return true;
+      case 4: // Localização
         const temInscricao = inscricaoImobiliaria || inscricaoMercantil;
         const imovelValid =
           temInscricao &&
@@ -450,7 +467,7 @@ export default function ImunidadeTemploReligiosoPage() {
           !cidadeError &&
           !estadoError;
         return !!(imovelValid && noImovelErrors);
-      case 4: // Documentos (atualizados)
+      case 5: // Documentos (atualizados)
         return !!(
           docEstatuto &&
           docAtaDiretoria &&
@@ -460,23 +477,6 @@ export default function ImunidadeTemploReligiosoPage() {
           docCadastro &&
           docRgCpf
         );
-      case 5: // Representação
-        if (possuiProcurador) {
-          const procuradorValid =
-            nomeProcurador &&
-            cpfProcurador &&
-            telefoneProcurador &&
-            emailProcurador;
-          const docsValid =
-            docProcuracao && docCpfProcurador && docIdentidadeProcurador;
-          const noErrors =
-            !nomeProcuradorError &&
-            !cpfProcuradorError &&
-            !telefoneProcuradorError &&
-            !emailProcuradorError;
-          return !!(procuradorValid && docsValid && noErrors);
-        }
-        return true;
       case 6: // Preferências
         const selectedCount = [
           preferenciaAR,
@@ -572,7 +572,7 @@ export default function ImunidadeTemploReligiosoPage() {
     }
   };
 
-  // Handlers da Seção 5 - Procurador
+  // Handlers da Seção 3 - Procurador
   const handleNomeProcuradorChange = (valor: string) => {
     const nomeFormatado = valor.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
     setNomeProcurador(nomeFormatado);
@@ -694,6 +694,19 @@ export default function ImunidadeTemploReligiosoPage() {
         setNomeError("");
         break;
       case 3:
+        setPossuiProcurador(true);
+        if (dados.procurador) {
+          setNomeProcurador(dados.procurador.nome);
+          setCpfProcurador(dados.procurador.cpf);
+          setRgProcurador(dados.procurador.rg);
+          setTelefoneProcurador(dados.procurador.telefone);
+          setEmailProcurador(dados.procurador.email);
+          setDocProcuracao(dados.procurador.documentos?.[0] || null);
+          setDocCpfProcurador(dados.procurador.documentos?.[1] || null);
+          setDocIdentidadeProcurador(dados.procurador.documentos?.[2] || null);
+        }
+        break;
+      case 4:
         setInscricaoImobiliaria("1234567-8");
         setInscricaoMercantil("123456");
         setCep("01001-000");
@@ -713,7 +726,7 @@ export default function ImunidadeTemploReligiosoPage() {
         setCidadeError("");
         setEstadoError("");
         break;
-      case 4:
+      case 5:
         setDocEstatuto(dados.documentos?.[0] || null);
         setDocAtaDiretoria(dados.documentos?.[1] || null);
         setDocImovel(dados.documentos?.[0] || null);
@@ -721,19 +734,6 @@ export default function ImunidadeTemploReligiosoPage() {
         setDocCroqui(dados.documentos?.[0] || null);
         setDocCadastro(dados.documentos?.[1] || null);
         setDocRgCpf(dados.documentos?.[0] || null);
-        break;
-      case 5:
-        setPossuiProcurador(true);
-        if (dados.procurador) {
-          setNomeProcurador(dados.procurador.nome);
-          setCpfProcurador(dados.procurador.cpf);
-          setRgProcurador(dados.procurador.rg);
-          setTelefoneProcurador(dados.procurador.telefone);
-          setEmailProcurador(dados.procurador.email);
-          setDocProcuracao(dados.procurador.documentos?.[0] || null);
-          setDocCpfProcurador(dados.procurador.documentos?.[1] || null);
-          setDocIdentidadeProcurador(dados.procurador.documentos?.[2] || null);
-        }
         break;
       case 6:
         setPreferenciaAR(true);
@@ -1125,7 +1125,7 @@ export default function ImunidadeTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 3 - Localização do Imóvel */}
+        {/* Seção 3 - Informações do Procurador */}
         <section
           data-section="3"
           className={`${styles.section} ${
@@ -1138,7 +1138,9 @@ export default function ImunidadeTemploReligiosoPage() {
             onClick={() => toggleSection(3)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>03. Identificação do Imóvel</h2>
+            <h2 className={styles.sectionTitle}>
+              03. Informações do Procurador
+            </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
                 <CheckCircleIcon className={styles.checkIcon} />
@@ -1155,374 +1157,6 @@ export default function ImunidadeTemploReligiosoPage() {
             <div
               className={styles.sectionContent}
               style={{ pointerEvents: activeSection >= 3 ? "auto" : "none" }}
-            >
-              <p className={styles.sectionDescription}>
-                Preencha todos os dados do imóvel conforme solicitado abaixo.
-              </p>
-
-              <div className={styles.gridTwo}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Inscrição Imobiliária{" "}
-                    <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={inscricaoImobiliaria}
-                    onChange={(e) => handleInscricaoChange(e.target.value)}
-                    className={`${styles.input} ${
-                      inscricaoError ? styles.inputError : ""
-                    }`}
-                    placeholder="000000-0"
-                  />
-                  {inscricaoError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {inscricaoError}
-                    </p>
-                  )}
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Inscrição Mercantil
-                  </label>
-                  <input
-                    type="text"
-                    value={inscricaoMercantil}
-                    onChange={(e) => handleInscricaoMercantilChange(e.target.value)}
-                    className={`${styles.input} ${
-                      inscricaoMercantilError ? styles.inputError : ""
-                    }`}
-                    placeholder="000000"
-                  />
-                  {inscricaoMercantilError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {inscricaoMercantilError}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.gridTwo}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    CEP <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={cep}
-                    onChange={(e) => handleCepChange(e.target.value)}
-                    onBlur={handleCepBlur}
-                    className={`${styles.input} ${
-                      cepError ? styles.inputError : ""
-                    }`}
-                    placeholder="00000-000"
-                  />
-                  {cepError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {cepError}
-                    </p>
-                  )}
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Rua/Logradouro <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={rua}
-                    onChange={(e) => handleRuaChange(e.target.value)}
-                    className={`${styles.input} ${
-                      ruaError ? styles.inputError : ""
-                    }`}
-                    placeholder="Nome da rua"
-                  />
-                  {ruaError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {ruaError}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.gridThree}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Bairro <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={bairro}
-                    onChange={(e) => handleBairroChange(e.target.value)}
-                    className={`${styles.input} ${
-                      bairroError ? styles.inputError : ""
-                    }`}
-                    placeholder="Bairro"
-                  />
-                  {bairroError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {bairroError}
-                    </p>
-                  )}
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Cidade <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={cidade}
-                    onChange={(e) => handleCidadeChange(e.target.value)}
-                    className={`${styles.input} ${
-                      cidadeError ? styles.inputError : ""
-                    }`}
-                    placeholder="Cidade"
-                  />
-                  {cidadeError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {cidadeError}
-                    </p>
-                  )}
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Estado <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={estado}
-                    onChange={(e) => handleEstadoChange(e.target.value)}
-                    className={`${styles.input} ${
-                      estadoError ? styles.inputError : ""
-                    }`}
-                    placeholder="UF"
-                    maxLength={2}
-                  />
-                  {estadoError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {estadoError}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.gridThree}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Número <span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={numero}
-                    onChange={(e) => handleNumeroChange(e.target.value)}
-                    className={`${styles.input} ${
-                      numeroError ? styles.inputError : ""
-                    }`}
-                    placeholder="Nº"
-                  />
-                  {numeroError && (
-                    <p className={styles.fieldError}>
-                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
-                      {numeroError}
-                    </p>
-                  )}
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Complemento</label>
-                  <input
-                    type="text"
-                    value={complemento}
-                    onChange={(e) => setComplemento(e.target.value)}
-                    className={styles.input}
-                    placeholder="Apto, Casa, etc."
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Lote</label>
-                  <input
-                    type="text"
-                    value={lote}
-                    onChange={(e) => setLote(e.target.value)}
-                    className={styles.input}
-                    placeholder="Lote"
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Quadra</label>
-                <input
-                  type="text"
-                  value={quadra}
-                  onChange={(e) => setQuadra(e.target.value)}
-                  className={styles.input}
-                  placeholder="Quadra"
-                />
-              </div>
-
-              <button
-                onClick={() => handleNextSection(3)}
-                disabled={!isSectionValid(3)}
-                className={styles.btnContinue}
-              >
-                Continuar
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* Seção 4 - Documentação */}
-        <section
-          data-section="4"
-          className={`${styles.section} ${
-            activeSection === 4 ? styles.sectionActive : ""
-          } ${completedSections.includes(4) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 4 ? 1 : 0.5 }}
-        >
-          <div
-            className={styles.sectionHeader}
-            onClick={() => toggleSection(4)}
-            style={{ cursor: "pointer" }}
-          >
-            <h2 className={styles.sectionTitle}>04. Documentação Necessária</h2>
-            <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(4) && (
-                <CheckCircleIcon className={styles.checkIcon} />
-              )}
-              <ExpandMoreIcon
-                className={`${styles.expandIcon} ${
-                  expandedSections.includes(4) ? styles.expandIconOpen : ""
-                }`}
-              />
-            </div>
-          </div>
-
-          {expandedSections.includes(4) && (
-            <div
-              className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
-            >
-              <p className={styles.sectionDescription}>
-                Anexe todos os documentos obrigatórios ao processo.
-              </p>
-
-              <div className={styles.uploadGrid}>
-                {[
-                  {
-                    label: "Estatuto Social e alterações",
-                    file: docEstatuto,
-                    setFile: setDocEstatuto,
-                  },
-                  {
-                    label: "Ata de Eleição da diretoria (atualizada)",
-                    file: docAtaDiretoria,
-                    setFile: setDocAtaDiretoria,
-                  },
-                  {
-                    label: "Documento do imóvel (RGI ou Promessa de compra e venda)",
-                    file: docImovel,
-                    setFile: setDocImovel,
-                  },
-                  {
-                    label: "Registro de IPTU do imóvel",
-                    file: docIptu,
-                    setFile: setDocIptu,
-                  },
-                  {
-                    label: "Croqui de localização",
-                    file: docCroqui,
-                    setFile: setDocCroqui,
-                  },
-                  {
-                    label: "Registro de cadastro mobiliário e imobiliário",
-                    file: docCadastro,
-                    setFile: setDocCadastro,
-                  },
-                  {
-                    label: "Identificação do requerente (RG/CPF)",
-                    file: docRgCpf,
-                    setFile: setDocRgCpf,
-                  },
-                ].map((doc, index) => (
-                  <div key={index} className={styles.uploadField}>
-                    <label className={styles.labelDoc}>
-                      {doc.label} <span className={styles.required}>*</span>
-                    </label>
-                    <label className={styles.uploadButton}>
-                      <CloudUploadIcon sx={{ marginRight: "8px" }} />
-                      Anexar arquivo
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const file = e.target.files[0];
-                            if (validarTamanhoArquivo(file)) {
-                              doc.setFile(file);
-                            } else {
-                              e.target.value = ""; // Limpa o input
-                            }
-                          }
-                        }}
-                        className={styles.fileInput}
-                      />
-                    </label>
-                    {doc.file && (
-                      <p className={styles.fileName}>{doc.file.name}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => handleNextSection(4)}
-                disabled={!isSectionValid(4)}
-                className={styles.btnContinue}
-              >
-                Continuar
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* Seção 5 - Representação */}
-        <section
-          data-section="5"
-          className={`${styles.section} ${
-            activeSection === 5 ? styles.sectionActive : ""
-          } ${completedSections.includes(5) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 5 ? 1 : 0.5 }}
-        >
-          <div
-            className={styles.sectionHeader}
-            onClick={() => toggleSection(5)}
-            style={{ cursor: "pointer" }}
-          >
-            <h2 className={styles.sectionTitle}>
-              05. Informações do Procurador
-            </h2>
-            <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(5) && (
-                <CheckCircleIcon className={styles.checkIcon} />
-              )}
-              <ExpandMoreIcon
-                className={`${styles.expandIcon} ${
-                  expandedSections.includes(5) ? styles.expandIconOpen : ""
-                }`}
-              />
-            </div>
-          </div>
-
-          {expandedSections.includes(5) && (
-            <div
-              className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Preencha com os dados do procurador responsável, caso exista.
@@ -1771,6 +1405,372 @@ export default function ImunidadeTemploReligiosoPage() {
                   </div>
                 </div>
               )}
+
+              <button
+                onClick={() => handleNextSection(3)}
+                disabled={!isSectionValid(3)}
+                className={styles.btnContinue}
+              >
+                Continuar
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Seção 4 - Localização do Imóvel */}
+        <section
+          data-section="4"
+          className={`${styles.section} ${
+            activeSection === 4 ? styles.sectionActive : ""
+          } ${completedSections.includes(4) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 4 ? 1 : 0.5 }}
+        >
+          <div
+            className={styles.sectionHeader}
+            onClick={() => toggleSection(4)}
+            style={{ cursor: "pointer" }}
+          >
+            <h2 className={styles.sectionTitle}>04. Identificação do Imóvel</h2>
+            <div className={styles.sectionHeaderIcons}>
+              {completedSections.includes(4) && (
+                <CheckCircleIcon className={styles.checkIcon} />
+              )}
+              <ExpandMoreIcon
+                className={`${styles.expandIcon} ${
+                  expandedSections.includes(4) ? styles.expandIconOpen : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          {expandedSections.includes(4) && (
+            <div
+              className={styles.sectionContent}
+              style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
+            >
+              <p className={styles.sectionDescription}>
+                Preencha todos os dados do imóvel conforme solicitado abaixo.
+              </p>
+
+              <div className={styles.gridTwo}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Inscrição Imobiliária{" "}
+                    <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={inscricaoImobiliaria}
+                    onChange={(e) => handleInscricaoChange(e.target.value)}
+                    className={`${styles.input} ${
+                      inscricaoError ? styles.inputError : ""
+                    }`}
+                    placeholder="000000-0"
+                  />
+                  {inscricaoError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {inscricaoError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Inscrição Mercantil
+                  </label>
+                  <input
+                    type="text"
+                    value={inscricaoMercantil}
+                    onChange={(e) => handleInscricaoMercantilChange(e.target.value)}
+                    className={`${styles.input} ${
+                      inscricaoMercantilError ? styles.inputError : ""
+                    }`}
+                    placeholder="000000"
+                  />
+                  {inscricaoMercantilError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {inscricaoMercantilError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.gridTwo}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    CEP <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={cep}
+                    onChange={(e) => handleCepChange(e.target.value)}
+                    onBlur={handleCepBlur}
+                    className={`${styles.input} ${
+                      cepError ? styles.inputError : ""
+                    }`}
+                    placeholder="00000-000"
+                  />
+                  {cepError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {cepError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Rua/Logradouro <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={rua}
+                    onChange={(e) => handleRuaChange(e.target.value)}
+                    className={`${styles.input} ${
+                      ruaError ? styles.inputError : ""
+                    }`}
+                    placeholder="Nome da rua"
+                  />
+                  {ruaError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {ruaError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.gridThree}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Bairro <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={bairro}
+                    onChange={(e) => handleBairroChange(e.target.value)}
+                    className={`${styles.input} ${
+                      bairroError ? styles.inputError : ""
+                    }`}
+                    placeholder="Bairro"
+                  />
+                  {bairroError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {bairroError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Cidade <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={cidade}
+                    onChange={(e) => handleCidadeChange(e.target.value)}
+                    className={`${styles.input} ${
+                      cidadeError ? styles.inputError : ""
+                    }`}
+                    placeholder="Cidade"
+                  />
+                  {cidadeError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {cidadeError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Estado <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={estado}
+                    onChange={(e) => handleEstadoChange(e.target.value)}
+                    className={`${styles.input} ${
+                      estadoError ? styles.inputError : ""
+                    }`}
+                    placeholder="UF"
+                    maxLength={2}
+                  />
+                  {estadoError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {estadoError}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.gridThree}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Número <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={numero}
+                    onChange={(e) => handleNumeroChange(e.target.value)}
+                    className={`${styles.input} ${
+                      numeroError ? styles.inputError : ""
+                    }`}
+                    placeholder="Nº"
+                  />
+                  {numeroError && (
+                    <p className={styles.fieldError}>
+                      <WarningIcon sx={{ fontSize: 16, marginRight: "4px" }} />
+                      {numeroError}
+                    </p>
+                  )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Complemento</label>
+                  <input
+                    type="text"
+                    value={complemento}
+                    onChange={(e) => setComplemento(e.target.value)}
+                    className={styles.input}
+                    placeholder="Apto, Casa, etc."
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Lote</label>
+                  <input
+                    type="text"
+                    value={lote}
+                    onChange={(e) => setLote(e.target.value)}
+                    className={styles.input}
+                    placeholder="Lote"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Quadra</label>
+                <input
+                  type="text"
+                  value={quadra}
+                  onChange={(e) => setQuadra(e.target.value)}
+                  className={styles.input}
+                  placeholder="Quadra"
+                />
+              </div>
+
+              <button
+                onClick={() => handleNextSection(4)}
+                disabled={!isSectionValid(4)}
+                className={styles.btnContinue}
+              >
+                Continuar
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Seção 5 - Documentação */}
+        <section
+          data-section="5"
+          className={`${styles.section} ${
+            activeSection === 5 ? styles.sectionActive : ""
+          } ${completedSections.includes(5) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 5 ? 1 : 0.5 }}
+        >
+          <div
+            className={styles.sectionHeader}
+            onClick={() => toggleSection(5)}
+            style={{ cursor: "pointer" }}
+          >
+            <h2 className={styles.sectionTitle}>05. Documentação Necessária</h2>
+            <div className={styles.sectionHeaderIcons}>
+              {completedSections.includes(5) && (
+                <CheckCircleIcon className={styles.checkIcon} />
+              )}
+              <ExpandMoreIcon
+                className={`${styles.expandIcon} ${
+                  expandedSections.includes(5) ? styles.expandIconOpen : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          {expandedSections.includes(5) && (
+            <div
+              className={styles.sectionContent}
+              style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
+            >
+              <p className={styles.sectionDescription}>
+                Anexe todos os documentos obrigatórios ao processo.
+              </p>
+
+              <div className={styles.uploadGrid}>
+                {[
+                  {
+                    label: "Estatuto Social e alterações",
+                    file: docEstatuto,
+                    setFile: setDocEstatuto,
+                  },
+                  {
+                    label: "Ata de Eleição da diretoria (atualizada)",
+                    file: docAtaDiretoria,
+                    setFile: setDocAtaDiretoria,
+                  },
+                  {
+                    label: "Documento do imóvel (RGI ou Promessa de compra e venda)",
+                    file: docImovel,
+                    setFile: setDocImovel,
+                  },
+                  {
+                    label: "Registro de IPTU do imóvel",
+                    file: docIptu,
+                    setFile: setDocIptu,
+                  },
+                  {
+                    label: "Croqui de localização",
+                    file: docCroqui,
+                    setFile: setDocCroqui,
+                  },
+                  {
+                    label: "Registro de cadastro mobiliário e imobiliário",
+                    file: docCadastro,
+                    setFile: setDocCadastro,
+                  },
+                  {
+                    label: "Identificação do requerente (RG/CPF)",
+                    file: docRgCpf,
+                    setFile: setDocRgCpf,
+                  },
+                ].map((doc, index) => (
+                  <div key={index} className={styles.uploadField}>
+                    <label className={styles.labelDoc}>
+                      {doc.label} <span className={styles.required}>*</span>
+                    </label>
+                    <label className={styles.uploadButton}>
+                      <CloudUploadIcon sx={{ marginRight: "8px" }} />
+                      Anexar arquivo
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const file = e.target.files[0];
+                            if (validarTamanhoArquivo(file)) {
+                              doc.setFile(file);
+                            } else {
+                              e.target.value = ""; // Limpa o input
+                            }
+                          }
+                        }}
+                        className={styles.fileInput}
+                      />
+                    </label>
+                    {doc.file && (
+                      <p className={styles.fileName}>{doc.file.name}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
 
               <button
                 onClick={() => handleNextSection(5)}

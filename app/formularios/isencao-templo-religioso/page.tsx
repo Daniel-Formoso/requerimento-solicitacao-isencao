@@ -429,7 +429,24 @@ export default function IsencaoTemploReligiosoPage() {
           );
         }
         return !!(baseValid && noErrors);
-      case 3: // Localização
+      case 3: // Informações do Procurador
+        if (possuiProcurador) {
+          const procuradorValid =
+            nomeProcurador &&
+            cpfProcurador &&
+            telefoneProcurador &&
+            emailProcurador;
+          const docsValid =
+            docProcuracao && docCpfProcurador && docIdentidadeProcurador;
+          const noErrors =
+            !nomeProcuradorError &&
+            !cpfProcuradorError &&
+            !telefoneProcuradorError &&
+            !emailProcuradorError;
+          return !!(procuradorValid && docsValid && noErrors);
+        }
+        return true;
+      case 4: // Localização do Imóvel
         const temInscricao = inscricaoImobiliaria || inscricaoMercantil;
         const imovelValid =
           temInscricao &&
@@ -449,7 +466,7 @@ export default function IsencaoTemploReligiosoPage() {
           !cidadeError &&
           !estadoError;
         return !!(imovelValid && noImovelErrors);
-      case 4: // Documentos (atualizados)
+      case 5: // Documentos
         return !!(
           docEstatuto &&
           docAtaDiretoria &&
@@ -459,31 +476,14 @@ export default function IsencaoTemploReligiosoPage() {
           docCadastro &&
           docRgCpf
         );
-      case 5: // Representação (antiga Seção 6)
-        if (possuiProcurador) {
-          const procuradorValid =
-            nomeProcurador &&
-            cpfProcurador &&
-            telefoneProcurador &&
-            emailProcurador;
-          const docsValid =
-            docProcuracao && docCpfProcurador && docIdentidadeProcurador;
-          const noErrors =
-            !nomeProcuradorError &&
-            !cpfProcuradorError &&
-            !telefoneProcuradorError &&
-            !emailProcuradorError;
-          return !!(procuradorValid && docsValid && noErrors);
-        }
-        return true;
-      case 6: // Preferências (antiga Seção 8)
+      case 6: // Preferências de Comunicação
         const selectedCount = [
           preferenciaAR,
           preferenciaWhatsapp,
           preferenciaEmail,
         ].filter(Boolean).length;
         return selectedCount >= 2;
-      case 7: // Finalização (antiga Seção 9)
+      case 7: // Finalização
         return aceiteTermo;
       default:
         return false;
@@ -692,6 +692,20 @@ export default function IsencaoTemploReligiosoPage() {
         setNomeError("");
         break;
       case 3:
+        setPossuiProcurador(true);
+        if (dados.procurador) {
+          setNomeProcurador(dados.procurador.nome);
+          setCpfProcurador(dados.procurador.cpf);
+          setRgProcurador(dados.procurador.rg);
+          setOrgaoEmissorProcurador("SSP/SP");
+          setTelefoneProcurador(dados.procurador.telefone);
+          setEmailProcurador(dados.procurador.email);
+          setDocProcuracao(dados.procurador.documentos?.[0] || null);
+          setDocCpfProcurador(dados.procurador.documentos?.[1] || null);
+          setDocIdentidadeProcurador(dados.procurador.documentos?.[2] || null);
+        }
+        break;
+      case 4:
         setInscricaoImobiliaria("1234567-8");
         setInscricaoMercantil("123456");
         setCep("01001-000");
@@ -711,7 +725,7 @@ export default function IsencaoTemploReligiosoPage() {
         setCidadeError("");
         setEstadoError("");
         break;
-      case 4:
+      case 5:
         setDocEstatuto(dados.documentos?.[0] || null);
         setDocAtaDiretoria(dados.documentos?.[1] || null);
         setDocImovel(dados.documentos?.[0] || null);
@@ -720,8 +734,8 @@ export default function IsencaoTemploReligiosoPage() {
         setDocCadastro(dados.documentos?.[1] || null);
         setDocRgCpf(dados.documentos?.[0] || null);
         break;
-      case 5:
-        setPossuiProcurador(true);
+      case 6:
+        setPreferenciaAR(true);
         if (dados.procurador) {
           setNomeProcurador(dados.procurador.nome);
           setCpfProcurador(dados.procurador.cpf);
@@ -1123,36 +1137,36 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 3 - Localização do Imóvel */}
+        {/* Seção 4 - Localização do Imóvel */}
         <section
-          data-section="3"
+          data-section="4"
           className={`${styles.section} ${
-            activeSection === 3 ? styles.sectionActive : ""
-          } ${completedSections.includes(3) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 3 ? 1 : 0.5 }}
+            activeSection === 4 ? styles.sectionActive : ""
+          } ${completedSections.includes(4) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 4 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(3)}
+            onClick={() => toggleSection(4)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>03. Identificação do Imóvel</h2>
+            <h2 className={styles.sectionTitle}>04. Identificação do Imóvel</h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(3) && (
+              {completedSections.includes(4) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(3) ? styles.expandIconOpen : ""
+                  expandedSections.includes(4) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(3) && (
+          {expandedSections.includes(4) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 3 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Preencha todos os dados do imóvel conforme solicitado abaixo.
@@ -1364,8 +1378,8 @@ export default function IsencaoTemploReligiosoPage() {
               </div>
 
               <button
-                onClick={() => handleNextSection(3)}
-                disabled={!isSectionValid(3)}
+                onClick={() => handleNextSection(4)}
+                disabled={!isSectionValid(4)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -1374,36 +1388,36 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 4 - Documentação */}
+        {/* Seção 5 - Documentação */}
         <section
-          data-section="4"
+          data-section="5"
           className={`${styles.section} ${
-            activeSection === 4 ? styles.sectionActive : ""
-          } ${completedSections.includes(4) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 4 ? 1 : 0.5 }}
+            activeSection === 5 ? styles.sectionActive : ""
+          } ${completedSections.includes(5) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 5 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(4)}
+            onClick={() => toggleSection(5)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>04. Documentação Necessária</h2>
+            <h2 className={styles.sectionTitle}>05. Documentação Necessária</h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(4) && (
+              {completedSections.includes(5) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(4) ? styles.expandIconOpen : ""
+                  expandedSections.includes(5) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(4) && (
+          {expandedSections.includes(5) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Anexe todos os documentos obrigatórios ao processo.
@@ -1478,8 +1492,8 @@ export default function IsencaoTemploReligiosoPage() {
               </div>
 
               <button
-                onClick={() => handleNextSection(4)}
-                disabled={!isSectionValid(4)}
+                onClick={() => handleNextSection(5)}
+                disabled={!isSectionValid(5)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -1488,38 +1502,38 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 5 - Informações do Procurador */}
+        {/* Seção 3 - Informações do Procurador */}
         <section
-          data-section="5"
+          data-section="3"
           className={`${styles.section} ${
-            activeSection === 5 ? styles.sectionActive : ""
-          } ${completedSections.includes(5) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 5 ? 1 : 0.5 }}
+            activeSection === 3 ? styles.sectionActive : ""
+          } ${completedSections.includes(3) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 3 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(5)}
+            onClick={() => toggleSection(3)}
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              05. Informações do Procurador
+              03. Informações do Procurador
             </h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(5) && (
+              {completedSections.includes(3) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(5) ? styles.expandIconOpen : ""
+                  expandedSections.includes(3) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(5) && (
+          {expandedSections.includes(3) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 3 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Preencha com os dados do procurador responsável, caso exista.
@@ -1770,8 +1784,8 @@ export default function IsencaoTemploReligiosoPage() {
               )}
 
               <button
-                onClick={() => handleNextSection(5)}
-                disabled={!isSectionValid(5)}
+                onClick={() => handleNextSection(3)}
+                disabled={!isSectionValid(3)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -1780,7 +1794,7 @@ export default function IsencaoTemploReligiosoPage() {
           )}
         </section>
 
-        {/* Seção 6 - Preferências de Comunicação */}
+        {/* Seção 4 - Localização do Imóvel */}
         <section
           data-section="6"
           className={`${styles.section} ${
