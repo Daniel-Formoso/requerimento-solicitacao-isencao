@@ -1551,7 +1551,7 @@ export default function IsencaoExcombatentePage() {
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              03. Informações do Procurador
+              03. Identificação do Procurador
             </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
