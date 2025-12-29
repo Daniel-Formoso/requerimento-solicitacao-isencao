@@ -1156,7 +1156,7 @@ export default function IsencaoTaxasMercantisPage() {
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              03. Informações do Procurador
+              03. Identificação do Procurador
             </h2>
             <div className={styles.sectionHeaderIcons}>
               {completedSections.includes(3) && (
@@ -1734,7 +1734,7 @@ export default function IsencaoTaxasMercantisPage() {
                     setFile: setDocAtaDiretoria,
                   },
                   {
-                    label: "Documento do imóvel (Título de propriedade inscrito no RGI ou Promessa de compra e venda)",
+                    label: "Documento do imóvel (RGI ou Promessa de compra e venda)",
                     file: docImovel,
                     setFile: setDocImovel,
                   },
@@ -1774,17 +1774,17 @@ export default function IsencaoTaxasMercantisPage() {
                     setFile: setDocFolhaPagamento,
                   },
                   {
-                    label: "Declaração de entidade, ratificada pelo contador responsável em atendimento aos requisitos do artigo 14 do CTN",
+                    label: "Declaração de entidade (art. 14 do CTN)",
                     file: docDeclaracaoEntidade,
                     setFile: setDocDeclaracaoEntidade,
                   },
                   {
-                    label: "Demonstração dos resultados do Exercício e balanço patrimonial referente aos 5 anos anteriores à solicitação",
+                    label: "Demonstração e Balanço dos 5 anos",
                     file: docDemonstracao,
                     setFile: setDocDemonstracao,
                   },
                   {
-                    label: "Certidão Negativa de débitos ou certidão positiva com efeitos de negativa junto à Prefeitura Municipal de Nova Iguaçu",
+                    label: "Certidão Negativa/Positiva da Prefeitura",
                     file: docCertidaoNegativa,
                     setFile: setDocCertidaoNegativa,
                   },
