@@ -1774,17 +1774,17 @@ export default function ImunidadeInstituicoesPage() {
                     setFile: setDocFolhaPagamento,
                   },
                   {
-                    label: "Declaração de entidade (Art. 14 do CTN - ratificada pelo contador)",
+                    label: "Declaração de entidade (art. 14 do CTN)",
                     file: docDeclaracaoEntidade,
                     setFile: setDocDeclaracaoEntidade,
                   },
                   {
-                    label: "Demonstração dos resultados e balanço patrimonial (últimos 5 anos)",
+                    label: "Demonstração e Balanço dos 5 anos",
                     file: docDemonstracao,
                     setFile: setDocDemonstracao,
                   },
                   {
-                    label: "Certidão Negativa de débitos junto à Prefeitura de Nova Iguaçu",
+                    label: "Certidão Negativa/Positiva da Prefeitura",
                     file: docCertidaoNegativa,
                     setFile: setDocCertidaoNegativa,
                   },
