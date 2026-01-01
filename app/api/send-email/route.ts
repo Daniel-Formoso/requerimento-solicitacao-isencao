@@ -1,77 +1,64 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import fs from "fs";
 import path from "path";
-import sharp from "sharp";
+
+// Configuração do transporter usando Gmail/Google Workspace
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    // Configurar o transporter do Nodemailer com Gmail
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
+    // Data e hora
+    const dataEnvio = new Date();
+    const dataFormatada = dataEnvio.toLocaleDateString("pt-BR");
+    const horaFormatada = dataEnvio.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    // Carregar logo local e otimizar antes de enviar como anexo com CID
+    // URL base para os botões
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    // Preparar logo para anexar como CID
     const logoPath = path.join(process.cwd(), "public", "assets", "logo.png");
-    let logoCid: string | null = null;
-    let logoBuffer: Buffer | null = null;
-    let logoFilename = "logo.png";
-    try {
-      const originalBuffer = fs.readFileSync(logoPath);
-      console.log(`Logo original carregada: ${logoPath} (${originalBuffer.length} bytes)`);
+    const logoCid = `logo-${Date.now()}@requerimento`;
 
-      try {
-        const optimizedBuffer = await sharp(originalBuffer)
-          .resize({ width: 400 })
-          .png({ compression: 8, quality: 90 })
-          .toBuffer();
+    // Montar o corpo do e-mail em HTML
+    const htmlBody = montarCorpoEmail(data, logoCid, baseUrl, dataFormatada, horaFormatada);
 
-        logoBuffer = optimizedBuffer;
-        logoFilename = "logo.png";
-        console.log(`Logo otimizada gerada: ${logoFilename} (${logoBuffer.length} bytes)`);
-      } catch (optErr) {
-        console.warn("Falha na otimização da logo, usando original:", optErr?.message || optErr);
-        logoBuffer = originalBuffer;
-      }
+    // Assunto do e-mail
+    const assunto = `Novo Requerimento: ${data.nome || "Solicitação"} - ${data.tipoFormulario || "Isenção/Imunidade"} | ${dataFormatada} ${horaFormatada}`;
 
-      logoCid = "logo_requerimento_novaiguacu";
-    } catch (error) {
-      console.error("Erro ao carregar logo:", error);
-    }
-
-    // Montar o corpo do e-mail em HTML (passa o CID, não base64)
-    const htmlBody = montarCorpoEmail(data, logoCid);
-
-    // Configurar as opções do e-mail
+    // Configurar e enviar o e-mail
     const mailOptions: any = {
-      from: process.env.GMAIL_USER,
+      from: `"Requerimento Isenção/Imunidade" <${process.env.GMAIL_USER || ""}>`,
       to: process.env.EMAIL_DESTINO || process.env.GMAIL_USER,
-      subject: `Novo Requerimento - ${data.tipoFormulario || "Solicitação"}`,
+      subject: assunto,
       html: htmlBody,
-    };
-
-    if (logoBuffer && logoCid) {
-      mailOptions.attachments = [
+      attachments: [
         {
-          filename: logoFilename,
-          content: logoBuffer,
+          filename: "logo.png",
+          path: logoPath,
           cid: logoCid,
           contentDisposition: "inline",
         },
-      ];
-      console.log(`Attachment preparado: cid=${logoCid}, filename=${logoFilename}, tamanho=${logoBuffer.length}`);
-    }
+      ],
+    };
 
-    // Enviar o e-mail
-    console.log("Enviando e-mail... attachments=", mailOptions.attachments ? mailOptions.attachments.length : 0);
+    console.log("Enviando e-mail...");
     const info = await transporter.sendMail(mailOptions);
-    console.log("E-mail enviado, messageId=", info && info.messageId ? info.messageId : JSON.stringify(info));
+    console.log("E-mail enviado com sucesso:", info?.messageId);
 
     return NextResponse.json(
       { success: true, message: "E-mail enviado com sucesso!" },
@@ -86,617 +73,612 @@ export async function POST(req: Request) {
   }
 }
 
+// Função auxiliar para formatar valor ou retornar traços
+function formatValue(value: string | null | undefined): string {
+  return value && value.trim() !== "" ? value : "-----";
+}
+
+// Função auxiliar para status de anexo simples
+function formatAttachmentStatusSimple(url: string | null | undefined | boolean): string {
+  return url
+    ? '<span style="color: #28a745;">✅ Anexado</span>'
+    : '<span style="color: #d32f2f;">❌ Não anexado</span>';
+}
+
+// Função auxiliar para formatar formas de contato
+function formatFormasContato(formasContato: string[]): string {
+  if (!formasContato || formasContato.length === 0) return "-----";
+  const labels: Record<string, string> = {
+    preferenciaAR: "📧 Carta com AR",
+    preferenciaEmail: "📧 E-mail",
+    preferenciaWhatsapp: "💬 WhatsApp",
+  };
+  return formasContato.map((c: string) => labels[c] || c).join(", ");
+}
+
+// Função para gerar lista de documentos anexados
+function generateDocumentsList(data: any, baseUrl: string): string {
+  const docs: { nome: string; anexado: boolean }[] = [];
+
+  // Documentos do formulário de idoso
+  if (data.certidao !== undefined) {
+    docs.push({ nome: "Certidão de Nascimento ou Casamento", anexado: !!data.certidao });
+  }
+  if (data.comprovanteTaxas !== undefined) {
+    docs.push({ nome: "Comprovante de Pagamento de Taxas", anexado: !!data.comprovanteTaxas });
+  }
+  if (data.rgCpf !== undefined) {
+    docs.push({ nome: "RG e CPF", anexado: !!data.rgCpf });
+  }
+  if (data.comprovanteResidencia !== undefined) {
+    docs.push({ nome: "Comprovante de Residência", anexado: !!data.comprovanteResidencia });
+  }
+  if (data.comprovanteRendimentos !== undefined) {
+    docs.push({ nome: "Comprovante de Rendimentos", anexado: !!data.comprovanteRendimentos });
+  }
+  if (data.escritura !== undefined) {
+    docs.push({ nome: "Escritura do Imóvel", anexado: !!data.escritura });
+  }
+  if (data.declaracaoUnicoImovel !== undefined) {
+    docs.push({ nome: "Declaração de Único Imóvel", anexado: !!data.declaracaoUnicoImovel });
+  }
+  if (data.fichaIptu !== undefined) {
+    docs.push({ nome: "Ficha de IPTU", anexado: !!data.fichaIptu });
+  }
+  if (data.procuracao !== undefined) {
+    docs.push({ nome: "Procuração", anexado: !!data.procuracao });
+  }
+  if (data.cpfProcuradorDoc !== undefined && data.possuiProcurador) {
+    docs.push({ nome: "CPF do Procurador", anexado: !!data.cpfProcuradorDoc });
+  }
+  if (data.identidadeProcurador !== undefined && data.possuiProcurador) {
+    docs.push({ nome: "Identidade do Procurador", anexado: !!data.identidadeProcurador });
+  }
+  if (data.peticao !== undefined) {
+    docs.push({ nome: "Petição", anexado: !!data.peticao });
+  }
+
+  if (docs.length === 0) {
+    return `
+      <tr>
+        <td colspan="3" style="padding: 12px; text-align: center; color: #666;">
+          Nenhum documento foi anexado.
+        </td>
+      </tr>
+    `;
+  }
+
+  return docs
+    .map(
+      (doc, index) => `
+      <tr style="background-color: ${index % 2 === 0 ? "#f9f9f9" : "#ffffff"};">
+        <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">
+          📄 ${doc.nome}
+        </td>
+        <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">
+          ${formatAttachmentStatusSimple(doc.anexado)}
+        </td>
+        <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
+          ${
+            doc.anexado
+              ? `<a href="#" 
+                 style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);"
+                 download>
+                Baixar
+              </a>`
+              : '<span style="color: #999;">-</span>'
+          }
+        </td>
+      </tr>
+    `
+    )
+    .join("");
+}
+
 // Função para montar o corpo do e-mail em HTML
-function montarCorpoEmail(data: any, logoCid: string | null): string {
+function montarCorpoEmail(
+  data: any,
+  logoCid: string,
+  baseUrl: string,
+  dataFormatada: string,
+  horaFormatada: string
+): string {
   const { tipoFormulario } = data;
 
-  let html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          line-height: 1.6;
-          color: #333;
-          margin: 0;
-          padding: 0;
-          background-color: #f5f5f5;
-        }
-        .container {
-          max-width: 700px;
-          margin: 0 auto;
-          background-color: white;
-          border-radius: 8px;
-          overflow: hidden;
-        }
-        .header {
-          background: linear-gradient(135deg, #2E3B6B 0%, #3d4d7a 100%);
-          color: white;
-          padding: 40px 30px;
-          text-align: center;
-          position: relative;
-        }
-        .header-logo {
-          width: 180px;
-          height: auto;
-          margin: 0 auto 20px auto;
-          display: block;
-        }
-        .header h1 {
-          margin: 0 0 10px 0;
-          font-size: 20px;
-          font-weight: 700;
-          letter-spacing: 0.5px;
-        }
-        .header p {
-          margin: 0;
-          font-size: 14px;
-          opacity: 0.95;
-          font-weight: 300;
-        }
-        .info-bar {
-          background-color: #2E3B6B;
-          color: white;
-          padding: 15px 30px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 13px;
-        }
-        .info-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .info-icon {
-          font-size: 16px;
-        }
-        .content {
-          padding: 30px;
-          background-color: #fafafa;
-        }
-        .section {
-          background-color: white;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 20px;
-          margin-bottom: 20px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .section-title {
-          color: #2E3B6B;
-          font-size: 15px;
-          font-weight: 700;
-          margin-bottom: 18px;
-          padding-bottom: 12px;
-          border-bottom: 2px solid #2E3B6B;
-          display: flex;
-          align-items: center;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .section-title-icon {
-          margin-right: 10px;
-          font-size: 18px;
-        }
-        .data-row {
-          display: flex;
-          padding: 12px 0;
-          border-bottom: 1px solid #f0f0f0;
-        }
-        .data-row:last-child {
-          border-bottom: none;
-        }
-        .data-label {
-          font-weight: 600;
-          color: #555;
-          min-width: 220px;
-          flex-shrink: 0;
-          font-size: 14px;
-        }
-        .data-value {
-          color: #333;
-          word-break: break-word;
-          font-size: 14px;
-        }
-        .status-anexado {
-          color: #28a745;
-          font-weight: 700;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-        }
-        .status-nao-anexado {
-          color: #dc3545;
-          font-weight: 700;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-        }
-        .footer {
-          background: linear-gradient(135deg, #2E3B6B 0%, #3d4d7a 100%);
-          color: white;
-          padding: 30px;
-          font-size: 12px;
-        }
-        .footer table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .footer td {
-          vertical-align: top;
-        }
-        .footer-left {
-          text-align: left;
-          padding-right: 20px;
-        }
-        .footer-right {
-          text-align: right;
-          width: 120px;
-        }
-        .footer-logo {
-          width: 120px;
-          height: auto;
-          display: block;
-          margin-left: auto;
-        }
-        .footer p {
-          margin: 5px 0;
-          line-height: 1.6;
-        }
-        .footer strong {
-          font-size: 14px;
-          display: block;
-          margin-bottom: 10px;
-        }
-        .document-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-        .document-item {
-          padding: 12px 15px;
-          background-color: #f8f9fa;
-          border: 1px solid #dee2e6;
-          margin-bottom: 8px;
-          border-radius: 6px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          transition: background-color 0.2s;
-        }
-        .document-item:hover {
-          background-color: #e9ecef;
-        }
-        .document-name {
-          font-weight: 500;
-          color: #2E3B6B;
-          flex: 1;
-        }
-        .btn-download {
-          background-color: #2E3B6B;
-          color: white;
-          padding: 8px 16px;
-          border-radius: 4px;
-          text-decoration: none;
-          font-size: 12px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          margin-left: auto;
-        }
-        .btn-download:hover {
-          background-color: #1f2a4a;
-        }
-        .status-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-        .status-item {
-          padding: 10px 0;
-          border-bottom: 1px solid #f0f0f0;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .status-item:last-child {
-          border-bottom: none;
-        }
-        .status-label {
-          font-weight: 500;
-          color: #333;
-          font-size: 14px;
-          flex: 1;
-          text-align: left;
-        }
-        .status-anexado, .status-nao-anexado {
-          min-width: 120px;
-          text-align: right;
-          margin-left: auto;
-          display: inline-block;
-        }
-        .buttons {
-          background-color: white;
-          padding: 20px 30px;
-          text-align: center;
-          border-bottom: 1px solid #e0e0e0;
-        }
-        .button {
-          display: inline-block;
-          padding: 12px 24px;
-          margin: 0 8px;
-          border-radius: 6px;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 14px;
-          transition: all 0.3s;
-        }
-        .button-primary {
-          background-color: #28a745;
-          color: white;
-        }
-        .button-secondary {
-          background-color: #ffc107;
-          color: #333;
-        }
-        .alert-box {
-          background-color: #fff3cd;
-          border: 1px solid #ffc107;
-          border-left: 4px solid #ffc107;
-          border-radius: 6px;
-          padding: 15px;
-          margin: 20px 30px;
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-        }
-        .alert-icon {
-          font-size: 20px;
-          margin-top: 2px;
-        }
-        .alert-text {
-          font-size: 13px;
-          color: #856404;
-          line-height: 1.5;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          ${logoCid ? `<img src="cid:${logoCid}" alt="Prefeitura de Nova Iguaçu" class="header-logo" />` : ''}
-          <h1>${tipoFormulario || "Requerimento"}</h1>
-          <p>Um novo requerimento foi recebido através do sistema online.</p>
-        </div>
-        
-        <div class="alert-box">
-          <span class="alert-icon"><LightbulbIcon /></span>
-          <div class="alert-text">
-            <strong>Como usar:</strong> Clique em "Baixar Requerimento" para abrir o documento formatado no navegador e salvar como PDF (Ctrl+P). Use "Baixar Documentos Anexados" para visualizar os arquivos do processo.
-          </div>
-        </div>
-        <div class="content">
+  // Formas de contato
+  const formasContato = [];
+  if (data.preferenciaAR) formasContato.push("preferenciaAR");
+  if (data.preferenciaWhatsapp) formasContato.push("preferenciaWhatsapp");
+  if (data.preferenciaEmail) formasContato.push("preferenciaEmail");
+
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <table width="700" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+          
+          <!-- HEADER -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #2b2862 0%, #1a1a4e 100%); padding: 30px; text-align: center;">
+              <img src="cid:${logoCid}" alt="Prefeitura" style="max-width: 120px; margin-bottom: 15px;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">
+                ${tipoFormulario || "Requerimento de Isenção/Imunidade"}
+              </h1>
+              <p style="color: #c5c5e0; margin: 10px 0 0 0; font-size: 14px;">
+                Um novo requerimento foi recebido através do sistema online.
+              </p>
+            </td>
+          </tr>
+
+          <!-- BLOCO DE BOTÕES E INFO -->
+          <tr>
+            <td style="padding: 25px 30px; background: #f8f9fa;">
+              <div style="margin-bottom: 20px;">
+                <h3 style="color: #2b2862; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">
+                  📄 Documentos Prontos para Anexar ao Processo
+                </h3>
+                <div style="margin-bottom: 15px;">
+                  <a href="#" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #28d160; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                    📄 BAIXAR REQUERIMENTO
+                  </a>
+                  <a href="#" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                    📦 BAIXAR DOCUMENTOS ANEXADOS
+                  </a>
+                </div>
+                <div style="font-size: 13px; color: #555; background: #fffbe6; border-radius: 6px; padding: 12px; border-left: 4px solid #ffc107;">
+                  <span style="font-size: 16px;">💡</span>
+                  <strong>Como usar:</strong> Clique em "Baixar Requerimento" para abrir o documento formatado no navegador e salvar como PDF (Ctrl+P). Use "Baixar Documentos" para os anexos.
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- INFO DE RECEBIMENTO -->
+          <tr>
+            <td style="padding: 15px 30px; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
+              <p style="margin: 0; color: #666; font-size: 14px;">
+                <strong>Recebido em:</strong> ${dataFormatada} às ${horaFormatada}
+              </p>
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: TAXA DE PAGAMENTO -->
+          <tr>
+            <td style="padding: 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862; display: flex; align-items: center;">
+                <span style="margin-right: 8px;">💳</span> Taxa de Pagamento
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Guia de Pagamento</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.possuiGuiaTaxa ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600;">Comprovante de Pagamento</td>
+                  <td style="padding: 10px 15px; text-align: right;">${data.possuiComprovanteTaxa ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: DADOS DO CONTRIBUINTE -->
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">👤</span> Dados do Contribuinte
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Processo</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(formatarTipoSolicitacao(data.tipoSolicitacao))}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome Completo</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.nome)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF/CNPJ</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cpf)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Identidade</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rg)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Expedidor</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.orgaoEmissor)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">E-mail</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.email)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.telefone)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CEP</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cep)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Endereço</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rua)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Número</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.numero)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Complemento</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.complemento)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Bairro</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.bairro)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Cidade</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cidade)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600;">Estado</td>
+                  <td style="padding: 10px 15px;">${formatValue(data.estado)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: DADOS DO PROCURADOR -->
+          ${data.possuiProcurador ? `
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">⚖️</span> Dados do Procurador
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Possui Procurador?</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">Sim</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Procurador</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.nomeProcurador)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF do Procurador</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cpfProcurador)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">E-mail do Procurador</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.emailProcurador)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600;">Telefone do Procurador</td>
+                  <td style="padding: 10px 15px;">${formatValue(data.telefoneProcurador)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+
+          <!-- SEÇÃO: IDENTIFICAÇÃO DO IMÓVEL -->
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">🏠</span> Identificação do Imóvel
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Inscrição Imobiliária</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.inscricaoImobiliaria)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Lote</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.lote)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600;">Quadra</td>
+                  <td style="padding: 10px 15px;">${formatValue(data.quadra)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: QUESTIONÁRIO DE ELEGIBILIDADE -->
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">✅</span> Questionário de Elegibilidade
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Perfil do Requerente</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(formatarPerfilRequerente(data.perfilRequerente))}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Estado Civil</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(formatarEstadoCivil(data.estadoCivil))}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">É único imóvel?</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${data.unicoImovel ? 'Sim' : 'Não'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">É residência própria?</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${data.residenciaPropria ? 'Sim' : 'Não'}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Ano de Início de Residência</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.anoInicio)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Renda até 2 Salários Mínimos?</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${data.rendaAte2Salarios ? 'Sim' : 'Não'}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; ${data.origemRenda === 'outro' ? 'border-bottom: 1px solid #ddd;' : ''}">Origem da Renda</td>
+                  <td style="padding: 10px 15px; ${data.origemRenda === 'outro' ? 'border-bottom: 1px solid #ddd;' : ''}">${formatValue(formatarOrigemRenda(data.origemRenda))}</td>
+                </tr>
+                ${data.origemRenda === 'outro' ? `
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600;">Outra Origem da Renda (Especificar)</td>
+                  <td style="padding: 10px 15px;">${formatValue(data.origemRendaOutro)}</td>
+                </tr>
+                ` : ''}
+              </table>
+              
+              ${data.nomeConjuge ? `
+              <h3 style="color: #2b2862; font-size: 15px; margin: 20px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid #ccc;">
+                <span style="margin-right: 8px;">👥</span> Dados do Cônjuge
+              </h3>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Cônjuge</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.nomeConjuge)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cpfConjuge)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rgConjuge)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.telefoneConjuge)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">E-mail</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.emailConjuge)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">É coproprietário?</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${data.coproprietario ? 'Sim' : 'Não'}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600;">Origem da Renda</td>
+                  <td style="padding: 10px 15px;">${formatValue(formatarOrigemRenda(data.origemRendaConjuge))}</td>
+                </tr>
+              </table>
+              ` : ''}
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: TESTEMUNHAS (ASSINATURA A ROGO) -->
+          ${data.assinaturaRogo ? `
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">✍️</span> Testemunhas (Assinatura a Rogo)
+              </h2>
+              
+              <h3 style="color: #2b2862; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">Testemunha 1</h3>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden; margin-bottom: 20px;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Nome)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Cpf)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Rg)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Emissor</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1OrgaoEmissor)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Telefone)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600;">E-mail</td>
+                  <td style="padding: 10px 15px;">${formatValue(data.testemunha1Email)}</td>
+                </tr>
+              </table>
+              
+              <h3 style="color: #2b2862; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">Testemunha 2</h3>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Nome)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Cpf)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Rg)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Emissor</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2OrgaoEmissor)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Telefone)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600;">E-mail</td>
+                  <td style="padding: 10px 15px;">${formatValue(data.testemunha2Email)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+
+          <!-- SEÇÃO: DOCUMENTAÇÃO -->
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">📁</span> Documentação
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Documento de Identidade</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.rgCpf ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.rgCpf ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Comprovante de Residência</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.comprovanteResidencia ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600;">Outros Documentos</td>
+                  <td style="padding: 10px 15px; text-align: right;">${data.escritura || data.fichaIptu || data.procuracao ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #999;">Nenhum documento anexado</span>'}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: FORMAS DE CONTATO -->
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">📞</span> Formas de Contato
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600;">Formas de Contato Preferidas</td>
+                  <td style="padding: 10px 15px;">${formatFormasContato(formasContato)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SEÇÃO: OBSERVAÇÕES -->
+          ${data.observacoes ? `
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">📝</span> Observações
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr>
+                  <td style="padding: 10px 15px; background-color: #f9f9f9;">${formatValue(data.observacoes)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+
+          <!-- RESUMO DE DOCUMENTOS ANEXADOS -->
+          <tr>
+            <td style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                <span style="margin-right: 8px;">📋</span> Resumo de Documentos Anexados
+              </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                <tr style="background-color: #2b2862;">
+                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff;">Nome do Documento</td>
+                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Status</td>
+                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Ação</td>
+                </tr>
+                ${generateDocumentsList(data, baseUrl)}
+              </table>
+            </td>
+          </tr>
+
+          <!-- RODAPÉ -->
+          <tr>
+            <td style="background-color: #2b2862; padding: 20px 30px; text-align: center;">
+              <p style="color: #ffffff; margin: 0; font-size: 14px; line-height: 1.6;">
+                <strong>Requerimento Geral de Processos</strong><br>
+                Prefeitura Municipal de Nova Iguaçu<br>
+                📧 Recebido via: requerimentos.ni.ig.br em 22/12/2025 às 20:45<br>
+                📍 Al. Dr. Ressequeiros, 89
+              </p>
+              <p style="color: #c5c5e0; margin: 15px 0 0 0; font-size: 12px;">
+                Este é um e-mail automático. Por favor, não responda.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
   `;
-
-  // Seção de Taxa de Pagamento
-  if (data.possuiGuiaTaxa !== undefined || data.possuiComprovanteTaxa !== undefined) {
-    html += `
-      <div class="section">
-        <div class="section-title"><span class="section-title-icon">💳</span> Taxa de Pagamento</div>
-        <div class="data-row">
-          <span class="data-label">Guia de Pagamento</span>
-          <span class="${data.possuiGuiaTaxa ? 'status-anexado' : 'status-nao-anexado'}">
-            ${data.possuiGuiaTaxa ? '✓ Anexado' : '✗ Não anexado'}
-          </span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">Comprovante de Pagamento</span>
-          <span class="${data.possuiComprovanteTaxa ? 'status-anexado' : 'status-nao-anexado'}">
-            ${data.possuiComprovanteTaxa ? '✓ Anexado' : '✗ Não anexado'}
-          </span>
-        </div>
-      </div>
-    `;
-  }
-
-  // Seção 1: Dados do Requerente
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">👤</span> Dados do Contribuinte</div>
-  `;
-
-  html += `<div class="data-row"><span class="data-label">Tipo de Solicitação:</span><span class="data-value">${data.tipoSolicitacao ? formatarTipoSolicitacao(data.tipoSolicitacao) : "----------"}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Processo Anterior:</span><span class="data-value">${formatarValor(data.processoAnterior)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Certidão Anterior:</span><span class="data-value">${formatarValor(data.certidaoAnterior)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Nome:</span><span class="data-value">${formatarValor(data.nome)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">CPF:</span><span class="data-value">${formatarValor(data.cpf)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">RG:</span><span class="data-value">${formatarValor(data.rg)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Órgão Emissor:</span><span class="data-value">${formatarValor(data.orgaoEmissor)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Telefone:</span><span class="data-value">${formatarValor(data.telefone)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">E-mail:</span><span class="data-value">${formatarValor(data.email)}</span></div>`;
-
-  html += `</div>`;
-
-  // Seção 2: Dados do Imóvel
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">🏠</span> Dados do Imóvel</div>
-  `;
-
-  html += `<div class="data-row"><span class="data-label">Inscrição Imobiliária:</span><span class="data-value">${formatarValor(data.inscricaoImobiliaria)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Inscrição Mercantil:</span><span class="data-value">${formatarValor(data.inscricaoMercantil)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">CEP:</span><span class="data-value">${formatarValor(data.cep)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Logradouro:</span><span class="data-value">${formatarValor(data.rua)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Número:</span><span class="data-value">${formatarValor(data.numero)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Complemento:</span><span class="data-value">${formatarValor(data.complemento)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Bairro:</span><span class="data-value">${formatarValor(data.bairro)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Cidade:</span><span class="data-value">${formatarValor(data.cidade)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Estado:</span><span class="data-value">${formatarValor(data.estado)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Lote:</span><span class="data-value">${formatarValor(data.lote)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Quadra:</span><span class="data-value">${formatarValor(data.quadra)}</span></div>`;
-
-  html += `</div>`;
-
-  // Seção 3: Questionário de Elegibilidade (para formulários de isenção)
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">📋</span> Informações de Elegibilidade</div>
-  `;
-
-  html += `<div class="data-row"><span class="data-label">Perfil do Requerente:</span><span class="data-value">${data.perfilRequerente ? formatarPerfilRequerente(data.perfilRequerente) : "----------"}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Estado Civil:</span><span class="data-value">${data.estadoCivil ? formatarEstadoCivil(data.estadoCivil) : "----------"}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Único Imóvel:</span><span class="data-value">${formatarValor(data.unicoImovel)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Residência Própria:</span><span class="data-value">${formatarValor(data.residenciaPropria)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Ano de Início de Residência:</span><span class="data-value">${formatarValor(data.anoInicio)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Renda até 2 Salários Mínimos:</span><span class="data-value">${formatarValor(data.rendaAte2Salarios)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Origem da Renda:</span><span class="data-value">${data.origemRenda ? formatarOrigemRenda(data.origemRenda) : "----------"}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Outra Origem da Renda:</span><span class="data-value">${formatarValor(data.origemRendaOutro)}</span></div>`;
-
-  html += `</div>`;
-
-  // Seção 4: Dados do Cônjuge
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">👥</span> Dados do Cônjuge</div>
-  `;
-
-  html += `<div class="data-row"><span class="data-label">Nome:</span><span class="data-value">${formatarValor(data.nomeConjuge)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">CPF:</span><span class="data-value">${formatarValor(data.cpfConjuge)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">RG:</span><span class="data-value">${formatarValor(data.rgConjuge)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Telefone:</span><span class="data-value">${formatarValor(data.telefoneConjuge)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">E-mail:</span><span class="data-value">${formatarValor(data.emailConjuge)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Coproprietário:</span><span class="data-value">${formatarValor(data.coproprietario)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Origem da Renda:</span><span class="data-value">${data.origemRendaConjuge ? formatarOrigemRenda(data.origemRendaConjuge) : "----------"}</span></div>`;
-
-  html += `</div>`;
-
-  // Seção 5: Dados do Procurador
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">⚖️</span> Dados do Procurador</div>
-  `;
-
-  html += `<div class="data-row"><span class="data-label">Nome:</span><span class="data-value">${formatarValor(data.nomeProcurador)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">CPF:</span><span class="data-value">${formatarValor(data.cpfProcurador)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">RG:</span><span class="data-value">${formatarValor(data.rgProcurador)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Órgão Emissor:</span><span class="data-value">${formatarValor(data.orgaoEmissorProcurador)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">Telefone:</span><span class="data-value">${formatarValor(data.telefoneProcurador)}</span></div>`;
-  html += `<div class="data-row"><span class="data-label">E-mail:</span><span class="data-value">${formatarValor(data.emailProcurador)}</span></div>`;
-
-  html += `</div>`;
-
-  // Seção 6: Assinatura a Rogo
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">✍️</span> Assinatura a Rogo</div>
-  `;
-
-  html += `
-    <div style="margin-bottom: 15px;">
-      <strong>Testemunha 1:</strong>
-      <div class="data-row"><span class="data-label">Nome:</span><span class="data-value">${formatarValor(data.testemunha1Nome)}</span></div>
-      <div class="data-row"><span class="data-label">CPF:</span><span class="data-value">${formatarValor(data.testemunha1Cpf)}</span></div>
-      <div class="data-row"><span class="data-label">RG:</span><span class="data-value">${formatarValor(data.testemunha1Rg)}</span></div>
-      <div class="data-row"><span class="data-label">Órgão Emissor:</span><span class="data-value">${formatarValor(data.testemunha1OrgaoEmissor)}</span></div>
-      <div class="data-row"><span class="data-label">Telefone:</span><span class="data-value">${formatarValor(data.testemunha1Telefone)}</span></div>
-      <div class="data-row"><span class="data-label">E-mail:</span><span class="data-value">${formatarValor(data.testemunha1Email)}</span></div>
-    </div>
-  `;
-
-  html += `
-    <div>
-      <strong>Testemunha 2:</strong>
-      <div class="data-row"><span class="data-label">Nome:</span><span class="data-value">${formatarValor(data.testemunha2Nome)}</span></div>
-      <div class="data-row"><span class="data-label">CPF:</span><span class="data-value">${formatarValor(data.testemunha2Cpf)}</span></div>
-      <div class="data-row"><span class="data-label">RG:</span><span class="data-value">${formatarValor(data.testemunha2Rg)}</span></div>
-      <div class="data-row"><span class="data-label">Órgão Emissor:</span><span class="data-value">${formatarValor(data.testemunha2OrgaoEmissor)}</span></div>
-      <div class="data-row"><span class="data-label">Telefone:</span><span class="data-value">${formatarValor(data.testemunha2Telefone)}</span></div>
-      <div class="data-row"><span class="data-label">E-mail:</span><span class="data-value">${formatarValor(data.testemunha2Email)}</span></div>
-    </div>
-  `;
-
-  html += `</div>`;
-
-  // Seção 7: Preferências de Comunicação
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">📞</span> Formas de Contato</div>
-  `;
-
-  const preferencias = [];
-  if (data.preferenciaAR) preferencias.push("Carta com AR");
-  if (data.preferenciaWhatsapp) preferencias.push("WhatsApp");
-  if (data.preferenciaEmail) preferencias.push("E-mail");
-
-  html += `<div class="data-row"><span class="data-label">Preferências:</span><span class="data-value">${preferencias.length > 0 ? preferencias.join(", ") : "----------"}</span></div>`;
-
-  html += `</div>`;
-
-  // Seção 8: Observações
-  if (data.observacoes) {
-    html += `
-      <div class="section">
-        <div class="section-title"><span class="section-title-icon">📝</span> Observações</div>
-        <div class="field-value">${data.observacoes}</div>
-      </div>
-    `;
-  }
-
-  // Seção 9: Status dos Documentos
-  const listaDocumentosAnexados = data.documentosAnexados || [];
-  
-  const todosDocumentos = [
-    { nome: "Certidão de Nascimento/Casamento", anexado: listaDocumentosAnexados.includes("Certidão de Nascimento/Casamento") },
-    { nome: "Comprovante de Pagamento das Taxas", anexado: listaDocumentosAnexados.includes("Comprovante de pagamento das taxas") },
-    { nome: "RG e CPF", anexado: listaDocumentosAnexados.includes("RG e CPF") },
-    { nome: "Comprovante de Residência", anexado: listaDocumentosAnexados.includes("Comprovante de residência") },
-    { nome: "Comprovante de Rendimentos", anexado: listaDocumentosAnexados.includes("Comprovante de rendimentos") },
-    { nome: "Escritura do Imóvel", anexado: listaDocumentosAnexados.includes("Escritura do imóvel") },
-    { nome: "Declaração de Único Imóvel", anexado: listaDocumentosAnexados.includes("Declaração de único imóvel") },
-    { nome: "Ficha de Inscrição do IPTU", anexado: listaDocumentosAnexados.includes("Ficha de inscrição do IPTU") },
-    // Documentos do Procurador
-    { nome: "Procuração Autenticada", anexado: listaDocumentosAnexados.includes("Procuração Autenticada") },
-    { nome: "CPF do Procurador", anexado: listaDocumentosAnexados.includes("CPF do Procurador") },
-    { nome: "Identidade do Procurador", anexado: listaDocumentosAnexados.includes("Identidade do Procurador") },
-    // Outros documentos
-    { nome: "Petição", anexado: listaDocumentosAnexados.includes("Petição") },
-  ];
-
-  html += `
-    <div class="section">
-      <div class="section-title"><span class="section-title-icon">📋</span> Status dos Documentos</div>
-      <ul class="status-list">
-  `;
-
-  todosDocumentos.forEach((doc) => {
-    html += `
-      <li class="status-item">
-        <span class="status-label">${doc.nome}</span>
-        <span class="${doc.anexado ? 'status-anexado' : 'status-nao-anexado'}">
-          ${doc.anexado ? '✓ Anexado' : '✗ Não Anexado'}
-        </span>
-      </li>
-    `;
-  });
-
-  html += `
-      </ul>
-    </div>
-  `;
-
-  // Seção 10: Documentos Anexados (com botão de download)
-  const documentosAnexados = todosDocumentos.filter(doc => doc.anexado);
-
-  if (documentosAnexados.length > 0) {
-    html += `
-      <div class="section">
-        <div class="section-title"><span class="section-title-icon">📎</span> Resumo de Documentos Anexados</div>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Clique em "Baixar" para fazer o download individual de cada documento.</p>
-        <ul class="document-list">
-    `;
-
-    documentosAnexados.forEach((doc) => {
-      html += `
-        <li class="document-item">
-          <span class="document-name">${doc.nome}</span>
-          <span class="btn-download">Baixar</span>
-        </li>
-      `;
-    });
-
-    html += `
-        </ul>
-      </div>
-    `;
-  }
-
-  // Footer
-  html += `
-        </div>
-        <div class="footer">
-          <table>
-            <tr>
-              <td class="footer-left">
-                <strong>Requerimento de Isenção e Imunidade</strong>
-                <p>Prefeitura Municipal de Nova Iguaçu</p>
-                <p>Rua Athaide Pimenta de Moraes, 528 - Centro, Nova Iguaçu</p>
-                <p>Rio de Janeiro - CEP: 26.210-190</p>
-              </td>
-              <td class="footer-right">
-                ${logoCid ? `<img src="cid:${logoCid}" alt="Prefeitura de Nova Iguaçu" class="footer-logo"/>` : ''}
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div style="background-color: #1a2440; color: #999; text-align: center; padding: 15px; font-size: 11px;">
-          <p style="margin: 0;">Este é um e-mail automático. Não é necessário respondê-lo.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  return html;
 }
 
 // Funções auxiliares para formatação
 function formatarTipoSolicitacao(tipo: string): string {
+  if (!tipo) return "-----";
   const tipos: { [key: string]: string } = {
-    "primeira": "Primeira Isenção",
-    "primeira-vez": "Primeira Isenção",
-    "primeira-isencao": "Primeira Isenção",
-    "renovacao": "Renovação de Isenção",
-    "revisao": "Revisão de Isenção",
+    primeira: "Primeira Isenção",
+    renovacao: "Renovação de Isenção",
+    revisao: "Revisão de Isenção",
   };
   return tipos[tipo] || tipo;
 }
 
-// Função para formatar valores vazios
-function formatarValor(valor: any): string {
-  if (valor === undefined || valor === null || valor === "") {
-    return "----------";
-  }
-  if (typeof valor === "boolean") {
-    return valor ? "Sim" : "Não";
-  }
-  return String(valor);
-}
-
 function formatarPerfilRequerente(perfil: string): string {
+  if (!perfil) return "-----";
   const perfis: { [key: string]: string } = {
-    "requerente": "Requerente",
-    "conjuge": "Cônjuge",
-    "ambos": "Ambos (Requerente e Cônjuge)",
+    requerente: "Requerente",
+    conjuge: "Cônjuge",
+    ambos: "Ambos",
   };
-  const valor = perfis[perfil?.toLowerCase?.()] || perfil;
-  if (!valor) return "----------";
-  return valor.charAt(0).toUpperCase() + valor.slice(1);
+  return perfis[perfil?.toLowerCase()] || perfil;
 }
 
 function formatarEstadoCivil(estado: string): string {
+  if (!estado) return "-----";
   const estados: { [key: string]: string } = {
-    "solteiro": "Solteiro(a)",
-    "casado": "Casado(a)",
-    "divorciado": "Divorciado(a)",
-    "viuvo": "Viúvo(a)",
+    solteiro: "Solteiro(a)",
+    casado: "Casado(a)",
+    divorciado: "Divorciado(a)",
+    viuvo: "Viúvo(a)",
     "uniao-estavel": "União Estável",
   };
   return estados[estado] || estado;
 }
 
 function formatarOrigemRenda(origem: string): string {
+  if (!origem) return "-----";
   const origens: { [key: string]: string } = {
-    "aposentadoria": "Aposentadoria",
-    "pensao": "Pensão",
-    "beneficio": "Benefício Social",
-    "trabalho": "Trabalho",
-    "outro": "Outro",
+    aposentadoria: "Aposentadoria",
+    pensao: "Pensão",
+    beneficio: "Benefício Social",
+    trabalho: "Trabalho",
+    outro: "Outro",
   };
   return origens[origem] || origem;
 }
-
