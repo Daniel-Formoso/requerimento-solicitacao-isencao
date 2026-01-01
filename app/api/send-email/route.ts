@@ -28,8 +28,8 @@ export async function POST(req: Request) {
 
       try {
         const optimizedBuffer = await sharp(originalBuffer)
-          .resize({ width: 300 })
-          .png({ compression: 9 })
+          .resize({ width: 400 })
+          .png({ compression: 8, quality: 90 })
           .toBuffer();
 
         logoBuffer = optimizedBuffer;
@@ -120,7 +120,8 @@ function montarCorpoEmail(data: any, logoCid: string | null): string {
         .header-logo {
           width: 180px;
           height: auto;
-          margin-bottom: 20px;
+          margin: 0 auto 20px auto;
+          display: block;
         }
         .header h1 {
           margin: 0 0 10px 0;
@@ -217,21 +218,28 @@ function montarCorpoEmail(data: any, logoCid: string | null): string {
           background: linear-gradient(135deg, #2E3B6B 0%, #3d4d7a 100%);
           color: white;
           padding: 30px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
           font-size: 12px;
+        }
+        .footer table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .footer td {
+          vertical-align: top;
         }
         .footer-left {
           text-align: left;
-          flex: 1;
+          padding-right: 20px;
         }
         .footer-right {
           text-align: right;
+          width: 120px;
         }
         .footer-logo {
           width: 120px;
           height: auto;
+          display: block;
+          margin-left: auto;
         }
         .footer p {
           margin: 5px 0;
@@ -315,7 +323,7 @@ function montarCorpoEmail(data: any, logoCid: string | null): string {
       <div class="container">
         <div class="header">
           ${logoCid ? `<img src="cid:${logoCid}" alt="Prefeitura de Nova Iguaçu" class="header-logo" />` : ''}
-          <h1>${tipoFormulario || "Requerimento Geral de Processos"}</h1>
+          <h1>${tipoFormulario || "Requerimento"}</h1>
           <p>Um novo requerimento foi recebido através do sistema online.</p>
         </div>
         
@@ -524,15 +532,19 @@ function montarCorpoEmail(data: any, logoCid: string | null): string {
   html += `
         </div>
         <div class="footer">
-          <div class="footer-left">
-            <strong>Requerimento Geral de Processos</strong>
-            <p>Prefeitura Municipal de Nova Iguaçu</p>
-            <p>📍 Endereço: R Dr. Mário Guimarães, 520/1050 - Centro, Nova Iguaçu - RJ, 26255-230</p>
-            <p>📞 Tel: (21) Requerimento PP</p>
-          </div>
-          <div class="footer-right">
-            ${logoCid ? `<img src="cid:${logoCid}" alt="Prefeitura de Nova Iguaçu" class="footer-logo" />` : ''}
-          </div>
+          <table>
+            <tr>
+              <td class="footer-left">
+                <strong>Requerimento de Isenção e Imunidade</strong>
+                <p>Prefeitura Municipal de Nova Iguaçu</p>
+                <p>Rua Athaide Pimenta de Moraes, 528 - Centro, Nova Iguaçu</p>
+                <p>Rio de Janeiro - CEP: 26.210-190</p>
+              </td>
+              <td class="footer-right">
+                ${logoCid ? `<img src="cid:${logoCid}" alt="Prefeitura de Nova Iguaçu" class="footer-logo"/>` : ''}
+              </td>
+            </tr>
+          </table>
         </div>
         <div style="background-color: #1a2440; color: #999; text-align: center; padding: 15px; font-size: 11px;">
           <p style="margin: 0;">Este é um e-mail automático. Não é necessário respondê-lo.</p>
