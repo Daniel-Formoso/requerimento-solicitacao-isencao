@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
+import { enviarEmailFormulario } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
@@ -671,15 +672,89 @@ export default function ImunidadeReciprocaPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSectionValid(7)) {
       console.log("Formulário enviado com sucesso!");
-      toast.success(
-        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
-        {
-          autoClose: 5000,
-        }
-      );
+      
+      // Preparar dados para envio por e-mail
+      const dadosFormulario = {
+        tipoFormulario: "Imunidade recíproca - Imóveis de entes públicos",
+        
+        // Seção 1: Taxas
+        possuiGuiaTaxa: guia !== null,
+        possuiComprovanteTaxa: comprovante !== null,
+        
+        // Seção 2: Identificação
+        tipoSolicitacao,
+        processoAnterior,
+        certidaoAnterior,
+        nome,
+        rg,
+        orgaoEmissor,
+        cpf,
+        telefone,
+        email,
+        
+        // Seção 3: Procurador (se houver)
+        possuiProcurador,
+        nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+        cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+        rgProcurador: possuiProcurador ? rgProcurador : undefined,
+        orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+        telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+        emailProcurador: possuiProcurador ? emailProcurador : undefined,
+        
+        // Seção 4: Localização do Imóvel
+        inscricaoImobiliaria,
+        inscricaoMercantil,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        lote,
+        quadra,
+        
+        // Seção 5: Documentos anexados
+        documentosAnexados: [
+          docEstatuto ? "Estatuto Social" : null,
+          docAtaDiretoria ? "Ata de Eleição da Diretoria" : null,
+          docImovel ? "Documento do Imóvel" : null,
+          docIptu ? "IPTU do Imóvel" : null,
+          docCroqui ? "Croqui de Localização" : null,
+          docCadastro ? "Ficha de Cadastro" : null,
+          docRgCpf ? "RG e CPF do Representante" : null,
+        ].filter(Boolean),
+        
+        // Seção 6: Preferências de Comunicação
+        preferenciaAR,
+        preferenciaWhatsapp,
+        preferenciaEmail: preferenciaEmail,
+        
+        // Seção 7: Observações
+        observacoes,
+      };
+      
+      // Enviar e-mail
+      const resultado = await enviarEmailFormulario(dadosFormulario);
+      
+      if (resultado.success) {
+        toast.success(
+          "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+          {
+            autoClose: 5000,
+          }
+        );
+      } else {
+        toast.error(
+          "Erro ao enviar o requerimento. Por favor, tente novamente.",
+          {
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 

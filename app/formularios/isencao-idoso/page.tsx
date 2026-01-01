@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
+import { enviarEmailFormulario } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
@@ -1007,15 +1008,123 @@ export default function IsencaoIdosoPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSectionValid(9)) {
       console.log("Formulário enviado com sucesso!");
-      toast.success(
-        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
-        {
-          autoClose: 5000,
-        }
-      );
+      
+      // Preparar dados para envio por e-mail
+      const dadosFormulario = {
+        tipoFormulario: "Isenção de IPTU - Idosos maiores de 60 anos",
+        
+        // Seção 1: Taxas
+        possuiGuiaTaxa: guia !== null,
+        possuiComprovanteTaxa: comprovante !== null,
+        
+        // Seção 2: Identificação
+        tipoSolicitacao,
+        processoAnterior,
+        certidaoAnterior,
+        nome,
+        rg,
+        orgaoEmissor,
+        cpf,
+        telefone,
+        email,
+        
+        // Seção 3: Localização do Imóvel
+        inscricaoImobiliaria,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        lote,
+        quadra,
+        
+        // Seção 4: Documentos anexados
+        documentosAnexados: [
+          docCertidao ? "Certidão de Nascimento/Casamento" : null,
+          docTaxas ? "Comprovante de pagamento das taxas" : null,
+          docRgCpf ? "RG e CPF" : null,
+          docResidencia ? "Comprovante de residência" : null,
+          docRendimentos ? "Comprovante de rendimentos" : null,
+          docEscritura ? "Escritura do imóvel" : null,
+          docUnicoImovel ? "Declaração de único imóvel" : null,
+          docFichaIptu ? "Ficha de inscrição do IPTU" : null,
+        ].filter(Boolean),
+        
+        // Seção 5: Questionário de Elegibilidade
+        perfilRequerente,
+        estadoCivil,
+        unicoImovel,
+        residenciaPropria,
+        anoInicio,
+        rendaAte2Salarios,
+        origemRenda,
+        origemRendaOutro,
+        
+        // Dados do Cônjuge (se houver)
+        nomeConjuge: temConjuge ? nomeConjuge : undefined,
+        cpfConjuge: temConjuge ? cpfConjuge : undefined,
+        rgConjuge: temConjuge ? rgConjuge : undefined,
+        telefoneConjuge: temConjuge ? telefoneConjuge : undefined,
+        emailConjuge: temConjuge ? emailConjuge : undefined,
+        coproprietario: temConjuge ? coproprietario : undefined,
+        origemRendaConjuge: temConjuge ? origemRendaConjuge : undefined,
+        
+        // Seção 6: Procurador (se houver)
+        possuiProcurador,
+        nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+        cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+        rgProcurador: possuiProcurador ? rgProcurador : undefined,
+        orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+        telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+        emailProcurador: possuiProcurador ? emailProcurador : undefined,
+        
+        // Seção 7: Assinatura a Rogo (se houver)
+        assinaturaRogo,
+        testemunha1Nome: assinaturaRogo ? testemunha1Nome : undefined,
+        testemunha1Cpf: assinaturaRogo ? testemunha1Cpf : undefined,
+        testemunha1Rg: assinaturaRogo ? testemunha1Rg : undefined,
+        testemunha1OrgaoEmissor: assinaturaRogo ? testemunha1OrgaoEmissor : undefined,
+        testemunha1Telefone: assinaturaRogo ? testemunha1Telefone : undefined,
+        testemunha1Email: assinaturaRogo ? testemunha1Email : undefined,
+        testemunha2Nome: assinaturaRogo ? testemunha2Nome : undefined,
+        testemunha2Cpf: assinaturaRogo ? testemunha2Cpf : undefined,
+        testemunha2Rg: assinaturaRogo ? testemunha2Rg : undefined,
+        testemunha2OrgaoEmissor: assinaturaRogo ? testemunha2OrgaoEmissor : undefined,
+        testemunha2Telefone: assinaturaRogo ? testemunha2Telefone : undefined,
+        testemunha2Email: assinaturaRogo ? testemunha2Email : undefined,
+        
+        // Seção 8: Preferências de Comunicação
+        preferenciaAR,
+        preferenciaWhatsapp,
+        preferenciaEmail: preferenciaEmail,
+        
+        // Seção 9: Observações
+        observacoes,
+      };
+      
+      // Enviar e-mail
+      const resultado = await enviarEmailFormulario(dadosFormulario);
+      
+      if (resultado.success) {
+        toast.success(
+          "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+          {
+            autoClose: 5000,
+          }
+        );
+      } else {
+        toast.error(
+          "Erro ao enviar o requerimento. Por favor, tente novamente.",
+          {
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 
