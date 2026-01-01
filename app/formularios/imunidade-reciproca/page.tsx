@@ -7,6 +7,7 @@ import { enviarEmailFormulario } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
+import LoadingModal from "@/components/LoadingModal/LoadingModal";
 import styles from "./page.module.css";
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -118,6 +119,9 @@ export default function ImunidadeReciprocaPage() {
   const [observacoes, setObservacoes] = useState("");
   const [docPeticao, setDocPeticao] = useState<File | null>(null);
   const [aceiteTermo, setAceiteTermo] = useState(false);
+
+  // Estado do modal de loading
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
   // Funções de formatação e validação
   const formatarCPF = (valor: string): string => {
@@ -676,6 +680,9 @@ export default function ImunidadeReciprocaPage() {
     if (isSectionValid(7)) {
       console.log("Formulário enviado com sucesso!");
       
+      // Abrir modal de loading
+      setIsLoadingModalOpen(true);
+      
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
         tipoFormulario: "Imunidade recíproca - Imóveis de entes públicos",
@@ -739,6 +746,9 @@ export default function ImunidadeReciprocaPage() {
       
       // Enviar e-mail
       const resultado = await enviarEmailFormulario(dadosFormulario);
+      
+      // Fechar modal de loading
+      setIsLoadingModalOpen(false);
       
       if (resultado.success) {
         toast.success(
@@ -850,6 +860,9 @@ export default function ImunidadeReciprocaPage() {
 
   return (
     <div className={styles.page}>
+      {/* Modal de Loading */}
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
+      
       <Header 
         icon={<HandshakeIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
         processType="IMUNIDADE"
@@ -1810,7 +1823,7 @@ export default function ImunidadeReciprocaPage() {
                     ATENÇÃO:
                   </span>
                   <p>
-                    Anexe primeiro o <strong>Ofício Assinado do Órgão Público</strong>. Este documento é essencial para comprovar a solicitação oficial da imunidade recíproca.
+                    Anexe primeiro o <strong>Ofício Assinado do Órgão Público</strong>. Este documento é essencial para comprovar a solicitação oficial da imunidade recíproca. Caso este documento esteja incorreto, não será possível prosseguir com o requerimento.
                   </p>
                 </div>
               </div>

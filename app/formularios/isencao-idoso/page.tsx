@@ -7,6 +7,7 @@ import { enviarEmailFormulario } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
+import LoadingModal from "@/components/LoadingModal/LoadingModal";
 import styles from "./page.module.css";
 import ElderlyIcon from "@mui/icons-material/Elderly";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -162,6 +163,9 @@ export default function IsencaoIdosoPage() {
   const [observacoes, setObservacoes] = useState("");
   const [docPeticao, setDocPeticao] = useState<File | null>(null);
   const [aceiteTermo, setAceiteTermo] = useState(false);
+
+  // Estado do modal de loading
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
   // Funções de formatação e validação
   const formatarCPF = (valor: string): string => {
@@ -1012,9 +1016,12 @@ export default function IsencaoIdosoPage() {
     if (isSectionValid(9)) {
       console.log("Formulário enviado com sucesso!");
       
+      // Abrir modal de loading
+      setIsLoadingModalOpen(true);
+      
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
-        tipoFormulario: "Isenção de IPTU - Idosos maiores de 60 anos",
+        tipoFormulario: "Isenção de IPTU para Idosos maiores de 60 anos",
         
         // Seção 1: Taxas
         possuiGuiaTaxa: guia !== null,
@@ -1109,6 +1116,9 @@ export default function IsencaoIdosoPage() {
       
       // Enviar e-mail
       const resultado = await enviarEmailFormulario(dadosFormulario);
+      
+      // Fechar modal de loading
+      setIsLoadingModalOpen(false);
       
       if (resultado.success) {
         toast.success(
@@ -1264,6 +1274,9 @@ export default function IsencaoIdosoPage() {
 
   return (
     <div className={styles.page}>
+      {/* Modal de Loading */}
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
+      
       <Header
         icon={<ElderlyIcon sx={{ fontSize: 56, color: "#EB5F1A" }} />}
         processType="ISENÇÃO"
