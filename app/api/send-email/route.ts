@@ -272,6 +272,53 @@ function montarCorpoEmail(data: any, logoCid: string | null): string {
         .document-name {
           font-weight: 500;
           color: #2E3B6B;
+          flex: 1;
+        }
+        .btn-download {
+          background-color: #2E3B6B;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 4px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          margin-left: auto;
+        }
+        .btn-download:hover {
+          background-color: #1f2a4a;
+        }
+        .status-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        .status-item {
+          padding: 10px 0;
+          border-bottom: 1px solid #f0f0f0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .status-item:last-child {
+          border-bottom: none;
+        }
+        .status-label {
+          font-weight: 500;
+          color: #333;
+          font-size: 14px;
+          flex: 1;
+          text-align: left;
+        }
+        .status-anexado, .status-nao-anexado {
+          min-width: 120px;
+          text-align: right;
+          margin-left: auto;
+          display: inline-block;
         }
         .buttons {
           background-color: white;
@@ -500,24 +547,64 @@ function montarCorpoEmail(data: any, logoCid: string | null): string {
     `;
   }
 
-  // Seção 9: Documentos Anexados
-  const documentos = [];
-  if (data.documentosAnexados && data.documentosAnexados.length > 0) {
-    documentos.push(...data.documentosAnexados);
-  }
+  // Seção 9: Status dos Documentos
+  const listaDocumentosAnexados = data.documentosAnexados || [];
+  
+  const todosDocumentos = [
+    { nome: "Certidão de Nascimento/Casamento", anexado: listaDocumentosAnexados.includes("Certidão de Nascimento/Casamento") },
+    { nome: "Comprovante de Pagamento das Taxas", anexado: listaDocumentosAnexados.includes("Comprovante de pagamento das taxas") },
+    { nome: "RG e CPF", anexado: listaDocumentosAnexados.includes("RG e CPF") },
+    { nome: "Comprovante de Residência", anexado: listaDocumentosAnexados.includes("Comprovante de residência") },
+    { nome: "Comprovante de Rendimentos", anexado: listaDocumentosAnexados.includes("Comprovante de rendimentos") },
+    { nome: "Escritura do Imóvel", anexado: listaDocumentosAnexados.includes("Escritura do imóvel") },
+    { nome: "Declaração de Único Imóvel", anexado: listaDocumentosAnexados.includes("Declaração de único imóvel") },
+    { nome: "Ficha de Inscrição do IPTU", anexado: listaDocumentosAnexados.includes("Ficha de inscrição do IPTU") },
+    // Documentos do Procurador
+    { nome: "Procuração Autenticada", anexado: listaDocumentosAnexados.includes("Procuração Autenticada") },
+    { nome: "CPF do Procurador", anexado: listaDocumentosAnexados.includes("CPF do Procurador") },
+    { nome: "Identidade do Procurador", anexado: listaDocumentosAnexados.includes("Identidade do Procurador") },
+    // Outros documentos
+    { nome: "Petição", anexado: listaDocumentosAnexados.includes("Petição") },
+  ];
 
-  if (documentos.length > 0) {
+  html += `
+    <div class="section">
+      <div class="section-title"><span class="section-title-icon">📋</span> Status dos Documentos</div>
+      <ul class="status-list">
+  `;
+
+  todosDocumentos.forEach((doc) => {
+    html += `
+      <li class="status-item">
+        <span class="status-label">${doc.nome}</span>
+        <span class="${doc.anexado ? 'status-anexado' : 'status-nao-anexado'}">
+          ${doc.anexado ? '✓ Anexado' : '✗ Não Anexado'}
+        </span>
+      </li>
+    `;
+  });
+
+  html += `
+      </ul>
+    </div>
+  `;
+
+  // Seção 10: Documentos Anexados (com botão de download)
+  const documentosAnexados = todosDocumentos.filter(doc => doc.anexado);
+
+  if (documentosAnexados.length > 0) {
     html += `
       <div class="section">
         <div class="section-title"><span class="section-title-icon">📎</span> Resumo de Documentos Anexados</div>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Clique em "Baixar" para fazer o download individual de cada documento.</p>
         <ul class="document-list">
     `;
 
-    documentos.forEach((doc: string) => {
+    documentosAnexados.forEach((doc) => {
       html += `
         <li class="document-item">
-          <span>${doc}</span>
-          <span class="status-anexado">✓ Anexado</span>
+          <span class="document-name">${doc.nome}</span>
+          <span class="btn-download">Baixar</span>
         </li>
       `;
     });
