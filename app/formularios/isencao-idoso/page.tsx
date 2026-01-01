@@ -1060,6 +1060,12 @@ export default function IsencaoIdosoPage() {
           docEscritura ? "Escritura do imóvel" : null,
           docUnicoImovel ? "Declaração de único imóvel" : null,
           docFichaIptu ? "Ficha de inscrição do IPTU" : null,
+          // Documentos do Procurador
+          possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+          possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+          possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+          // Outros documentos
+          docPeticao ? "Petição" : null,
         ].filter(Boolean),
         
         // Seção 5: Questionário de Elegibilidade
