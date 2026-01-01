@@ -63,6 +63,23 @@ export function gerarDadosAleatorios(options: DadosAleatoriosOptions = {}) {
       guiaTaxa: gerarArquivoPDF('guia_pagamento.pdf'),
       comprovanteTaxa: gerarArquivoPDF('comprovante_pagamento.pdf'),
     },
+    // Array de documentos anexados (nomes dos documentos)
+    documentosAnexados: [
+      'Certidão de Nascimento/Casamento',
+      'Comprovante de pagamento das taxas',
+      'RG e CPF',
+      'Comprovante de residência',
+      'Comprovante de rendimentos',
+      'Escritura do imóvel',
+      'Declaração de único imóvel',
+      'Ficha de inscrição do IPTU',
+      ...(options.incluirProcurador ? [
+        'Procuração Autenticada',
+        'CPF do Procurador',
+        'Identidade do Procurador',
+      ] : []),
+      'Petição',
+    ],
     ...options.incluirDocumentos && {
       documentos: [
         gerarArquivoPDF('doc1.pdf'),
