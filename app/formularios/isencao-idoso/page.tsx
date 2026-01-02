@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
-import { enviarEmailFormulario } from "@/utils/enviarEmail";
+import { enviarEmailFormulario, enviarRequerimentoCompleto } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
@@ -1120,8 +1120,26 @@ export default function IsencaoIdosoPage() {
         observacoes,
       };
       
-      // Enviar e-mail
-      const resultado = await enviarEmailFormulario(dadosFormulario);
+      // Preparar arquivos para envio
+      const arquivos = {
+        guia: guia,
+        comprovante: comprovante,
+        docCertidao: docCertidao,
+        docTaxas: docTaxas,
+        docRgCpf: docRgCpf,
+        docResidencia: docResidencia,
+        docRendimentos: docRendimentos,
+        docEscritura: docEscritura,
+        docUnicoImovel: docUnicoImovel,
+        docFichaIptu: docFichaIptu,
+        docProcuracao: docProcuracao,
+        docCpfProcurador: docCpfProcurador,
+        docIdentidadeProcurador: docIdentidadeProcurador,
+        docPeticao: docPeticao,
+      };
+      
+      // Enviar requerimento completo (salva no banco + envia e-mail)
+      const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
       
       // Fechar modal de loading
       setIsLoadingModalOpen(false);

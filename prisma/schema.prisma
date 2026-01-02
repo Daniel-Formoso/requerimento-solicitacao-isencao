@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Requerimento {
+  id                    Int       @id @default(autoincrement())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Tipo de formulário e solicitação
+  tipoFormulario        String
+  tipoSolicitacao       String?
+  processoAnterior      String?
+  certidaoAnterior      String?
+  
+  // Dados do contribuinte
+  nome                  String
+  cpf                   String
+  rg                    String?
+  orgaoEmissor          String?
+  email                 String
+  telefone              String
+  cep                   String
+  rua                   String
+  numero                String
+  complemento           String?
+  bairro                String
+  cidade                String
+  estado                String
+  
+  // Dados do imóvel
+  inscricaoImobiliaria  String?
+  lote                  String?
+  quadra                String?
+  
+  // Questionário de elegibilidade
+  perfilRequerente      String?
+  estadoCivil           String?
+  unicoImovel           Boolean?
+  residenciaPropria     Boolean?
+  anoInicio             String?
+  rendaAte2Salarios     Boolean?
+  origemRenda           String?
+  origemRendaOutro      String?
+  
+  // Dados do cônjuge
+  nomeConjuge           String?
+  cpfConjuge            String?
+  rgConjuge             String?
+  telefoneConjuge       String?
+  emailConjuge          String?
+  coproprietario        Boolean?
+  origemRendaConjuge    String?
+  
+  // Dados do procurador
+  possuiProcurador      Boolean?
+  nomeProcurador        String?
+  cpfProcurador         String?
+  rgProcurador          String?
+  orgaoEmissorProcurador String?
+  emailProcurador       String?
+  telefoneProcurador    String?
+  
+  // Testemunhas (Assinatura a Rogo)
+  assinaturaRogo        Boolean?
+  testemunha1Nome       String?
+  testemunha1Cpf        String?
+  testemunha1Rg         String?
+  testemunha1OrgaoEmissor String?
+  testemunha1Telefone   String?
+  testemunha1Email      String?
+  testemunha2Nome       String?
+  testemunha2Cpf        String?
+  testemunha2Rg         String?
+  testemunha2OrgaoEmissor String?
+  testemunha2Telefone   String?
+  testemunha2Email      String?
+  
+  // Preferências de contato
+  preferenciaAR         Boolean?
+  preferenciaWhatsapp   Boolean?
+  preferenciaEmail      Boolean?
+  
+  // Observações
+  observacoes           String?
+  
+  // Taxas
+  possuiGuiaTaxa        Boolean?
+  possuiComprovanteTaxa Boolean?
+  
+  // Documentos anexados (paths dos arquivos salvos)
+  documentosAnexados    String?  // JSON array de strings
+  
+  // IP e metadados
+  ipAddress             String?
+  userAgent             String?
+  
+  @@map("requerimentos")
+}
