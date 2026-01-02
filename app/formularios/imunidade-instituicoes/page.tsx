@@ -3,127 +3,110 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
-import styles from "./page.module.css";
-import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import WarningIcon from "@mui/icons-material/Warning";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import GavelIcon from "@mui/icons-material/Gavel";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { submitFormularioComFeedback } from "@/utils/submitFormulario";
+  const handleSubmit = async () => {
+    if (!isSectionValid(7)) return;
 
-export default function ImunidadeInstituicoesPage() {
-  // Estado para controlar qual seção está ativa
-  const [activeSection, setActiveSection] = useState(1);
-  const [completedSections, setCompletedSections] = useState<number[]>([]);
-  const [expandedSections, setExpandedSections] = useState<number[]>([]); // Seção 1 começa fechada
-
-  // Estados da Seção 1 - Taxas
-  const [guia, setGuia] = useState<File | null>(null);
-  const [comprovante, setComprovante] = useState<File | null>(null);
-
-  // Estados da Seção 2 - Identificação
-  const [tipoSolicitacao, setTipoSolicitacao] = useState("");
-  const [processoAnterior, setProcessoAnterior] = useState("");
-  const [certidaoAnterior, setCertidaoAnterior] = useState("");
-  const [nome, setNome] = useState("");
-  const [rg, setRg] = useState("");
-  const [orgaoEmissor, setOrgaoEmissor] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [email, setEmail] = useState("");
-
-  // Estados de validação e erro da Seção 2
-  const [nomeError, setNomeError] = useState("");
-  const [cpfError, setCpfError] = useState("");
-  const [telefoneError, setTelefoneError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [processoAnteriorError, setProcessoAnteriorError] = useState("");
-  const [certidaoAnteriorError, setCertidaoAnteriorError] = useState("");
-
-  // Estados da Seção 3 - Procurador/Representação
-  const [possuiProcurador, setPossuiProcurador] = useState(false);
-  const [nomeProcurador, setNomeProcurador] = useState("");
-  const [cpfProcurador, setCpfProcurador] = useState("");
-  const [rgProcurador, setRgProcurador] = useState("");
-  const [orgaoEmissorProcurador, setOrgaoEmissorProcurador] = useState("");
-  const [telefoneProcurador, setTelefoneProcurador] = useState("");
-  const [emailProcurador, setEmailProcurador] = useState("");
-  const [docProcuracao, setDocProcuracao] = useState<File | null>(null);
-  const [docCpfProcurador, setDocCpfProcurador] = useState<File | null>(null);
-  const [docIdentidadeProcurador, setDocIdentidadeProcurador] =
-    useState<File | null>(null);
-
-  // Estados de validação e erro da Seção 3
-  const [nomeProcuradorError, setNomeProcuradorError] = useState("");
-  const [cpfProcuradorError, setCpfProcuradorError] = useState("");
-  const [telefoneProcuradorError, setTelefoneProcuradorError] = useState("");
-  const [emailProcuradorError, setEmailProcuradorError] = useState("");
-
-  // Estados da Seção 4 - Localização do Imóvel
-  const [inscricaoImobiliaria, setInscricaoImobiliaria] = useState("");
-  const [inscricaoMercantil, setInscricaoMercantil] = useState("");
-  const [cep, setCep] = useState("");
-  const [rua, setRua] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [estado, setEstado] = useState("");
-  const [lote, setLote] = useState("");
-  const [quadra, setQuadra] = useState("");
-
-  // Estados de validação e erro da Seção 4
-  const [inscricaoError, setInscricaoError] = useState("");
-  const [inscricaoMercantilError, setInscricaoMercantilError] = useState("");
-  const [cepError, setCepError] = useState("");
-  const [ruaError, setRuaError] = useState("");
-  const [numeroError, setNumeroError] = useState("");
-  const [bairroError, setBairroError] = useState("");
-  const [cidadeError, setCidadeError] = useState("");
-  const [estadoError, setEstadoError] = useState("");
-
-  // Estados da Seção 5 - Documentos (atualizados)
-  const [docEstatuto, setDocEstatuto] = useState<File | null>(null);
-  const [docAtaDiretoria, setDocAtaDiretoria] = useState<File | null>(null);
-  const [docImovel, setDocImovel] = useState<File | null>(null);
-  const [docIptu, setDocIptu] = useState<File | null>(null);
-  const [docCroqui, setDocCroqui] = useState<File | null>(null);
-  const [docCadastro, setDocCadastro] = useState<File | null>(null);
-  const [docRgCpf, setDocRgCpf] = useState<File | null>(null);
-  const [docComprovanteResidencia, setDocComprovanteResidencia] = useState<File | null>(null);
-  const [docCartaoCnpj, setDocCartaoCnpj] = useState<File | null>(null);
-  const [docFolhaPagamento, setDocFolhaPagamento] = useState<File | null>(null);
-  const [docDeclaracaoEntidade, setDocDeclaracaoEntidade] = useState<File | null>(null);
-  const [docDemonstracao, setDocDemonstracao] = useState<File | null>(null);
-  const [docCertidaoNegativa, setDocCertidaoNegativa] = useState<File | null>(null);
-
-  // Estados da Seção 6 - Preferências de Comunicação
-  const [preferenciaAR, setPreferenciaAR] = useState(false);
-  const [preferenciaWhatsapp, setPreferenciaWhatsapp] = useState(false);
-  const [preferenciaEmail, setPreferenciaEmail] = useState(false);
-
-  // Estados da Seção 7 - Finalização
-  const [observacoes, setObservacoes] = useState("");
-  const [docPeticao, setDocPeticao] = useState<File | null>(null);
-  const [aceiteTermo, setAceiteTermo] = useState(false);
-
-  // Funções de formatação e validação
-  const formatarCPF = (valor: string): string => {
-    const numeros = valor.replace(/\D/g, "");
-    if (numeros.length <= 11) {
-      return numeros
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    }
-    return cpf;
+    const dadosFormulario = {
+      formularioSlug: "imunidade-instituicoes",
+      tipoFormulario: "Imunidade para Instituições sem Fins Lucrativos",
+      
+      // Seção 1: Taxas
+      possuiGuiaTaxa: guia !== null,
+      possuiComprovanteTaxa: comprovante !== null,
+      
+      // Seção 2: Identificação
+      tipoSolicitacao,
+      processoAnterior,
+      certidaoAnterior,
+      nome,
+      rg,
+      orgaoEmissor,
+      cpf,
+      telefone,
+      email,
+      
+      // Seção 3: Localização e Inscrições
+      inscricaoImobiliaria,
+      inscricaoMercantil,
+      cep,
+      rua,
+      numero,
+      complemento,
+      bairro,
+      cidade,
+      estado,
+      lote,
+      quadra,
+      
+      // Seção 4: Documentos anexados
+      documentosAnexados: [
+        docEstatuto ? "Estatuto da Entidade" : null,
+        docAtaDiretoria ? "Ata da Diretoria" : null,
+        docImovel ? "Documentação do Imóvel" : null,
+        docIptu ? "Comprovante de IPTU" : null,
+        docCroqui ? "Croqui da Propriedade" : null,
+        docCadastro ? "Cadastro Imobiliário" : null,
+        docRgCpf ? "RG e CPF do Responsável" : null,
+        docComprovanteResidencia ? "Comprovante de Residência" : null,
+        docCartaoCnpj ? "Cartão CNPJ" : null,
+        docFolhaPagamento ? "Folha de Pagamento" : null,
+        docDeclaracaoEntidade ? "Declaração da Entidade" : null,
+        docDemonstracao ? "Demonstração Financeira" : null,
+        docCertidaoNegativa ? "Certidão Negativa de Débitos" : null,
+        // Documentos do Procurador
+        possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+        possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+        possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+      ].filter(Boolean),
+      
+      // Seção 6: Procurador (se houver)
+      possuiProcurador,
+      nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+      cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+      rgProcurador: possuiProcurador ? rgProcurador : undefined,
+      orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+      telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+      emailProcurador: possuiProcurador ? emailProcurador : undefined,
+      
+      // Seção 7: Preferências de Comunicação
+      preferenciaAR,
+      preferenciaWhatsapp,
+      preferenciaEmail: preferenciaEmail,
+      
+      // Seção 8: Observações
+      observacoes,
+    };
+    
+    const arquivos = {
+      guia: guia,
+      comprovante: comprovante,
+      docEstatuto: docEstatuto,
+      docAtaDiretoria: docAtaDiretoria,
+      docImovel: docImovel,
+      docIptu: docIptu,
+      docCroqui: docCroqui,
+      docCadastro: docCadastro,
+      docRgCpf: docRgCpf,
+      docComprovanteResidencia: docComprovanteResidencia,
+      docCartaoCnpj: docCartaoCnpj,
+      docFolhaPagamento: docFolhaPagamento,
+      docDeclaracaoEntidade: docDeclaracaoEntidade,
+      docDemonstracao: docDemonstracao,
+      docCertidaoNegativa: docCertidaoNegativa,
+      docProcuracao: docProcuracao,
+      docCpfProcurador: docCpfProcurador,
+      docIdentidadeProcurador: docIdentidadeProcurador,
+      docPeticao: docPeticao,
+    };
+    
+    await submitFormularioComFeedback({
+      isValid: true,
+      setLoading: setIsLoadingModalOpen,
+      dadosFormulario,
+      arquivos,
+      toast,
+    });
   };
 
   const validarCPF = (cpf: string): boolean => {
@@ -666,15 +649,129 @@ export default function ImunidadeInstituicoesPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSectionValid(9)) {
       console.log("Formulário enviado com sucesso!");
-      toast.success(
-        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
-        {
-          autoClose: 5000,
-        }
-      );
+      
+      // Abrir modal de loading
+      setIsLoadingModalOpen(true);
+      
+      // Preparar dados para envio por e-mail
+      const dadosFormulario = {
+        formularioSlug: "imunidade-instituicoes",
+        tipoFormulario: "Imunidade para Instituições sem Fins Lucrativos",
+        
+        // Seção 1: Taxas
+        possuiGuiaTaxa: guia !== null,
+        possuiComprovanteTaxa: comprovante !== null,
+        
+        // Seção 2: Identificação
+        tipoSolicitacao,
+        processoAnterior,
+        certidaoAnterior,
+        nome,
+        rg,
+        orgaoEmissor,
+        cpf,
+        telefone,
+        email,
+        
+        // Seção 3: Localização e Inscrições
+        inscricaoImobiliaria,
+        inscricaoMercantil,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        lote,
+        quadra,
+        
+        // Seção 4: Documentos anexados
+        documentosAnexados: [
+          docEstatuto ? "Estatuto da Entidade" : null,
+          docAtaDiretoria ? "Ata da Diretoria" : null,
+          docImovel ? "Documentação do Imóvel" : null,
+          docIptu ? "Comprovante de IPTU" : null,
+          docCroqui ? "Croqui da Propriedade" : null,
+          docCadastro ? "Cadastro Imobiliário" : null,
+          docRgCpf ? "RG e CPF do Responsável" : null,
+          docComprovanteResidencia ? "Comprovante de Residência" : null,
+          docCartaoCnpj ? "Cartão CNPJ" : null,
+          docFolhaPagamento ? "Folha de Pagamento" : null,
+          docDeclaracaoEntidade ? "Declaração da Entidade" : null,
+          docDemonstracao ? "Demonstração Financeira" : null,
+          docCertidaoNegativa ? "Certidão Negativa de Débitos" : null,
+          // Documentos do Procurador
+          possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+          possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+          possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+        ].filter(Boolean),
+        
+        // Seção 6: Procurador (se houver)
+        possuiProcurador,
+        nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+        cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+        rgProcurador: possuiProcurador ? rgProcurador : undefined,
+        orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+        telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+        emailProcurador: possuiProcurador ? emailProcurador : undefined,
+        
+        // Seção 7: Preferências de Comunicação
+        preferenciaAR,
+        preferenciaWhatsapp,
+        preferenciaEmail: preferenciaEmail,
+        
+        // Seção 8: Observações
+        observacoes,
+      };
+      
+      // Preparar arquivos para envio
+      const arquivos = {
+        guia: guia,
+        comprovante: comprovante,
+        docEstatuto: docEstatuto,
+        docAtaDiretoria: docAtaDiretoria,
+        docImovel: docImovel,
+        docIptu: docIptu,
+        docCroqui: docCroqui,
+        docCadastro: docCadastro,
+        docRgCpf: docRgCpf,
+        docComprovanteResidencia: docComprovanteResidencia,
+        docCartaoCnpj: docCartaoCnpj,
+        docFolhaPagamento: docFolhaPagamento,
+        docDeclaracaoEntidade: docDeclaracaoEntidade,
+        docDemonstracao: docDemonstracao,
+        docCertidaoNegativa: docCertidaoNegativa,
+        docProcuracao: docProcuracao,
+        docCpfProcurador: docCpfProcurador,
+        docIdentidadeProcurador: docIdentidadeProcurador,
+        docPeticao: docPeticao,
+      };
+      
+      // Enviar requerimento completo (salva no banco + envia e-mail)
+      const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
+      
+      // Fechar modal de loading
+      setIsLoadingModalOpen(false);
+      
+      if (resultado.success) {
+        toast.success(
+          "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+          {
+            autoClose: 5000,
+          }
+        );
+      } else {
+        toast.error(
+          "Erro ao enviar o requerimento. Por favor, tente novamente.",
+          {
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 
@@ -2097,6 +2194,8 @@ export default function ImunidadeInstituicoesPage() {
         </div>
       </main>
       <Footer />
+
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
 
       {/* ToastContainer para exibir notificações */}
       <ToastContainer

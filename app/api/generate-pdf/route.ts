@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateRequerimentoPdf, IdosoFormData } from "@/utils/generatePdfIdoso";
+import { generatePdf, getPdfFileName } from "@/utils/pdf/pdfFactory";
+import { BasePdfFormData } from "@/utils/pdf/base/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const data: IdosoFormData = await req.json();
+    const data: BasePdfFormData = await req.json();
+
+    if (!data.formularioSlug) {
+      return NextResponse.json(
+        { success: false, message: "'formularioSlug' é obrigatório" },
+        { status: 400 }
+      );
+    }
 
     if (!data.nome || !data.cpf) {
       return NextResponse.json(
@@ -12,12 +20,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Gerar PDF
-    const pdfBuffer = await generateRequerimentoPdf(data);
-
-    // Gerar nome personalizado (apenas nome)
-    const nomeLimpo = (data.nome || "").normalize('NFD').replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
-    const nomeArquivo = `Requerimento_Idoso_${nomeLimpo}.pdf`;
+    // Gerar PDF usando factory centralizado
+    const pdfBuffer = await generatePdf(data);
+    const nomeArquivo = await getPdfFileName(data);
 
     // Retornar PDF com headers apropriados
     return new NextResponse(new Uint8Array(pdfBuffer), {
@@ -49,7 +54,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const data: IdosoFormData = JSON.parse(decodeURIComponent(dataParam));
+    const data: BasePdfFormData = JSON.parse(decodeURIComponent(dataParam));
+
+    if (!data.formularioSlug) {
+      return NextResponse.json(
+        { success: false, message: "'formularioSlug' é obrigatório" },
+        { status: 400 }
+      );
+    }
 
     if (!data.nome || !data.cpf) {
       return NextResponse.json(
@@ -58,12 +70,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Gerar PDF
-    const pdfBuffer = await generateRequerimentoPdf(data);
-
-    // Gerar nome personalizado (apenas nome)
-    const nomeLimpo = (data.nome || "").normalize('NFD').replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
-    const nomeArquivo = `Requerimento_Idoso_${nomeLimpo}.pdf`;
+    // Gerar PDF usando factory centralizado
+    const pdfBuffer = await generatePdf(data);
+    const nomeArquivo = await getPdfFileName(data);
 
     // Retornar PDF com headers apropriados
     return new NextResponse(new Uint8Array(pdfBuffer), {

@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
+import { enviarRequerimentoCompleto } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
+import LoadingModal from "@/components/LoadingModal/LoadingModal";
 import styles from "./page.module.css";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -26,6 +28,7 @@ export default function IsencaoImovelCedidoPage() {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [expandedSections, setExpandedSections] = useState<number[]>([]); // Seção 1 começa fechada
   const [inquilinoExpanded, setInquilinoExpanded] = useState(true); // Controla expansão da subseção do inquilino (começa expandida)
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
   // Estados da Seção 1 - Taxas
   const [guia, setGuia] = useState<File | null>(null);
@@ -793,6 +796,8 @@ export default function IsencaoImovelCedidoPage() {
           docPublicidade &&
           docCertidaoDebitos
         );
+      case 6: // Seção intermediária (não existe no formulário, mas necessária para fluxo)
+        return true;
       case 7: // Assinatura a Rogo
         if (assinaturaRogo) {
           const testemunha1Valid =
@@ -866,15 +871,17 @@ export default function IsencaoImovelCedidoPage() {
         setCompletedSections([...completedSections, currentSection]);
       }
 
-      setActiveSection(currentSection + 1);
+      // Pula da seção 5 direto para a 7 (não existe seção 6 neste formulário)
+      const nextSectionNumber = currentSection === 5 ? 7 : currentSection + 1;
+      setActiveSection(nextSectionNumber);
 
       // Fechar a seção atual e expandir apenas a próxima seção
-      setExpandedSections([currentSection + 1]);
+      setExpandedSections([nextSectionNumber]);
 
       // Scroll imediato para a próxima seção
       setTimeout(() => {
         const nextSection = document.querySelector(
-          `[data-section="${currentSection + 1}"]`
+          `[data-section="${nextSectionNumber}"]`
         );
         if (nextSection) {
           const yOffset = -80;
@@ -929,15 +936,139 @@ export default function IsencaoImovelCedidoPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSectionValid(9)) {
       console.log("Formulário enviado com sucesso!");
-      toast.success(
-        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
-        {
-          autoClose: 5000,
-        }
-      );
+      
+      // Abrir modal de loading
+      setIsLoadingModalOpen(true);
+      
+      // Preparar dados para envio por e-mail
+      const dadosFormulario = {
+        formularioSlug: "isencao-imovel-cedido",
+        tipoFormulario: "Isenção de IPTU para Imóvel Cedido",
+        
+        // Seção 1: Taxas
+        possuiGuiaTaxa: guia !== null,
+        possuiComprovanteTaxa: comprovante !== null,
+        
+        // Seção 2: Identificação
+        tipoSolicitacao,
+        processoAnterior,
+        certidaoAnterior,
+        nome,
+        rg,
+        orgaoEmissor,
+        cpf,
+        telefone,
+        email,
+        
+        // Seção 3: Localização do Imóvel
+        inscricaoImobiliaria,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        lote,
+        quadra,
+        
+        // Seção 3.1: Dados do Inquilino
+        nomeInquilino,
+        cpfInquilino,
+        rgInquilino,
+        orgaoEmissorInquilino,
+        telefoneInquilino,
+        emailInquilino,
+        
+        // Seção 4: Documentos anexados
+        documentosAnexados: [
+          docFichaIptu ? "Ficha de inscrição do IPTU" : null,
+          docRgCpf ? "RG e CPF" : null,
+          docPropriedade ? "Prova de propriedade" : null,
+          docContrato ? "Contrato de cessão" : null,
+          docPublicidade ? "Publicidade do contrato" : null,
+          docCertidaoDebitos ? "Certidão negativa de débitos" : null,
+          // Documentos do Procurador
+          possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+          possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+          possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+          // Outros documentos
+          docPeticao ? "Petição" : null,
+        ].filter(Boolean),
+        
+        // Seção 6: Procurador (se houver)
+        possuiProcurador,
+        nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+        cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+        rgProcurador: possuiProcurador ? rgProcurador : undefined,
+        orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+        telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+        emailProcurador: possuiProcurador ? emailProcurador : undefined,
+        
+        // Seção 7: Assinatura a Rogo (se houver)
+        assinaturaRogo,
+        testemunha1Nome: assinaturaRogo ? testemunha1Nome : undefined,
+        testemunha1Cpf: assinaturaRogo ? testemunha1Cpf : undefined,
+        testemunha1Rg: assinaturaRogo ? testemunha1Rg : undefined,
+        testemunha1OrgaoEmissor: assinaturaRogo ? testemunha1OrgaoEmissor : undefined,
+        testemunha1Telefone: assinaturaRogo ? testemunha1Telefone : undefined,
+        testemunha1Email: assinaturaRogo ? testemunha1Email : undefined,
+        testemunha2Nome: assinaturaRogo ? testemunha2Nome : undefined,
+        testemunha2Cpf: assinaturaRogo ? testemunha2Cpf : undefined,
+        testemunha2Rg: assinaturaRogo ? testemunha2Rg : undefined,
+        testemunha2OrgaoEmissor: assinaturaRogo ? testemunha2OrgaoEmissor : undefined,
+        testemunha2Telefone: assinaturaRogo ? testemunha2Telefone : undefined,
+        testemunha2Email: assinaturaRogo ? testemunha2Email : undefined,
+        
+        // Seção 8: Preferências de Comunicação
+        preferenciaAR,
+        preferenciaWhatsapp,
+        preferenciaEmail: preferenciaEmail,
+        
+        // Seção 9: Observações
+        observacoes,
+      };
+      
+      // Preparar arquivos para envio
+      const arquivos = {
+        guia: guia,
+        comprovante: comprovante,
+        docFichaIptu: docFichaIptu,
+        docRgCpf: docRgCpf,
+        docPropriedade: docPropriedade,
+        docContrato: docContrato,
+        docPublicidade: docPublicidade,
+        docCertidaoDebitos: docCertidaoDebitos,
+        docProcuracao: docProcuracao,
+        docCpfProcurador: docCpfProcurador,
+        docIdentidadeProcurador: docIdentidadeProcurador,
+        docPeticao: docPeticao,
+      };
+      
+      // Enviar requerimento completo (salva no banco + envia e-mail)
+      const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
+      
+      // Fechar modal de loading
+      setIsLoadingModalOpen(false);
+      
+      if (resultado.success) {
+        toast.success(
+          "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+          {
+            autoClose: 5000,
+          }
+        );
+      } else {
+        toast.error(
+          "Erro ao enviar o requerimento. Por favor, tente novamente.",
+          {
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 
@@ -2848,6 +2979,8 @@ export default function IsencaoImovelCedidoPage() {
         </div>
       </main>
       <Footer />
+
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
 
       {/* ToastContainer para exibir notificações */}
       <ToastContainer
