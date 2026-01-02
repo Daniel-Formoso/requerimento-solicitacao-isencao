@@ -6,6 +6,13 @@ export async function POST(req: NextRequest) {
   try {
     const data: BasePdfFormData = await req.json();
 
+    if (!data.formularioSlug) {
+      return NextResponse.json(
+        { success: false, message: "'formularioSlug' é obrigatório" },
+        { status: 400 }
+      );
+    }
+
     if (!data.nome || !data.cpf) {
       return NextResponse.json(
         { success: false, message: "Dados incompletos: nome e CPF são obrigatórios" },
@@ -48,6 +55,13 @@ export async function GET(req: NextRequest) {
     }
 
     const data: BasePdfFormData = JSON.parse(decodeURIComponent(dataParam));
+
+    if (!data.formularioSlug) {
+      return NextResponse.json(
+        { success: false, message: "'formularioSlug' é obrigatório" },
+        { status: 400 }
+      );
+    }
 
     if (!data.nome || !data.cpf) {
       return NextResponse.json(

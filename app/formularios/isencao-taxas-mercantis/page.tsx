@@ -678,6 +678,7 @@ export default function IsencaoTaxasMercantisPage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "isencao-taxas-mercantis",
         tipoFormulario: "Isenção para Taxas Mercantis",
         
         // Seção 1: Taxas

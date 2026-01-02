@@ -1019,6 +1019,7 @@ export default function IsencaoPcdPage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "isencao-pcd",
         tipoFormulario: "Isenção de IPTU para Pessoa com Deficiência",
         
         // Seção 1: Taxas

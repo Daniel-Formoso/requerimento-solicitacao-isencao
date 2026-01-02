@@ -871,15 +871,17 @@ export default function IsencaoImovelCedidoPage() {
         setCompletedSections([...completedSections, currentSection]);
       }
 
-      setActiveSection(currentSection + 1);
+      // Pula da seção 5 direto para a 7 (não existe seção 6 neste formulário)
+      const nextSectionNumber = currentSection === 5 ? 7 : currentSection + 1;
+      setActiveSection(nextSectionNumber);
 
       // Fechar a seção atual e expandir apenas a próxima seção
-      setExpandedSections([currentSection + 1]);
+      setExpandedSections([nextSectionNumber]);
 
       // Scroll imediato para a próxima seção
       setTimeout(() => {
         const nextSection = document.querySelector(
-          `[data-section="${currentSection + 1}"]`
+          `[data-section="${nextSectionNumber}"]`
         );
         if (nextSection) {
           const yOffset = -80;
@@ -943,6 +945,7 @@ export default function IsencaoImovelCedidoPage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "isencao-imovel-cedido",
         tipoFormulario: "Isenção de IPTU para Imóvel Cedido",
         
         // Seção 1: Taxas
