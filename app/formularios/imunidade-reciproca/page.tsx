@@ -685,6 +685,7 @@ export default function ImunidadeReciprocaPage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "imunidade-reciproca",
         tipoFormulario: "Imunidade recíproca - Imóveis de entes públicos",
         
         // Seção 1: Taxas

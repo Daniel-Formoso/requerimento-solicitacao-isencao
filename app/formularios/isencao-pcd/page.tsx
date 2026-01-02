@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
+import { enviarRequerimentoCompleto } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
+import LoadingModal from "@/components/LoadingModal/LoadingModal";
 import styles from "./page.module.css";
 import AccessibleIcon from "@mui/icons-material/Accessible";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -25,6 +27,7 @@ export default function IsencaoPcdPage() {
   const [activeSection, setActiveSection] = useState(1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [expandedSections, setExpandedSections] = useState<number[]>([]); // Seção 1 começa fechada
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
   // Estados da Seção 1 - Taxas
   const [guia, setGuia] = useState<File | null>(null);
@@ -1007,14 +1010,134 @@ export default function IsencaoPcdPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSectionValid(9)) {
-      toast.success(
-        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
-        {
-          autoClose: 5000,
-        }
-      );
+      console.log("Formulário enviado com sucesso!");
+      
+      // Abrir modal de loading
+      setIsLoadingModalOpen(true);
+      
+      // Preparar dados para envio por e-mail
+      const dadosFormulario = {
+        formularioSlug: "isencao-pcd",
+        tipoFormulario: "Isenção de IPTU para Pessoa com Deficiência",
+        
+        // Seção 1: Taxas
+        possuiGuiaTaxa: guia !== null,
+        possuiComprovanteTaxa: comprovante !== null,
+        
+        // Seção 2: Identificação
+        tipoSolicitacao,
+        processoAnterior,
+        certidaoAnterior,
+        nome,
+        rg,
+        orgaoEmissor,
+        cpf,
+        telefone,
+        email,
+        
+        // Seção 3: Localização do Imóvel
+        inscricaoImobiliaria,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        lote,
+        quadra,
+        
+        // Seção 4: Documentos anexados
+        documentosAnexados: [
+          docResidencia ? "Comprovante de residência" : null,
+          docRgCpf ? "RG e CPF" : null,
+          docEscritura ? "Escritura do imóvel" : null,
+          docRendimentos ? "Comprovante de rendimentos" : null,
+          docLaudoMedico ? "Laudo Médico" : null,
+          docUnicoImovel ? "Declaração de único imóvel" : null,
+          docFichaIptu ? "Ficha de inscrição do IPTU" : null,
+          // Documentos do Procurador
+          possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+          possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+          possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+        ].filter(Boolean),
+        
+        // Seção 5: Questionário de Elegibilidade
+        perfilRequerente,
+        estadoCivil,
+        unicoImovel,
+        residenciaPropria,
+        anoInicio,
+        rendaAte2Salarios,
+        origemRenda,
+        origemRendaOutro,
+        
+        // Dados do Cônjuge (se houver)
+        nomeConjuge: temConjuge ? nomeConjuge : undefined,
+        cpfConjuge: temConjuge ? cpfConjuge : undefined,
+        rgConjuge: temConjuge ? rgConjuge : undefined,
+        telefoneConjuge: temConjuge ? telefoneConjuge : undefined,
+        emailConjuge: temConjuge ? emailConjuge : undefined,
+        coproprietario: temConjuge ? coproprietario : undefined,
+        origemRendaConjuge: temConjuge ? origemRendaConjuge : undefined,
+        
+        // Seção 6: Procurador (se houver)
+        possuiProcurador,
+        nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+        cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+        rgProcurador: possuiProcurador ? rgProcurador : undefined,
+        orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+        telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+        emailProcurador: possuiProcurador ? emailProcurador : undefined,
+        
+        // Seção 7: Preferências de Comunicação
+        preferenciaAR,
+        preferenciaWhatsapp,
+        preferenciaEmail: preferenciaEmail,
+        
+        // Seção 8: Observações
+        observacoes,
+      };
+      
+      // Preparar arquivos para envio
+      const arquivos = {
+        guia: guia,
+        comprovante: comprovante,
+        docResidencia: docResidencia,
+        docRgCpf: docRgCpf,
+        docEscritura: docEscritura,
+        docRendimentos: docRendimentos,
+        docLaudoMedico: docLaudoMedico,
+        docUnicoImovel: docUnicoImovel,
+        docFichaIptu: docFichaIptu,
+        docProcuracao: docProcuracao,
+        docCpfProcurador: docCpfProcurador,
+        docIdentidadeProcurador: docIdentidadeProcurador,
+      };
+      
+      // Enviar requerimento completo (salva no banco + envia e-mail)
+      const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
+      
+      // Fechar modal de loading
+      setIsLoadingModalOpen(false);
+      
+      if (resultado.success) {
+        toast.success(
+          "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+          {
+            autoClose: 5000,
+          }
+        );
+      } else {
+        toast.error(
+          "Erro ao enviar o requerimento. Por favor, tente novamente.",
+          {
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 
@@ -1821,16 +1944,16 @@ export default function IsencaoPcdPage() {
                   <CheckCircleIcon className={styles.checkIcon} />
                 )}
                 <ExpandMoreIcon
-                  className={`${styles.expandIcon} ${expandedSections.includes(5) ? styles.expandIconOpen : ""
+                  className={`${styles.expandIcon} ${expandedSections.includes(4) ? styles.expandIconOpen : ""
                     }`}
                 />
               </div>
             </div>
 
-            {expandedSections.includes(5) && (
+            {expandedSections.includes(4) && (
               <div
                 className={styles.sectionContent}
-                style={{ pointerEvents: activeSection >= 5 ? "auto" : "none" }}
+                style={{ pointerEvents: activeSection >= 4 ? "auto" : "none" }}
               >
                 <p className={styles.sectionDescription}>
                   Preencha todos os dados do imóvel conforme solicitado abaixo.
@@ -2042,7 +2165,7 @@ export default function IsencaoPcdPage() {
                   <CheckCircleIcon className={styles.checkIcon} />
                 )}
                 <ExpandMoreIcon
-                  className={`${styles.expandIcon} ${expandedSections.includes(4) ? styles.expandIconOpen : ""
+                  className={`${styles.expandIcon} ${expandedSections.includes(5) ? styles.expandIconOpen : ""
                     }`}
                 />
               </div>
@@ -3091,6 +3214,8 @@ export default function IsencaoPcdPage() {
         </div>
       </main>
       <Footer />
+
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
 
       {/* ToastContainer para exibir notificações */}
       <ToastContainer
