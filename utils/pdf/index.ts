@@ -4,7 +4,7 @@
  */
 
 // Factory centralizado
-export { generatePdf, getPdfFileName, getSupportedFormTypes, isFormTypeSupported, type FormType } from "./pdfFactory";
+export { generatePdf, getPdfFileName, getSupportedFormTypes, isFormTypeSupported } from "./pdfFactory";
 
 // Tipos base
 export type { BasePdfFormData } from "./base/types";
@@ -33,4 +33,7 @@ export { generatePdfPCD, type PCDFormData, getPCDFileName } from "./pcd/gerador"
 export { generatePdfImovelCedido, type ImovelCedidoFormData, getImovelCedidoFileName } from "./imovelcedido/gerador";
 export { generatePdfTemploReligioso, type TemploReligiosoFormData, getTemploReligiosoFileName } from "./temploligioso/gerador";
 export { generatePdfTaxasMercantis, type TaxasMercantisFormData, getTaxasMercantisFileName } from "./taxasmercantis/gerador";
-export { generatePdfImunidade, type ImunidadeFormData, getImunidadeFileName } from "./imunidade/gerador";
+export { generatePdfImunidadeTemplo, getImunidadeTemploFileName, type ImunidadeTemploFormData } from "./imunidade/temploReligioso";
+export { generatePdfImunidadeInstituicoes, getImunidadeInstituicoesFileName, type ImunidadeInstituicoesFormData } from "./imunidade/instituicoes";
+export { generatePdfImunidadeSindicatos, getImunidadeSindicatosFileName, type ImunidadeSindicatosFormData } from "./imunidade/sindicatos";
+export { generatePdfImunidadeReciproca, getImunidadeReciprocaFileName, type ImunidadeReciprocaFormData } from "./imunidade/reciproca";

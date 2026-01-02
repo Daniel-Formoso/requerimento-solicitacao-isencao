@@ -678,6 +678,7 @@ export default function ImunidadeSindicatosPage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "imunidade-sindicatos",
         tipoFormulario: "Imunidade para Sindicatos",
         
         // Seção 1: Taxas

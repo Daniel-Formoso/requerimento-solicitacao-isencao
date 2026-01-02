@@ -1015,6 +1015,7 @@ export default function IsencaoExcombatentePage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "isencao-excombatente",
         tipoFormulario: "Isenção de IPTU para Ex-Combatentes",
         
         // Seção 1: Taxas

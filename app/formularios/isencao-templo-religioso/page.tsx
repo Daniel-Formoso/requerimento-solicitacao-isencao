@@ -664,6 +664,7 @@ export default function IsencaoTemploReligiosoPage() {
       
       // Preparar dados para envio por e-mail
       const dadosFormulario = {
+        formularioSlug: "isencao-templo-religioso",
         tipoFormulario: "Isenção de IPTU para Templos Religiosos",
         
         // Seção 1: Taxas
