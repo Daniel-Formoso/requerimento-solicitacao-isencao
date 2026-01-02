@@ -656,7 +656,7 @@ export default function IsencaoTemploReligiosoPage() {
   };
 
   const handleSubmit = async () => {
-    if (isSectionValid(9)) {
+    if (isSectionValid(7)) {
       console.log("Formulário enviado com sucesso!");
       
       // Abrir modal de loading

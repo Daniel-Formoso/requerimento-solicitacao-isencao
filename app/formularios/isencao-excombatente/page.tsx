@@ -3303,6 +3303,8 @@ export default function IsencaoExcombatentePage() {
       </main>
       <Footer />
 
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
+
       {/* ToastContainer para exibir notificações */}
       <ToastContainer
         position="top-right"

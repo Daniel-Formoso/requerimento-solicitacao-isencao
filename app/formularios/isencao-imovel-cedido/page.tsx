@@ -796,6 +796,8 @@ export default function IsencaoImovelCedidoPage() {
           docPublicidade &&
           docCertidaoDebitos
         );
+      case 6: // Seção intermediária (não existe no formulário, mas necessária para fluxo)
+        return true;
       case 7: // Assinatura a Rogo
         if (assinaturaRogo) {
           const testemunha1Valid =
