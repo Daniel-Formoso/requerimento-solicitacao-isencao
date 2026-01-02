@@ -222,15 +222,15 @@ function montarCorpoEmail(
                   Documentos Prontos para Anexar ao Processo
                 </h3>
                 <div style="margin-bottom: 15px;">
-                  <a href="#" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #28d160; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                  <a href="${baseUrl}/api/generate-pdf?data=${encodeURIComponent(JSON.stringify(data))}" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #28d160; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
                     BAIXAR REQUERIMENTO
                   </a>
-                  <a href="#" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
-                    BAIXAR DOCUMENTOS ANEXADOS
+                  <a href="#" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #ff6b00; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                    BAIXAR DOCUMENTOS ANEXADOS (ZIP)
                   </a>
                 </div>
                 <div style="font-size: 13px; color: #555; background: #fffbe6; border-radius: 6px; padding: 12px; border-left: 4px solid #ffc107;">
-                  <strong>Como usar:</strong> Clique em "Baixar Requerimento" para abrir o documento formatado no navegador e salvar como PDF (Ctrl+P). Use "Baixar Documentos" para os anexos.
+                  <strong>Como usar:</strong> Clique em "Baixar Requerimento" para gerar o PDF do seu requerimento ou em "Baixar Documentos Anexados" para baixar todos os documentos em um arquivo ZIP.
                 </div>
               </div>
             </td>
@@ -342,16 +342,15 @@ function montarCorpoEmail(
           </tr>
 
           <!-- SEÇÃO: DADOS DO PROCURADOR -->
-              ${data.possuiProcurador ? `
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                Dados do Procurador
+                Identificação do Procurador
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Possui Procurador?</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">Sim</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${data.possuiProcurador ? 'Sim' : 'Não'}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Procurador</td>
@@ -380,7 +379,6 @@ function montarCorpoEmail(
               </table>
             </td>
           </tr>
-          ` : ''}
 
           <!-- SEÇÃO: IDENTIFICAÇÃO DO IMÓVEL -->
           <tr>
@@ -515,12 +513,17 @@ function montarCorpoEmail(
           </tr>
 
           <!-- SEÇÃO: TESTEMUNHAS (ASSINATURA A ROGO) -->
-          ${data.assinaturaRogo ? `
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
                 Testemunhas (Assinatura a Rogo)
               </h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden; margin-bottom: 20px;">
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Assinatura a Rogo?</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${data.assinaturaRogo ? 'Sim' : 'Não'}</td>
+                </tr>
+              </table>
               
               <h3 style="color: #2b2862; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">Testemunha 1</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden; margin-bottom: 20px;">
@@ -579,7 +582,6 @@ function montarCorpoEmail(
               </table>
             </td>
           </tr>
-          ` : ''}
 
           <!-- SEÇÃO: DOCUMENTAÇÃO -->
           <tr>
@@ -614,7 +616,6 @@ function montarCorpoEmail(
           </tr>
 
           <!-- SEÇÃO: OBSERVAÇÕES -->
-          ${data.observacoes ? `
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
@@ -627,7 +628,6 @@ function montarCorpoEmail(
               </table>
             </td>
           </tr>
-          ` : ''}
 
           <!-- RESUMO DE DOCUMENTOS ANEXADOS -->
           <tr>
