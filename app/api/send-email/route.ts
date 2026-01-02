@@ -112,37 +112,43 @@ function formatFormasContato(formasContato: string[]): string {
 
 // Função para gerar lista de documentos anexados
 function generateDocumentsList(data: any, baseUrl: string): string {
-  // Lista fixa de documentos esperados para o formulário de idoso
-  const documentosEsperados = [
-    "Certidão de Nascimento/Casamento",
-    "Comprovante de pagamento das taxas",
-    "RG e CPF",
-    "Comprovante de residência",
-    "Comprovante de rendimentos",
-    "Escritura do imóvel",
-    "Declaração de único imóvel",
-    "Ficha de inscrição do IPTU",
-    "Procuração Autenticada",
-    "CPF do Procurador",
-    "Identidade do Procurador",
-    "Petição",
+  // Lista fixa de documentos esperados e seus campos
+  const documentosEsperados: { nome: string; campo: string }[] = [
+    { nome: "Certidão de Nascimento/Casamento", campo: "docCertidao" },
+    { nome: "Comprovante de pagamento das taxas", campo: "docTaxas" },
+    { nome: "RG e CPF", campo: "docRgCpf" },
+    { nome: "Comprovante de residência", campo: "docResidencia" },
+    { nome: "Comprovante de rendimentos", campo: "docRendimentos" },
+    { nome: "Escritura do imóvel", campo: "docEscritura" },
+    { nome: "Declaração de único imóvel", campo: "docUnicoImovel" },
+    { nome: "Ficha de inscrição do IPTU", campo: "docFichaIptu" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
   ];
 
   // Array de documentos realmente anexados
   const documentosAnexados = data.documentosAnexados || [];
 
-  // Monta a lista de documentos com status
+  // Monta a lista de documentos com status e link de download
   const lista = documentosEsperados
-    .map((nomeDoc, index) => {
-      const anexado = documentosAnexados.includes(nomeDoc);
+    .map((doc, index) => {
+      const anexado = documentosAnexados.includes(doc.nome);
+      let downloadLink = '';
+      let nomeArquivo = '';
+      if (anexado && data.id && data.nomesArquivos && data.nomesArquivos[doc.campo]) {
+        nomeArquivo = `${doc.campo}_${data.nomesArquivos[doc.campo]}`;
+        downloadLink = `${baseUrl}/api/download-arquivo?id=${data.id}&filename=${encodeURIComponent(nomeArquivo)}`;
+      }
       return `
         <tr style="background-color: ${index % 2 === 0 ? '#f9f9f9' : '#ffffff'};">
-          <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">📄 ${nomeDoc}</td>
+          <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">📄 ${doc.nome}</td>
           <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
             ${formatAttachmentStatusSimple(anexado)}
           </td>
           <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
-            ${anexado ? `<a href="#" style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);" download>Baixar</a>` : '<span style="color: #999;">-</span>'}
+            ${anexado && data.id && nomeArquivo ? `<a href="${downloadLink}" style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);" download>Baixar</a>` : '<span style="color: #999;">-</span>'}
           </td>
         </tr>
       `;
@@ -308,34 +314,6 @@ function montarCorpoEmail(
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
                   <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.telefone)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CEP</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cep)}</td>
-                </tr>
-                <tr style="background-color: #f9f9f9;">
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Endereço</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rua)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Número</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.numero)}</td>
-                </tr>
-                <tr style="background-color: #f9f9f9;">
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Complemento</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.complemento)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Bairro</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.bairro)}</td>
-                </tr>
-                <tr style="background-color: #f9f9f9;">
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Cidade</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cidade)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 15px; font-weight: 600;">Estado</td>
-                  <td style="padding: 10px 15px;">${formatValue(data.estado)}</td>
                 </tr>
               </table>
             </td>
@@ -625,23 +603,6 @@ function montarCorpoEmail(
                 <tr>
                   <td style="padding: 10px 15px; background-color: #f9f9f9;">${formatValueOptional(data.observacoes)}</td>
                 </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- RESUMO DE DOCUMENTOS ANEXADOS -->
-          <tr>
-            <td style="padding: 0 30px 25px 30px;">
-              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">📋</span> Resumo de Documentos Anexados
-              </h2>
-              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
-                <tr style="background-color: #2b2862;">
-                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff;">Nome do Documento</td>
-                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Status</td>
-                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Ação</td>
-                </tr>
-                ${generateDocumentsList(data, baseUrl)}
               </table>
             </td>
           </tr>
