@@ -337,7 +337,7 @@ function montarCorpoEmail(
                   <td style="padding: 10px 15px; font-weight: 600;">Estado</td>
                   <td style="padding: 10px 15px;">${formatValue(data.estado)}</td>
                 </tr>
-              </table>git pu
+              </table>
             </td>
           </tr>
 
