@@ -15,12 +15,16 @@ export async function POST(req: NextRequest) {
     // Gerar PDF
     const pdfBuffer = await generateRequerimentoPdf(data);
 
+    // Gerar nome personalizado (apenas nome)
+    const nomeLimpo = (data.nome || "").normalize('NFD').replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
+    const nomeArquivo = `Requerimento_Idoso_${nomeLimpo}.pdf`;
+
     // Retornar PDF com headers apropriados
     return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Requerimento_Idoso_${data.cpf?.replace(/\D/g, '')}_${new Date().getTime()}.pdf"`,
+        "Content-Disposition": `attachment; filename="${nomeArquivo}"`,
       },
     });
   } catch (error) {
@@ -57,12 +61,16 @@ export async function GET(req: NextRequest) {
     // Gerar PDF
     const pdfBuffer = await generateRequerimentoPdf(data);
 
+    // Gerar nome personalizado (apenas nome)
+    const nomeLimpo = (data.nome || "").normalize('NFD').replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
+    const nomeArquivo = `Requerimento_Idoso_${nomeLimpo}.pdf`;
+
     // Retornar PDF com headers apropriados
     return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Requerimento_Idoso_${data.cpf?.replace(/\D/g, '')}_${new Date().getTime()}.pdf"`,
+        "Content-Disposition": `attachment; filename="${nomeArquivo}"`,
       },
     });
   } catch (error) {
