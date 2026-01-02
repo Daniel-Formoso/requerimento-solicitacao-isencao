@@ -321,6 +321,13 @@
   gap: 24px;
 }
 
+@media (max-width: 768px) {
+  .procuradorSection .uploadGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 .uploadField {
   display: flex;
   flex-direction: column;
