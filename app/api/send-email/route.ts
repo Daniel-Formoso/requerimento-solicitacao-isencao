@@ -225,7 +225,7 @@ function montarCorpoEmail(
                   <a href="${baseUrl}/api/generate-pdf?data=${encodeURIComponent(JSON.stringify(data))}" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #28d160; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
                     BAIXAR REQUERIMENTO
                   </a>
-                  <a href="#" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #ff6b00; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                  <a href="${baseUrl}/api/download-zip?id=${data.id}" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #ff6b00; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
                     BAIXAR DOCUMENTOS ANEXADOS (ZIP)
                   </a>
                 </div>
