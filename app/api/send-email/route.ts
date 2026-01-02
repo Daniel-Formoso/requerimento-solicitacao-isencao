@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import path from "path";
+import fs from "fs";
 
 // Configuração do transporter usando Gmail/Google Workspace
 const transporter = nodemailer.createTransport({
@@ -30,30 +31,35 @@ export async function POST(req: Request) {
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    // Preparar logo para anexar como CID
-    const logoPath = path.join(process.cwd(), "public", "assets", "logo.png");
-    const logoCid = `logo-${Date.now()}@requerimento`;
+    // Preparar caminhos e checar existência de logo WebP e PNG
+    const logoWebpPath = path.join(process.cwd(), "public", "assets", "logo.webp");
+    const logoPngPath = path.join(process.cwd(), "public", "assets", "logo.png");
+    const hasWebp = fs.existsSync(logoWebpPath);
+    const hasPng = fs.existsSync(logoPngPath);
+    const logoWebpCid = hasWebp ? `logo-webp-${Date.now()}@requerimento` : null;
+    const logoPngCid = hasPng ? `logo-png-${Date.now()}@requerimento` : null;
 
-    // Montar o corpo do e-mail em HTML
-    const htmlBody = montarCorpoEmail(data, logoCid, baseUrl, dataFormatada, horaFormatada);
+    // Não usar data URI inline (alguns clientes bloqueiam); usar CID attachments
+    const htmlBody = montarCorpoEmail(data, null, logoWebpCid, logoPngCid, baseUrl, dataFormatada, horaFormatada);
 
     // Assunto do e-mail
     const assunto = `Novo Requerimento: ${data.nome || "Solicitação"} - ${data.tipoFormulario || "Isenção/Imunidade"} | ${dataFormatada} ${horaFormatada}`;
 
     // Configurar e enviar o e-mail
+    const attachments: any[] = [];
+    if (hasWebp) {
+      attachments.push({ filename: "logo.webp", path: logoWebpPath, cid: logoWebpCid, contentDisposition: "inline" });
+    }
+    if (hasPng) {
+      attachments.push({ filename: "logo.png", path: logoPngPath, cid: logoPngCid, contentDisposition: "inline" });
+    }
+
     const mailOptions: any = {
       from: `"Requerimento Isenção/Imunidade" <${process.env.GMAIL_USER || ""}>`,
       to: process.env.EMAIL_DESTINO || process.env.GMAIL_USER,
       subject: assunto,
       html: htmlBody,
-      attachments: [
-        {
-          filename: "logo.png",
-          path: logoPath,
-          cid: logoCid,
-          contentDisposition: "inline",
-        },
-      ],
+      attachments,
     };
 
     console.log("Enviando e-mail...");
@@ -78,6 +84,13 @@ function formatValue(value: string | null | undefined): string {
   return value && value.trim() !== "" ? value : "-----";
 }
 
+// Função auxiliar para formatar valor opcional (exibe "Nada informado" com opacidade)
+function formatValueOptional(value: string | null | undefined): string {
+  return value && value.trim() !== "" 
+    ? value 
+    : '<span style="color: #999; font-style: italic;">Nada informado</span>';
+}
+
 // Função auxiliar para status de anexo simples
 function formatAttachmentStatusSimple(url: string | null | undefined | boolean): string {
   return url
@@ -89,56 +102,54 @@ function formatAttachmentStatusSimple(url: string | null | undefined | boolean):
 function formatFormasContato(formasContato: string[]): string {
   if (!formasContato || formasContato.length === 0) return "-----";
   const labels: Record<string, string> = {
-    preferenciaAR: "📧 Carta com AR",
-    preferenciaEmail: "📧 E-mail",
-    preferenciaWhatsapp: "💬 WhatsApp",
+    preferenciaAR: "Carta de Recebimento (AR)",
+    preferenciaEmail: "E-mail",
+    preferenciaWhatsapp: "WhatsApp",
   };
-  return formasContato.map((c: string) => labels[c] || c).join(", ");
+  // Separar as opções com espaço extra para evitar confusão visual
+  return formasContato.map((c: string) => labels[c] || c).join('&nbsp;&nbsp;&nbsp;');
 }
 
 // Função para gerar lista de documentos anexados
 function generateDocumentsList(data: any, baseUrl: string): string {
-  const docs: { nome: string; anexado: boolean }[] = [];
+  // Lista fixa de documentos esperados para o formulário de idoso
+  const documentosEsperados = [
+    "Certidão de Nascimento/Casamento",
+    "Comprovante de pagamento das taxas",
+    "RG e CPF",
+    "Comprovante de residência",
+    "Comprovante de rendimentos",
+    "Escritura do imóvel",
+    "Declaração de único imóvel",
+    "Ficha de inscrição do IPTU",
+    "Procuração Autenticada",
+    "CPF do Procurador",
+    "Identidade do Procurador",
+    "Petição",
+  ];
 
-  // Documentos do formulário de idoso
-  if (data.certidao !== undefined) {
-    docs.push({ nome: "Certidão de Nascimento ou Casamento", anexado: !!data.certidao });
-  }
-  if (data.comprovanteTaxas !== undefined) {
-    docs.push({ nome: "Comprovante de Pagamento de Taxas", anexado: !!data.comprovanteTaxas });
-  }
-  if (data.rgCpf !== undefined) {
-    docs.push({ nome: "RG e CPF", anexado: !!data.rgCpf });
-  }
-  if (data.comprovanteResidencia !== undefined) {
-    docs.push({ nome: "Comprovante de Residência", anexado: !!data.comprovanteResidencia });
-  }
-  if (data.comprovanteRendimentos !== undefined) {
-    docs.push({ nome: "Comprovante de Rendimentos", anexado: !!data.comprovanteRendimentos });
-  }
-  if (data.escritura !== undefined) {
-    docs.push({ nome: "Escritura do Imóvel", anexado: !!data.escritura });
-  }
-  if (data.declaracaoUnicoImovel !== undefined) {
-    docs.push({ nome: "Declaração de Único Imóvel", anexado: !!data.declaracaoUnicoImovel });
-  }
-  if (data.fichaIptu !== undefined) {
-    docs.push({ nome: "Ficha de IPTU", anexado: !!data.fichaIptu });
-  }
-  if (data.procuracao !== undefined) {
-    docs.push({ nome: "Procuração", anexado: !!data.procuracao });
-  }
-  if (data.cpfProcuradorDoc !== undefined && data.possuiProcurador) {
-    docs.push({ nome: "CPF do Procurador", anexado: !!data.cpfProcuradorDoc });
-  }
-  if (data.identidadeProcurador !== undefined && data.possuiProcurador) {
-    docs.push({ nome: "Identidade do Procurador", anexado: !!data.identidadeProcurador });
-  }
-  if (data.peticao !== undefined) {
-    docs.push({ nome: "Petição", anexado: !!data.peticao });
-  }
+  // Array de documentos realmente anexados
+  const documentosAnexados = data.documentosAnexados || [];
 
-  if (docs.length === 0) {
+  // Monta a lista de documentos com status
+  const lista = documentosEsperados
+    .map((nomeDoc, index) => {
+      const anexado = documentosAnexados.includes(nomeDoc);
+      return `
+        <tr style="background-color: ${index % 2 === 0 ? '#f9f9f9' : '#ffffff'};">
+          <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">📄 ${nomeDoc}</td>
+          <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
+            ${formatAttachmentStatusSimple(anexado)}
+          </td>
+          <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
+            ${anexado ? `<a href="#" style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);" download>Baixar</a>` : '<span style="color: #999;">-</span>'}
+          </td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  if (!lista) {
     return `
       <tr>
         <td colspan="3" style="padding: 12px; text-align: center; color: #666;">
@@ -147,38 +158,15 @@ function generateDocumentsList(data: any, baseUrl: string): string {
       </tr>
     `;
   }
-
-  return docs
-    .map(
-      (doc, index) => `
-      <tr style="background-color: ${index % 2 === 0 ? "#f9f9f9" : "#ffffff"};">
-        <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">
-          📄 ${doc.nome}
-        </td>
-        <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">
-          ${formatAttachmentStatusSimple(doc.anexado)}
-        </td>
-        <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
-          ${
-            doc.anexado
-              ? `<a href="#" 
-                 style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);"
-                 download>
-                Baixar
-              </a>`
-              : '<span style="color: #999;">-</span>'
-          }
-        </td>
-      </tr>
-    `
-    )
-    .join("");
+  return lista;
 }
 
 // Função para montar o corpo do e-mail em HTML
 function montarCorpoEmail(
   data: any,
-  logoCid: string,
+  logoInlineSrc: string | null,
+  logoWebpCid: string | null,
+  logoPngCid: string | null,
   baseUrl: string,
   dataFormatada: string,
   horaFormatada: string
@@ -207,7 +195,16 @@ function montarCorpoEmail(
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #2b2862 0%, #1a1a4e 100%); padding: 30px; text-align: center;">
-              <img src="cid:${logoCid}" alt="Prefeitura" style="max-width: 120px; margin-bottom: 15px;">
+              ${(() => {
+                if (logoInlineSrc) {
+                  return `<img src="${logoInlineSrc}" alt="Prefeitura" width="120" style="display:block; width:120px; height:auto; margin:0 auto 15px;">`;
+                }
+                const displayCid = logoPngCid || logoWebpCid;
+                if (displayCid) {
+                  return `<img src="cid:${displayCid}" alt="Prefeitura" width="120" style="display:block; width:120px; height:auto; margin:0 auto 15px;">`;
+                }
+                return `<div style="color:#ffffff; font-weight:600; margin-bottom:15px;">Prefeitura</div>`;
+              })()}
               <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">
                 ${tipoFormulario || "Requerimento de Isenção/Imunidade"}
               </h1>
@@ -222,18 +219,17 @@ function montarCorpoEmail(
             <td style="padding: 25px 30px; background: #f8f9fa;">
               <div style="margin-bottom: 20px;">
                 <h3 style="color: #2b2862; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">
-                  📄 Documentos Prontos para Anexar ao Processo
+                  Documentos Prontos para Anexar ao Processo
                 </h3>
                 <div style="margin-bottom: 15px;">
                   <a href="#" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #28d160; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
-                    📄 BAIXAR REQUERIMENTO
+                    BAIXAR REQUERIMENTO
                   </a>
                   <a href="#" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
-                    📦 BAIXAR DOCUMENTOS ANEXADOS
+                    BAIXAR DOCUMENTOS ANEXADOS
                   </a>
                 </div>
                 <div style="font-size: 13px; color: #555; background: #fffbe6; border-radius: 6px; padding: 12px; border-left: 4px solid #ffc107;">
-                  <span style="font-size: 16px;">💡</span>
                   <strong>Como usar:</strong> Clique em "Baixar Requerimento" para abrir o documento formatado no navegador e salvar como PDF (Ctrl+P). Use "Baixar Documentos" para os anexos.
                 </div>
               </div>
@@ -252,8 +248,8 @@ function montarCorpoEmail(
           <!-- SEÇÃO: TAXA DE PAGAMENTO -->
           <tr>
             <td style="padding: 25px 30px;">
-              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862; display: flex; align-items: center;">
-                <span style="margin-right: 8px;">💳</span> Taxa de Pagamento
+                <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862; display: flex; align-items: center;">
+                Taxa de Pagamento
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
@@ -271,14 +267,24 @@ function montarCorpoEmail(
           <!-- SEÇÃO: DADOS DO CONTRIBUINTE -->
           <tr>
             <td style="padding: 0 30px 25px 30px;">
-              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">👤</span> Dados do Contribuinte
+                <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                Dados do Contribuinte
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Processo</td>
                   <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(formatarTipoSolicitacao(data.tipoSolicitacao))}</td>
                 </tr>
+                ${data.tipoSolicitacao === 'renovacao' ? `
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Processo Anterior</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.processoAnterior)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Certidão Anterior</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.certidaoAnterior)}</td>
+                </tr>
+                ` : ''}
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome Completo</td>
                   <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.nome)}</td>
@@ -289,11 +295,11 @@ function montarCorpoEmail(
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Identidade</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rg)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.rg)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Expedidor</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.orgaoEmissor)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.orgaoEmissor)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">E-mail</td>
@@ -317,7 +323,7 @@ function montarCorpoEmail(
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Complemento</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.complemento)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.complemento)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Bairro</td>
@@ -336,11 +342,11 @@ function montarCorpoEmail(
           </tr>
 
           <!-- SEÇÃO: DADOS DO PROCURADOR -->
-          ${data.possuiProcurador ? `
+              ${data.possuiProcurador ? `
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">⚖️</span> Dados do Procurador
+                Dados do Procurador
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
@@ -349,19 +355,27 @@ function montarCorpoEmail(
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Procurador</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.nomeProcurador)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.nomeProcurador)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF do Procurador</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cpfProcurador)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.cpfProcurador)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG do Procurador</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.rgProcurador)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Emissor</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.orgaoEmissorProcurador)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">E-mail do Procurador</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.emailProcurador)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.emailProcurador)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600;">Telefone do Procurador</td>
-                  <td style="padding: 10px 15px;">${formatValue(data.telefoneProcurador)}</td>
+                  <td style="padding: 10px 15px;">${formatValueOptional(data.telefoneProcurador)}</td>
                 </tr>
               </table>
             </td>
@@ -371,8 +385,8 @@ function montarCorpoEmail(
           <!-- SEÇÃO: IDENTIFICAÇÃO DO IMÓVEL -->
           <tr>
             <td style="padding: 0 30px 25px 30px;">
-              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">🏠</span> Identificação do Imóvel
+                <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                Identificação do Imóvel
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
@@ -380,12 +394,40 @@ function montarCorpoEmail(
                   <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.inscricaoImobiliaria)}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Lote</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.lote)}</td>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CEP</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cep)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Endereço</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rua)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Número</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.numero)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Complemento</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.complemento)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Bairro</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.bairro)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Cidade</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cidade)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Estado</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.estado)}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Lote</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.lote)}</td>
+                </tr>
+                <tr>
                   <td style="padding: 10px 15px; font-weight: 600;">Quadra</td>
-                  <td style="padding: 10px 15px;">${formatValue(data.quadra)}</td>
+                  <td style="padding: 10px 15px;">${formatValueOptional(data.quadra)}</td>
                 </tr>
               </table>
             </td>
@@ -394,8 +436,8 @@ function montarCorpoEmail(
           <!-- SEÇÃO: QUESTIONÁRIO DE ELEGIBILIDADE -->
           <tr>
             <td style="padding: 0 30px 25px 30px;">
-              <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">✅</span> Questionário de Elegibilidade
+                <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
+                Questionário de Elegibilidade
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
@@ -416,7 +458,7 @@ function montarCorpoEmail(
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Ano de Início de Residência</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.anoInicio)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.anoInicio)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Renda até 2 Salários Mínimos?</td>
@@ -429,35 +471,35 @@ function montarCorpoEmail(
                 ${data.origemRenda === 'outro' ? `
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600;">Outra Origem da Renda (Especificar)</td>
-                  <td style="padding: 10px 15px;">${formatValue(data.origemRendaOutro)}</td>
+                  <td style="padding: 10px 15px;">${formatValueOptional(data.origemRendaOutro)}</td>
                 </tr>
                 ` : ''}
               </table>
               
               ${data.nomeConjuge ? `
               <h3 style="color: #2b2862; font-size: 15px; margin: 20px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid #ccc;">
-                <span style="margin-right: 8px;">👥</span> Dados do Cônjuge
+                Dados do Cônjuge
               </h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome do Cônjuge</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.nomeConjuge)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.nomeConjuge)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.cpfConjuge)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.cpfConjuge)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.rgConjuge)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.rgConjuge)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.telefoneConjuge)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.telefoneConjuge)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">E-mail</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.emailConjuge)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.emailConjuge)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">É coproprietário?</td>
@@ -477,34 +519,34 @@ function montarCorpoEmail(
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">✍️</span> Testemunhas (Assinatura a Rogo)
+                Testemunhas (Assinatura a Rogo)
               </h2>
               
               <h3 style="color: #2b2862; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">Testemunha 1</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden; margin-bottom: 20px;">
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Nome)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha1Nome)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Cpf)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha1Cpf)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Rg)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha1Rg)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Emissor</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1OrgaoEmissor)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha1OrgaoEmissor)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha1Telefone)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha1Telefone)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600;">E-mail</td>
-                  <td style="padding: 10px 15px;">${formatValue(data.testemunha1Email)}</td>
+                  <td style="padding: 10px 15px;">${formatValueOptional(data.testemunha1Email)}</td>
                 </tr>
               </table>
               
@@ -512,27 +554,27 @@ function montarCorpoEmail(
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Nome</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Nome)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha2Nome)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Cpf)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha2Cpf)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">RG</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Rg)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha2Rg)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Órgão Emissor</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2OrgaoEmissor)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha2OrgaoEmissor)}</td>
                 </tr>
                 <tr style="background-color: #f9f9f9;">
                   <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Telefone</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValue(data.testemunha2Telefone)}</td>
+                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd;">${formatValueOptional(data.testemunha2Telefone)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px 15px; font-weight: 600;">E-mail</td>
-                  <td style="padding: 10px 15px;">${formatValue(data.testemunha2Email)}</td>
+                  <td style="padding: 10px 15px;">${formatValueOptional(data.testemunha2Email)}</td>
                 </tr>
               </table>
             </td>
@@ -543,25 +585,15 @@ function montarCorpoEmail(
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
-                <span style="margin-right: 8px;">📁</span> Documentação
+                Documentação
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
-                <tr style="background-color: #f9f9f9;">
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Documento de Identidade</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.rgCpf ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
+                <tr style="background-color: #2b2862;">
+                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff;">Nome do Documento</td>
+                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Status</td>
+                  <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Ação</td>
                 </tr>
-                <tr>
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">CPF</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.rgCpf ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
-                </tr>
-                <tr style="background-color: #f9f9f9;">
-                  <td style="padding: 10px 15px; font-weight: 600; border-bottom: 1px solid #ddd;">Comprovante de Residência</td>
-                  <td style="padding: 10px 15px; border-bottom: 1px solid #ddd; text-align: right;">${data.comprovanteResidencia ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #dc3545;">❌ Não anexado</span>'}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 15px; font-weight: 600;">Outros Documentos</td>
-                  <td style="padding: 10px 15px; text-align: right;">${data.escritura || data.fichaIptu || data.procuracao ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #999;">Nenhum documento anexado</span>'}</td>
-                </tr>
+                ${generateDocumentsList(data, baseUrl)}
               </table>
             </td>
           </tr>
@@ -590,7 +622,7 @@ function montarCorpoEmail(
               </h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                 <tr>
-                  <td style="padding: 10px 15px; background-color: #f9f9f9;">${formatValue(data.observacoes)}</td>
+                  <td style="padding: 10px 15px; background-color: #f9f9f9;">${formatValueOptional(data.observacoes)}</td>
                 </tr>
               </table>
             </td>
@@ -618,10 +650,9 @@ function montarCorpoEmail(
           <tr>
             <td style="background-color: #2b2862; padding: 20px 30px; text-align: center;">
               <p style="color: #ffffff; margin: 0; font-size: 14px; line-height: 1.6;">
-                <strong>Requerimento Geral de Processos</strong><br>
+                <strong>Requerimento Digital de Isenção e Imunidade</strong><br>
                 Prefeitura Municipal de Nova Iguaçu<br>
-                📧 Recebido via: requerimentos.ni.ig.br em 22/12/2025 às 20:45<br>
-                📍 Al. Dr. Ressequeiros, 89
+                Rua Athaide Pimenta de Moraes, 528 - Centro, Nova Iguaçu, Rio de Janeiro - CEP: 26.210-190<br>
               </p>
               <p style="color: #c5c5e0; margin: 15px 0 0 0; font-size: 12px;">
                 Este é um e-mail automático. Por favor, não responda.
@@ -656,7 +687,8 @@ function formatarPerfilRequerente(perfil: string): string {
     conjuge: "Cônjuge",
     ambos: "Ambos",
   };
-  return perfis[perfil?.toLowerCase()] || perfil;
+  const mapped = perfis[perfil?.toLowerCase()];
+  return mapped || (perfil.charAt(0).toUpperCase() + perfil.slice(1).toLowerCase());
 }
 
 function formatarEstadoCivil(estado: string): string {
@@ -668,7 +700,8 @@ function formatarEstadoCivil(estado: string): string {
     viuvo: "Viúvo(a)",
     "uniao-estavel": "União Estável",
   };
-  return estados[estado] || estado;
+  const mapped = estados[estado];
+  return mapped || (estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase());
 }
 
 function formatarOrigemRenda(origem: string): string {
@@ -680,5 +713,6 @@ function formatarOrigemRenda(origem: string): string {
     trabalho: "Trabalho",
     outro: "Outro",
   };
-  return origens[origem] || origem;
+  const mapped = origens[origem];
+  return mapped || (origem.charAt(0).toUpperCase() + origem.slice(1).toLowerCase());
 }
