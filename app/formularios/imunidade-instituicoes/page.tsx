@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
+import { enviarRequerimentoCompleto } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
+import LoadingModal from "@/components/LoadingModal/LoadingModal";
 import styles from "./page.module.css";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -23,6 +25,7 @@ export default function ImunidadeInstituicoesPage() {
   const [activeSection, setActiveSection] = useState(1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [expandedSections, setExpandedSections] = useState<number[]>([]); // Seção 1 começa fechada
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
   // Estados da Seção 1 - Taxas
   const [guia, setGuia] = useState<File | null>(null);
@@ -666,15 +669,128 @@ export default function ImunidadeInstituicoesPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isSectionValid(9)) {
       console.log("Formulário enviado com sucesso!");
-      toast.success(
-        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
-        {
-          autoClose: 5000,
-        }
-      );
+      
+      // Abrir modal de loading
+      setIsLoadingModalOpen(true);
+      
+      // Preparar dados para envio por e-mail
+      const dadosFormulario = {
+        tipoFormulario: "Imunidade para Instituições sem Fins Lucrativos",
+        
+        // Seção 1: Taxas
+        possuiGuiaTaxa: guia !== null,
+        possuiComprovanteTaxa: comprovante !== null,
+        
+        // Seção 2: Identificação
+        tipoSolicitacao,
+        processoAnterior,
+        certidaoAnterior,
+        nome,
+        rg,
+        orgaoEmissor,
+        cpf,
+        telefone,
+        email,
+        
+        // Seção 3: Localização e Inscrições
+        inscricaoImobiliaria,
+        inscricaoMercantil,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        lote,
+        quadra,
+        
+        // Seção 4: Documentos anexados
+        documentosAnexados: [
+          docEstatuto ? "Estatuto da Entidade" : null,
+          docAtaDiretoria ? "Ata da Diretoria" : null,
+          docImovel ? "Documentação do Imóvel" : null,
+          docIptu ? "Comprovante de IPTU" : null,
+          docCroqui ? "Croqui da Propriedade" : null,
+          docCadastro ? "Cadastro Imobiliário" : null,
+          docRgCpf ? "RG e CPF do Responsável" : null,
+          docComprovanteResidencia ? "Comprovante de Residência" : null,
+          docCartaoCnpj ? "Cartão CNPJ" : null,
+          docFolhaPagamento ? "Folha de Pagamento" : null,
+          docDeclaracaoEntidade ? "Declaração da Entidade" : null,
+          docDemonstracao ? "Demonstração Financeira" : null,
+          docCertidaoNegativa ? "Certidão Negativa de Débitos" : null,
+          // Documentos do Procurador
+          possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+          possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+          possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+        ].filter(Boolean),
+        
+        // Seção 6: Procurador (se houver)
+        possuiProcurador,
+        nomeProcurador: possuiProcurador ? nomeProcurador : undefined,
+        cpfProcurador: possuiProcurador ? cpfProcurador : undefined,
+        rgProcurador: possuiProcurador ? rgProcurador : undefined,
+        orgaoEmissorProcurador: possuiProcurador ? orgaoEmissorProcurador : undefined,
+        telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
+        emailProcurador: possuiProcurador ? emailProcurador : undefined,
+        
+        // Seção 7: Preferências de Comunicação
+        preferenciaAR,
+        preferenciaWhatsapp,
+        preferenciaEmail: preferenciaEmail,
+        
+        // Seção 8: Observações
+        observacoes,
+      };
+      
+      // Preparar arquivos para envio
+      const arquivos = {
+        guia: guia,
+        comprovante: comprovante,
+        docEstatuto: docEstatuto,
+        docAtaDiretoria: docAtaDiretoria,
+        docImovel: docImovel,
+        docIptu: docIptu,
+        docCroqui: docCroqui,
+        docCadastro: docCadastro,
+        docRgCpf: docRgCpf,
+        docComprovanteResidencia: docComprovanteResidencia,
+        docCartaoCnpj: docCartaoCnpj,
+        docFolhaPagamento: docFolhaPagamento,
+        docDeclaracaoEntidade: docDeclaracaoEntidade,
+        docDemonstracao: docDemonstracao,
+        docCertidaoNegativa: docCertidaoNegativa,
+        docProcuracao: docProcuracao,
+        docCpfProcurador: docCpfProcurador,
+        docIdentidadeProcurador: docIdentidadeProcurador,
+        docPeticao: docPeticao,
+      };
+      
+      // Enviar requerimento completo (salva no banco + envia e-mail)
+      const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
+      
+      // Fechar modal de loading
+      setIsLoadingModalOpen(false);
+      
+      if (resultado.success) {
+        toast.success(
+          "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+          {
+            autoClose: 5000,
+          }
+        );
+      } else {
+        toast.error(
+          "Erro ao enviar o requerimento. Por favor, tente novamente.",
+          {
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 
@@ -2097,6 +2213,8 @@ export default function ImunidadeInstituicoesPage() {
         </div>
       </main>
       <Footer />
+
+      <LoadingModal isOpen={isLoadingModalOpen} estimatedTime={5} />
 
       {/* ToastContainer para exibir notificações */}
       <ToastContainer
