@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
-import { enviarEmailFormulario } from "@/utils/enviarEmail";
+import { enviarRequerimentoCompleto } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
@@ -727,14 +727,53 @@ export default function ImunidadeReciprocaPage() {
         
         // Seção 5: Documentos anexados
         documentosAnexados: [
-          docEstatuto ? "Estatuto Social" : null,
-          docAtaDiretoria ? "Ata de Eleição da Diretoria" : null,
-          docImovel ? "Documento do Imóvel" : null,
-          docIptu ? "IPTU do Imóvel" : null,
-          docCroqui ? "Croqui de Localização" : null,
-          docCadastro ? "Ficha de Cadastro" : null,
-          docRgCpf ? "RG e CPF do Representante" : null,
+          guia ? "Guia de Pagamento" : null,
+          comprovante ? "Comprovante de Pagamento" : null,
+          docOficio ? "Ofício Assinado do Órgão Público" : null,
+          docEstatuto ? "Estatuto Social e alterações" : null,
+          docAtaDiretoria ? "Ata de Eleição da diretoria" : null,
+          docImovel ? "Documento do imóvel" : null,
+          docIptu ? "Registro de IPTU do imóvel" : null,
+          docCroqui ? "Croqui de localização" : null,
+          docCadastro ? "Registro de cadastro imobiliário" : null,
+          docRgCpf ? "Identificação (RG/CPF)" : null,
+          docComprovanteResidencia ? "Comprovante de residência" : null,
+          docCartaoCnpj ? "Cartão CNPJ" : null,
+          docFolhaPagamento ? "Folha de pagamento" : null,
+          docDeclaracaoEntidade ? "Declaração de entidade" : null,
+          docDemonstracao ? "Demonstração e Balanço" : null,
+          docCertidaoNegativa ? "Certidão Negativa/Positiva" : null,
+          // Documentos do Procurador
+          possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
+          possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
+          possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+          // Outros documentos
+          docPeticao ? "Petição" : null,
         ].filter(Boolean),
+
+        // Mapeamento de nomes de arquivos originais
+        nomesArquivos: {
+          guia: guia?.name || "",
+          comprovante: comprovante?.name || "",
+          docOficio: docOficio?.name || "",
+          docEstatuto: docEstatuto?.name || "",
+          docAtaDiretoria: docAtaDiretoria?.name || "",
+          docImovel: docImovel?.name || "",
+          docIptu: docIptu?.name || "",
+          docCroqui: docCroqui?.name || "",
+          docCadastro: docCadastro?.name || "",
+          docRgCpf: docRgCpf?.name || "",
+          docComprovanteResidencia: docComprovanteResidencia?.name || "",
+          docCartaoCnpj: docCartaoCnpj?.name || "",
+          docFolhaPagamento: docFolhaPagamento?.name || "",
+          docDeclaracaoEntidade: docDeclaracaoEntidade?.name || "",
+          docDemonstracao: docDemonstracao?.name || "",
+          docCertidaoNegativa: docCertidaoNegativa?.name || "",
+          docProcuracao: possuiProcurador ? (docProcuracao?.name || "") : "",
+          docCpfProcurador: possuiProcurador ? (docCpfProcurador?.name || "") : "",
+          docIdentidadeProcurador: possuiProcurador ? (docIdentidadeProcurador?.name || "") : "",
+          docPeticao: docPeticao?.name || "",
+        },
         
         // Seção 6: Preferências de Comunicação
         preferenciaAR,
@@ -745,8 +784,32 @@ export default function ImunidadeReciprocaPage() {
         observacoes,
       };
       
-      // Enviar e-mail
-      const resultado = await enviarEmailFormulario(dadosFormulario);
+      // Preparar arquivos para envio
+      const arquivos = {
+        guia: guia,
+        comprovante: comprovante,
+        docOficio: docOficio,
+        docEstatuto: docEstatuto,
+        docAtaDiretoria: docAtaDiretoria,
+        docImovel: docImovel,
+        docIptu: docIptu,
+        docCroqui: docCroqui,
+        docCadastro: docCadastro,
+        docRgCpf: docRgCpf,
+        docComprovanteResidencia: docComprovanteResidencia,
+        docCartaoCnpj: docCartaoCnpj,
+        docFolhaPagamento: docFolhaPagamento,
+        docDeclaracaoEntidade: docDeclaracaoEntidade,
+        docDemonstracao: docDemonstracao,
+        docCertidaoNegativa: docCertidaoNegativa,
+        docProcuracao: docProcuracao,
+        docCpfProcurador: docCpfProcurador,
+        docIdentidadeProcurador: docIdentidadeProcurador,
+        docPeticao: docPeticao,
+      };
+      
+      // Enviar requerimento completo (salva no banco + envia e-mail)
+      const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
       
       // Fechar modal de loading
       setIsLoadingModalOpen(false);

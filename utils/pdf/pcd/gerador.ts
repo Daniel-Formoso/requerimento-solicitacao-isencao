@@ -42,6 +42,39 @@ export interface PCDFormData extends BasePdfFormData {
   testemunha2Telefone?: string;
   testemunha2Email?: string;
   documentosAnexados?: string[];
+  nomesArquivos?: Record<string, string>;
+}
+
+function renderDocs(data: PCDFormData) {
+  const anexados = new Set((data.documentosAnexados || []).map((d) => d?.trim()));
+  const nomesArquivos = data.nomesArquivos || {};
+  const docs = [
+    { label: "Guia de Pagamento", field: "guia" },
+    { label: "Comprovante de Pagamento", field: "comprovante" },
+    { label: "Comprovante de Residência", field: "docResidencia" },
+    { label: "RG e CPF", field: "docRgCpf" },
+    { label: "Prova de Propriedade", field: "docEscritura" },
+    { label: "Comprovante de Rendimentos", field: "docRendimentos" },
+    { label: "Laudo Médico", field: "docLaudoMedico" },
+    { label: "Comprovante de Único Imóvel", field: "docUnicoImovel" },
+    { label: "Ficha de Lançamento IPTU", field: "docFichaIptu" },
+    { label: "Procuração Autenticada", field: "docProcuracao" },
+    { label: "CPF do Procurador", field: "docCpfProcurador" },
+    { label: "Identidade do Procurador", field: "docIdentidadeProcurador" },
+    { label: "Petição", field: "docPeticao" },
+  ];
+
+  return docs
+    .map((doc) => {
+      const anexado = anexados.has(doc.label) || Boolean(nomesArquivos[doc.field]);
+      return `
+      <div class="info-item">
+        <div class="info-label">${doc.label}</div>
+        <div class="info-value">${anexado ? "Anexado" : "Faltando"}</div>
+      </div>
+    `;
+    })
+    .join("");
 }
 
 function generatePdfHtml(data: PCDFormData): string {
@@ -379,7 +412,7 @@ function generatePdfHtml(data: PCDFormData): string {
   <div class="section">
     <div class="section-title">Documentos Anexados</div>
     <div class="info-grid">
-      ${documentosAnexadosHtml}
+      ${renderDocs(data)}
     </div>
   </div>
 

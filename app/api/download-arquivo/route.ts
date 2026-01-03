@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { existsSync, statSync, createReadStream } from "fs";
+import { existsSync, statSync, createReadStream, readdirSync } from "fs";
 import { join } from "path";
 
 export async function GET(req: NextRequest) {
@@ -21,10 +21,37 @@ export async function GET(req: NextRequest) {
     const mes = String(today.getMonth() + 1).padStart(2, '0');
     const ano = today.getFullYear();
     const dateFolder = `${dia}-${mes}-${ano}`;
+    const dateFolderPath = join(process.cwd(), "uploads", dateFolder);
 
-    const filePath = join(process.cwd(), "uploads", dateFolder, id, filename);
+    // Buscar a pasta que contém o ID (nova estrutura)
+    let filePath: string | null = null;
+    
+    if (existsSync(dateFolderPath)) {
+      const tiposFormulario = readdirSync(dateFolderPath, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory());
+      
+      for (const tipoDir of tiposFormulario) {
+        const tipoPath = join(dateFolderPath, tipoDir.name);
+        const requerimentos = readdirSync(tipoPath, { withFileTypes: true })
+          .filter(dirent => dirent.isDirectory());
+        
+        for (const reqDir of requerimentos) {
+          const reqPath = join(tipoPath, reqDir.name);
+          const idFilePath = join(reqPath, '.id');
+          // Verificar se existe arquivo .id com o ID correspondente
+          if (existsSync(idFilePath)) {
+            const savedId = require('fs').readFileSync(idFilePath, 'utf8').trim();
+            if (savedId === id) {
+              filePath = join(reqPath, filename);
+              break;
+            }
+          }
+        }
+        if (filePath) break;
+      }
+    }
 
-    if (!existsSync(filePath)) {
+    if (!filePath || !existsSync(filePath)) {
       return NextResponse.json(
         { success: false, message: "Arquivo não encontrado" },
         { status: 404 }

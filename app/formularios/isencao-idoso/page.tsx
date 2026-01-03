@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { gerarDadosAleatorios } from "@/utils/gerarDadosAleatorios";
-import { submitFormularioComFeedback } from "@/utils/submitFormulario";
+import { enviarRequerimentoCompleto } from "@/utils/enviarEmail";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import ComprovanteTaxa from "@/components/ComprovanteTaxa/ComprovanteTaxa";
@@ -1048,14 +1048,16 @@ export default function IsencaoIdosoPage() {
 
       // Seção 4: Documentos anexados
       documentosAnexados: [
-        docCertidao ? "Certidão de Nascimento/Casamento" : null,
-        docTaxas ? "Comprovante de pagamento das taxas" : null,
+        guia ? "Guia de Pagamento" : null,
+        comprovante ? "Comprovante de Pagamento" : null,
+        docCertidao ? "Cópia da Certidão" : null,
+        docTaxas ? "Taxas Municipais" : null,
         docRgCpf ? "RG e CPF" : null,
-        docResidencia ? "Comprovante de residência" : null,
-        docRendimentos ? "Comprovante de rendimentos" : null,
-        docEscritura ? "Escritura do imóvel" : null,
-        docUnicoImovel ? "Declaração de único imóvel" : null,
-        docFichaIptu ? "Ficha de inscrição do IPTU" : null,
+        docResidencia ? "Comprovante de Residência" : null,
+        docRendimentos ? "Comprovante de Rendimentos" : null,
+        docEscritura ? "Comprovante de Propriedade" : null,
+        docUnicoImovel ? "Certidão de Único Imóvel" : null,
+        docFichaIptu ? "Ficha de Lançamento do IPTU" : null,
         // Documentos do Procurador
         possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
         possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
@@ -1063,6 +1065,24 @@ export default function IsencaoIdosoPage() {
         // Outros documentos
         docPeticao ? "Petição" : null,
       ].filter(Boolean),
+
+      // Mapeamento de nomes de arquivos originais
+      nomesArquivos: {
+        guia: guia?.name || "",
+        comprovante: comprovante?.name || "",
+        docCertidao: docCertidao?.name || "",
+        docTaxas: docTaxas?.name || "",
+        docRgCpf: docRgCpf?.name || "",
+        docResidencia: docResidencia?.name || "",
+        docRendimentos: docRendimentos?.name || "",
+        docEscritura: docEscritura?.name || "",
+        docUnicoImovel: docUnicoImovel?.name || "",
+        docFichaIptu: docFichaIptu?.name || "",
+        docProcuracao: possuiProcurador ? (docProcuracao?.name || "") : "",
+        docCpfProcurador: possuiProcurador ? (docCpfProcurador?.name || "") : "",
+        docIdentidadeProcurador: possuiProcurador ? (docIdentidadeProcurador?.name || "") : "",
+        docPeticao: docPeticao?.name || "",
+      },
 
       // Seção 5: Questionário de Elegibilidade
       perfilRequerente,
@@ -1133,13 +1153,27 @@ export default function IsencaoIdosoPage() {
       docPeticao: docPeticao,
     };
 
-    await submitFormularioComFeedback({
-      isValid: true,
-      setLoading: setIsLoadingModalOpen,
-      dadosFormulario,
-      arquivos,
-      toast,
-    });
+    setIsLoadingModalOpen(true);
+
+    const resultado = await enviarRequerimentoCompleto(dadosFormulario, arquivos);
+
+    setIsLoadingModalOpen(false);
+
+    if (resultado.success) {
+      toast.success(
+        "Requerimento enviado com sucesso! Em breve você receberá um e-mail de confirmação.",
+        {
+          autoClose: 5000,
+        }
+      );
+    } else {
+      toast.error(
+        "Erro ao enviar o requerimento. Por favor, tente novamente.",
+        {
+          autoClose: 5000,
+        }
+      );
+    }
   };
 
   // Função para preencher dados aleatórios usando utilitário externo

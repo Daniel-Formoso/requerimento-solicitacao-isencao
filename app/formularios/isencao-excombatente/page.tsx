@@ -1047,13 +1047,15 @@ export default function IsencaoExcombatentePage() {
         
         // Seção 4: Documentos anexados
         documentosAnexados: [
-          docResidencia ? "Comprovante de residência" : null,
+          guia ? "Guia de Pagamento" : null,
+          comprovante ? "Comprovante de Pagamento" : null,
+          docResidencia ? "Comprovante de Residência" : null,
           docRgCpf ? "RG e CPF" : null,
-          docEscritura ? "Escritura do imóvel" : null,
-          docRendimentos ? "Comprovante de rendimentos" : null,
-          docExcombatente ? "Comprovante de ex-combatente" : null,
-          docUnicoImovel ? "Declaração de único imóvel" : null,
-          docFichaIptu ? "Ficha de inscrição do IPTU" : null,
+          docEscritura ? "Prova de Propriedade do Imóvel" : null,
+          docRendimentos ? "Comprovante de Rendimentos" : null,
+          docExcombatente ? "Documento de Ex-Combatente" : null,
+          docUnicoImovel ? "Certidão de Único Imóvel" : null,
+          docFichaIptu ? "Ficha de Lançamento IPTU" : null,
           // Documentos do Procurador
           possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
           possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
@@ -1061,6 +1063,23 @@ export default function IsencaoExcombatentePage() {
           // Outros documentos
           docPeticao ? "Petição" : null,
         ].filter(Boolean),
+
+        // Mapeamento de nomes de arquivos originais
+        nomesArquivos: {
+          guia: guia?.name || "",
+          comprovante: comprovante?.name || "",
+          docResidencia: docResidencia?.name || "",
+          docRgCpf: docRgCpf?.name || "",
+          docEscritura: docEscritura?.name || "",
+          docRendimentos: docRendimentos?.name || "",
+          docExcombatente: docExcombatente?.name || "",
+          docUnicoImovel: docUnicoImovel?.name || "",
+          docFichaIptu: docFichaIptu?.name || "",
+          docProcuracao: possuiProcurador ? (docProcuracao?.name || "") : "",
+          docCpfProcurador: possuiProcurador ? (docCpfProcurador?.name || "") : "",
+          docIdentidadeProcurador: possuiProcurador ? (docIdentidadeProcurador?.name || "") : "",
+          docPeticao: docPeticao?.name || "",
+        },
         
         // Seção 5: Questionário de Elegibilidade
         perfilRequerente,
