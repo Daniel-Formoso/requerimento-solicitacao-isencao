@@ -58,7 +58,7 @@ function generatePdfHtml(data: TemploReligiosoFormData): string {
   </style>
 </head>
 <body>
-  <div class="header">
+  <div class="">
     ${logoBase64 ? `<img src="${logoBase64}" alt="Prefeitura">` : ""}
     <div class="header-text">
       <h3>Prefeitura Municipal de Nova Iguaçu</h3>
@@ -92,7 +92,7 @@ function generatePdfHtml(data: TemploReligiosoFormData): string {
   </div>
 
   <div class="section">
-    <div class="section-title">Dados do Responsável</div>
+    <div class="section-title">Identificação do Requerente</div>
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Nome Completo</div>
@@ -183,11 +183,11 @@ function generatePdfHtml(data: TemploReligiosoFormData): string {
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Preferências de Contato</div>
-        <div class="info-value">${formatarFormasContato({
-          preferenciaAR: data.preferenciaAR,
-          preferenciaWhatsapp: data.preferenciaWhatsapp,
-          preferenciaEmail: data.preferenciaEmail,
-        })}</div>
+        <div class="info-value">${formatarFormasContato(
+          data.preferenciaAR,
+          data.preferenciaWhatsapp,
+          data.preferenciaEmail
+        )}</div>
       </div>
       ${
         data.observacoes
