@@ -177,7 +177,19 @@ function montarCorpoEmail(
   dataFormatada: string,
   horaFormatada: string
 ): string {
-  const { tipoFormulario } = data;
+  const { tipoFormulario, formularioSlug } = data;
+
+  // Lista de formulários que NÃO devem exibir Elegibilidade e Testemunhas
+  const formulariosImunidadeTaxas = [
+    'imunidade-instituicoes',
+    'imunidade-reciproca',
+    'imunidade-sindicatos',
+    'imunidade-templo-religioso',
+    'isencao-taxas-mercantis',
+    'isencao-templo-religioso'
+  ];
+  
+  const ocultarElegibilidadeTestemunhas = formulariosImunidadeTaxas.includes(formularioSlug);
 
   // Formas de contato
   const formasContato = [];
@@ -410,6 +422,7 @@ function montarCorpoEmail(
           </tr>
 
           <!-- SEÇÃO: QUESTIONÁRIO DE ELEGIBILIDADE -->
+          ${!ocultarElegibilidadeTestemunhas ? `
           <tr>
             <td style="padding: 0 30px 25px 30px;">
                 <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
@@ -489,8 +502,10 @@ function montarCorpoEmail(
               ` : ''}
             </td>
           </tr>
+          ` : ''}
 
           <!-- SEÇÃO: TESTEMUNHAS (ASSINATURA A ROGO) -->
+          ${!ocultarElegibilidadeTestemunhas ? `
           <tr>
             <td style="padding: 0 30px 25px 30px;">
               <h2 style="color: #2b2862; font-size: 16px; margin: 0 0 15px 0; padding-bottom: 10px; border-bottom: 2px solid #2b2862;">
@@ -560,6 +575,7 @@ function montarCorpoEmail(
               </table>
             </td>
           </tr>
+          ` : ''}
 
           <!-- SEÇÃO: DOCUMENTAÇÃO -->
           <tr>
