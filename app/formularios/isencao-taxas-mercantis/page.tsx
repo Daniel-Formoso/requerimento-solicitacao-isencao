@@ -106,6 +106,7 @@ export default function IsencaoTaxasMercantisPage() {
   const [docDeclaracaoEntidade, setDocDeclaracaoEntidade] = useState<File | null>(null);
   const [docDemonstracao, setDocDemonstracao] = useState<File | null>(null);
   const [docCertidaoNegativa, setDocCertidaoNegativa] = useState<File | null>(null);
+  const [docRendimentos, setDocRendimentos] = useState<File | null>(null);
 
   // Estados da Seção 6 - Preferências de Comunicação
   const [preferenciaAR, setPreferenciaAR] = useState(false);
