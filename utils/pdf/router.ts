@@ -2,7 +2,6 @@ import { generatePdfIdoso, getIdosoFileName } from "./idoso/gerador";
 import { generatePdfExCombatente, getExCombatenteFileName } from "./excombatente/gerador";
 import { generatePdfPCD, getPCDFileName } from "./pcd/gerador";
 import { generatePdfImovelCedido, getImovelCedidoFileName } from "./imovelcedido/gerador";
-import { generatePdfTemploReligioso, getTemploReligiosoFileName } from "./temploligioso/gerador";
 import { generatePdfTaxasMercantis, getTaxasMercantisFileName } from "./taxasmercantis/gerador";
 import { generatePdfImunidadeTemplo, getImunidadeTemploFileName } from "./imunidade/temploReligioso";
 import { generatePdfImunidadeInstituicoes, getImunidadeInstituicoesFileName } from "./imunidade/instituicoes";
@@ -45,8 +44,8 @@ const routes: Record<FormSlug, PdfRoute> = {
     fileName: getImovelCedidoFileName,
   },
   "isencao-templo-religioso": {
-    generator: generatePdfTemploReligioso,
-    fileName: getTemploReligiosoFileName,
+    generator: generatePdfImunidadeTemplo,
+    fileName: getImunidadeTemploFileName,
   },
   "isencao-taxas-mercantis": {
     generator: generatePdfTaxasMercantis,
