@@ -21,28 +21,30 @@ export async function POST(req: Request) {
     const tipoFormulario = (formData.get('formularioSlug') as string) || 'requerimento-geral';
     const nomeRequerente = (formData.get('nome') as string) || 'Sem Nome';
     
-    // Criar pasta base: uploads/data/tipo-formulario
+    console.log('📋 DADOS RECEBIDOS:');
+    console.log('  - formularioSlug:', tipoFormulario);
+    console.log('  - nome:', nomeRequerente);
+    console.log('  - dateFolder:', dateFolder);
+    
+    // Criar pasta base: uploads/data/tipo-formulario (sempre criar primeiro)
     const formularioDir = join(process.cwd(), "uploads", dateFolder, tipoFormulario);
-    if (!existsSync(formularioDir)) {
-      mkdirSync(formularioDir, { recursive: true });
-    }
+    console.log('📁 Criando diretório base:', formularioDir);
+    mkdirSync(formularioDir, { recursive: true });
 
     // Contar quantas pastas já existem para gerar o próximo número
-    const existingFolders = existsSync(formularioDir) 
-      ? readdirSync(formularioDir, { withFileTypes: true })
-          .filter(dirent => dirent.isDirectory())
-          .length
-      : 0;
+    const existingFolders = readdirSync(formularioDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .length;
+    console.log('📊 Pastas existentes no diretório:', existingFolders);
     
     const numeroSequencial = String(existingFolders + 1).padStart(2, '0');
     const nomePasta = `${numeroSequencial} - requerimento ${nomeRequerente}`;
+    console.log('📌 Nome da nova pasta:', nomePasta);
     
-    // Criar estrutura: uploads/DD-MM-YYYY/tipo-formulario/01 - requerimento Nome/
+    // Criar estrutura completa: uploads/DD-MM-YYYY/tipo-formulario/01 - requerimento Nome/
     const uploadDir = join(formularioDir, nomePasta);
-    
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true });
-    }
+    console.log('🎯 Caminho completo:', uploadDir);
+    mkdirSync(uploadDir, { recursive: true });
 
 
     // Salvar os arquivos enviados
