@@ -30,6 +30,7 @@ export interface ExCombatenteFormData extends BasePdfFormData {
   emailConjuge?: string;
   origemRendaConjuge?: string;
   documentosAnexados?: string[];
+  nomesArquivos?: Record<string, string>;
   testemunha1Nome?: string;
   testemunha1Cpf?: string;
   testemunha1Rg?: string;
@@ -43,6 +44,35 @@ export interface ExCombatenteFormData extends BasePdfFormData {
   testemunha2Telefone?: string;
   testemunha2Email?: string;
   assinaturaRogo?: boolean;
+}
+
+function renderDocs(data: ExCombatenteFormData) {
+  const anexados = new Set((data.documentosAnexados || []).map((d) => d?.trim()));
+  const nomesArquivos = data.nomesArquivos || {};
+  const docs = [
+    { label: "Guia de Pagamento", field: "guia" },
+    { label: "Comprovante de Pagamento", field: "comprovante" },
+    { label: "Comprovante de Residência", field: "docResidencia" },
+    { label: "RG e CPF", field: "docRgCpf" },
+    { label: "Prova de Propriedade do Imóvel", field: "docEscritura" },
+    { label: "Comprovante de Rendimentos", field: "docRendimentos" },
+    { label: "Documento de Ex-Combatente", field: "docExcombatente" },
+    { label: "Certidão de Único Imóvel", field: "docUnicoImovel" },
+    { label: "Ficha de Lançamento IPTU", field: "docFichaIptu" },
+    { label: "Petição", field: "docPeticao" },
+  ];
+
+  return docs
+    .map((doc) => {
+      const anexado = anexados.has(doc.label) || Boolean(nomesArquivos[doc.field]);
+      return `
+      <div class="info-item">
+        <div class="info-label">${doc.label}</div>
+        <div class="info-value">${anexado ? "Anexado" : "Faltando"}</div>
+      </div>
+    `;
+    })
+    .join("");
 }
 
 function generatePdfHtml(data: ExCombatenteFormData): string {
@@ -384,11 +414,9 @@ function generatePdfHtml(data: ExCombatenteFormData): string {
   <div class="section">
     <div class="section-title">Documentos Anexados</div>
     <div class="info-grid">
-      ${documentosAnexadosHtml}
+      ${renderDocs(data)}
     </div>
   </div>
-
-
 
   <div class="section">
     <div class="section-title">Formas de Contato</div>

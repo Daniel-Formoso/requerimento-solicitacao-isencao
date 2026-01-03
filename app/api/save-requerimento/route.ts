@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 
@@ -17,8 +17,28 @@ export async function POST(req: Request) {
     const ano = today.getFullYear();
     const dateFolder = `${dia}-${mes}-${ano}`;
 
-    // Criar estrutura de diretórios: uploads/DD-MM-YYYY/id
-    const uploadDir = join(process.cwd(), "uploads", dateFolder, id);
+    // Obter tipo de formulário e nome do requerente
+    const tipoFormulario = (formData.get('formularioSlug') as string) || 'requerimento-geral';
+    const nomeRequerente = (formData.get('nome') as string) || 'Sem Nome';
+    
+    // Criar pasta base: uploads/data/tipo-formulario
+    const formularioDir = join(process.cwd(), "uploads", dateFolder, tipoFormulario);
+    if (!existsSync(formularioDir)) {
+      mkdirSync(formularioDir, { recursive: true });
+    }
+
+    // Contar quantas pastas já existem para gerar o próximo número
+    const existingFolders = existsSync(formularioDir) 
+      ? readdirSync(formularioDir, { withFileTypes: true })
+          .filter(dirent => dirent.isDirectory())
+          .length
+      : 0;
+    
+    const numeroSequencial = String(existingFolders + 1).padStart(2, '0');
+    const nomePasta = `${numeroSequencial} - requerimento ${nomeRequerente}`;
+    
+    // Criar estrutura: uploads/DD-MM-YYYY/tipo-formulario/01 - requerimento Nome/
+    const uploadDir = join(formularioDir, nomePasta);
     
     if (!existsSync(uploadDir)) {
       mkdirSync(uploadDir, { recursive: true });
@@ -37,16 +57,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // Salvar um arquivo dados.json com nome/cpf do requerente (se enviados)
-    const nome = formData.get('nome') || '';
-    const cpf = formData.get('cpf') || '';
-    const dadosJson = { nome, cpf };
-    writeFileSync(join(uploadDir, 'dados.json'), JSON.stringify(dadosJson, null, 2), 'utf8');
+    // Salvar arquivo .id para facilitar busca posterior
+    writeFileSync(join(uploadDir, '.id'), id, 'utf8');
 
-    console.log(`Requerimento ${id} salvo em ${uploadDir}`);
+    console.log(`Requerimento ${numeroSequencial} - ${nomeRequerente} salvo em ${uploadDir}`);
 
     return NextResponse.json(
-      { success: true, message: "Requerimento salvo com sucesso", id },
+      { success: true, message: "Requerimento salvo com sucesso", id, numeroSequencial, caminho: uploadDir, uploadDir },
       { status: 200 }
     );
   } catch (error) {
