@@ -711,24 +711,31 @@ export default function IsencaoTaxasMercantisPage() {
         
         // Seção 4: Documentos anexados
         documentosAnexados: [
-          docEstatuto ? "Estatuto da Entidade" : null,
-          docAtaDiretoria ? "Ata da Diretoria" : null,
-          docImovel ? "Documentação do Imóvel" : null,
-          docIptu ? "Comprovante de IPTU" : null,
-          docCroqui ? "Croqui da Propriedade" : null,
-          docCadastro ? "Cadastro Imobiliário" : null,
-          docRgCpf ? "RG e CPF do Responsável" : null,
-          docComprovanteResidencia ? "Comprovante de Residência" : null,
-          docCartaoCnpj ? "Cartão CNPJ" : null,
-          docFolhaPagamento ? "Folha de Pagamento" : null,
-          docDeclaracaoEntidade ? "Declaração da Entidade" : null,
-          docDemonstracao ? "Demonstração Financeira" : null,
-          docCertidaoNegativa ? "Certidão Negativa de Débitos" : null,
+          guia ? "Guia de Pagamento" : null,
+          comprovante ? "Comprovante de Pagamento" : null,
+          docRgCpf ? "RG e CPF" : null,
+          docComprovanteResidencia ? "Comprovante de residência" : null,
+          docRendimentos ? "Comprovante de rendimentos" : null,
           // Documentos do Procurador
           possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
           possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
           possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+          // Outros documentos
+          docPeticao ? "Petição" : null,
         ].filter(Boolean),
+
+        // Mapeamento de nomes de arquivos originais
+        nomesArquivos: {
+          guia: guia?.name || "",
+          comprovante: comprovante?.name || "",
+          docRgCpf: docRgCpf?.name || "",
+          docComprovanteResidencia: docComprovanteResidencia?.name || "",
+          docRendimentos: docRendimentos?.name || "",
+          docProcuracao: possuiProcurador ? (docProcuracao?.name || "") : "",
+          docCpfProcurador: possuiProcurador ? (docCpfProcurador?.name || "") : "",
+          docIdentidadeProcurador: possuiProcurador ? (docIdentidadeProcurador?.name || "") : "",
+          docPeticao: docPeticao?.name || "",
+        },
         
         // Seção 6: Procurador (se houver)
         possuiProcurador,

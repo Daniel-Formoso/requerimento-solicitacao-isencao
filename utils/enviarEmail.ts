@@ -4,9 +4,10 @@ export async function enviarRequerimentoCompleto(dados: any, arquivos: { [key: s
     // Passo 1: Salvar arquivos no servidor e obter ID
     const formData = new FormData();
     const nomesArquivos: Record<string, string> = {};
-    // Adicionar nome e cpf ao FormData para salvar no dados.json
+    // Adicionar nome, cpf e formularioSlug ao FormData para salvar no dados.json
     if (dados.nome) formData.append('nome', dados.nome);
     if (dados.cpf) formData.append('cpf', dados.cpf);
+    if (dados.formularioSlug) formData.append('formularioSlug', dados.formularioSlug);
     // Adicionar arquivos ao FormData e registrar nomes
     Object.entries(arquivos).forEach(([key, file]) => {
       if (file instanceof File) {
@@ -32,7 +33,32 @@ export async function enviarRequerimentoCompleto(dados: any, arquivos: { [key: s
       throw new Error(saveResult.message || "Erro ao salvar requerimento");
     }
 
-    // Passo 2: Enviar e-mail com os dados, o ID e os nomes dos arquivos
+    // Passo 2: Gerar PDF do requerimento e salvar na pasta de uploads
+    try {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      
+      const pdfResponse = await fetch(`${baseUrl}/api/generate-pdf?data=${encodeURIComponent(JSON.stringify(dados))}`);
+      if (pdfResponse.ok) {
+        const pdfBlob = await pdfResponse.blob();
+        const pdfBuffer = await pdfBlob.arrayBuffer();
+        
+        // Salvar PDF na pasta de uploads (apenas no servidor)
+        if (saveResult.uploadDir && typeof window === 'undefined') {
+          const fs = await import('fs');
+          const path = await import('path');
+          const pdfPath = path.join(saveResult.uploadDir, '00 - REQUERIMENTO.pdf');
+          fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
+          console.log(`PDF do requerimento salvo em ${pdfPath}`);
+        }
+      }
+    } catch (pdfError) {
+      console.error('Erro ao salvar PDF do requerimento:', pdfError);
+      // Continua mesmo se falhar o PDF
+    }
+
+    // Passo 3: Enviar e-mail com os dados, o ID e os nomes dos arquivos
     const dadosComId = { ...dados, id: saveResult.id, nomesArquivos };
     const emailResponse = await fetch("/api/send-email", {
       method: "POST",

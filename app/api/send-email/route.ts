@@ -110,61 +110,223 @@ function formatFormasContato(formasContato: string[]): string {
   return formasContato.map((c: string) => labels[c] || c).join('&nbsp;&nbsp;&nbsp;');
 }
 
-// Função para gerar lista de documentos anexados
-function generateDocumentsList(data: any, baseUrl: string): string {
-  // Lista fixa de documentos esperados e seus campos
-  const documentosEsperados: { nome: string; campo: string }[] = [
-    { nome: "Certidão de Nascimento/Casamento", campo: "docCertidao" },
-    { nome: "Comprovante de pagamento das taxas", campo: "docTaxas" },
+// Slugs suportados (mantém em sincronia com utils/pdf/router.ts)
+type FormSlug =
+  | "isencao-idoso"
+  | "isencao-excombatente"
+  | "isencao-pcd"
+  | "isencao-imovel-cedido"
+  | "isencao-templo-religioso"
+  | "isencao-taxas-mercantis"
+  | "imunidade-templo-religioso"
+  | "imunidade-instituicoes"
+  | "imunidade-sindicatos"
+  | "imunidade-reciproca";
+
+// Mapa de anexos esperados por formulário (nome para exibição + campo para achar o arquivo)
+const docsByForm: Record<FormSlug, { nome: string; campo: string }[]> = {
+  "isencao-idoso": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Cópia da Certidão", campo: "docCertidao" },
+    { nome: "Taxas Municipais", campo: "docTaxas" },
     { nome: "RG e CPF", campo: "docRgCpf" },
-    { nome: "Comprovante de residência", campo: "docResidencia" },
-    { nome: "Comprovante de rendimentos", campo: "docRendimentos" },
-    { nome: "Escritura do imóvel", campo: "docEscritura" },
-    { nome: "Declaração de único imóvel", campo: "docUnicoImovel" },
-    { nome: "Ficha de inscrição do IPTU", campo: "docFichaIptu" },
+    { nome: "Comprovante de Residência", campo: "docResidencia" },
+    { nome: "Comprovante de Rendimentos", campo: "docRendimentos" },
+    { nome: "Comprovante de Propriedade", campo: "docEscritura" },
+    { nome: "Certidão de Único Imóvel", campo: "docUnicoImovel" },
+    { nome: "Ficha de Lançamento do IPTU", campo: "docFichaIptu" },
     { nome: "Procuração Autenticada", campo: "docProcuracao" },
     { nome: "CPF do Procurador", campo: "docCpfProcurador" },
     { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
     { nome: "Petição", campo: "docPeticao" },
-  ];
+  ],
+  "isencao-excombatente": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Comprovante de Residência", campo: "docResidencia" },
+    { nome: "RG e CPF", campo: "docRgCpf" },
+    { nome: "Prova de Propriedade do Imóvel", campo: "docEscritura" },
+    { nome: "Comprovante de Rendimentos", campo: "docRendimentos" },
+    { nome: "Documento de Ex-Combatente", campo: "docExcombatente" },
+    { nome: "Certidão de Único Imóvel", campo: "docUnicoImovel" },
+    { nome: "Ficha de Lançamento IPTU", campo: "docFichaIptu" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "isencao-pcd": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Comprovante de Residência", campo: "docResidencia" },
+    { nome: "RG e CPF", campo: "docRgCpf" },
+    { nome: "Prova de Propriedade", campo: "docEscritura" },
+    { nome: "Comprovante de Rendimentos", campo: "docRendimentos" },
+    { nome: "Laudo Médico", campo: "docLaudoMedico" },
+    { nome: "Comprovante de Único Imóvel", campo: "docUnicoImovel" },
+    { nome: "Ficha de Lançamento IPTU", campo: "docFichaIptu" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "isencao-imovel-cedido": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Ficha de Lançamento do IPTU", campo: "docFichaIptu" },
+    { nome: "Documentos Pessoais (RG e CPF)", campo: "docRgCpf" },
+    { nome: "Comprovante de Propriedade", campo: "docEscritura" },
+    { nome: "Instrumento Contratual", campo: "docContrato" },
+    { nome: "Comprovante de Publicidade (D.O.M.)", campo: "docPublicidade" },
+    { nome: "Certidão Negativa de Débitos", campo: "docCertidaoNegativa" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "isencao-templo-religioso": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Estatuto Social e alterações", campo: "docEstatuto" },
+    { nome: "Ata de Eleição da diretoria", campo: "docAtaDiretoria" },
+    { nome: "Documento do imóvel", campo: "docImovel" },
+    { nome: "Registro de IPTU do imóvel", campo: "docIptu" },
+    { nome: "Croqui de localização", campo: "docCroqui" },
+    { nome: "Registro de cadastro imobiliário", campo: "docCadastro" },
+    { nome: "Identificação (RG/CPF)", campo: "docRgCpf" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "isencao-taxas-mercantis": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "RG e CPF", campo: "docRgCpf" },
+    { nome: "Comprovante de residência", campo: "docComprovanteResidencia" },
+    { nome: "Comprovante de rendimentos", campo: "docRendimentos" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "imunidade-templo-religioso": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Estatuto Social e alterações", campo: "docEstatuto" },
+    { nome: "Ata de Eleição da diretoria", campo: "docAtaDiretoria" },
+    { nome: "Documento do imóvel", campo: "docImovel" },
+    { nome: "Registro de IPTU do imóvel", campo: "docIptu" },
+    { nome: "Croqui de localização", campo: "docCroqui" },
+    { nome: "Registro de cadastro imobiliário", campo: "docCadastro" },
+    { nome: "Identificação (RG/CPF)", campo: "docRgCpf" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "imunidade-instituicoes": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Estatuto Social e alterações", campo: "docEstatuto" },
+    { nome: "Ata de Eleição da diretoria", campo: "docAtaDiretoria" },
+    { nome: "Documento do imóvel", campo: "docImovel" },
+    { nome: "Registro de IPTU do imóvel", campo: "docIptu" },
+    { nome: "Croqui de localização", campo: "docCroqui" },
+    { nome: "Registro de cadastro imobiliário", campo: "docCadastro" },
+    { nome: "Identificação (RG/CPF)", campo: "docRgCpf" },
+    { nome: "Comprovante de residência", campo: "docComprovanteResidencia" },
+    { nome: "Cartão CNPJ", campo: "docCartaoCnpj" },
+    { nome: "Folha de pagamento", campo: "docFolhaPagamento" },
+    { nome: "Declaração de entidade", campo: "docDeclaracaoEntidade" },
+    { nome: "Demonstração e Balanço", campo: "docDemonstracao" },
+    { nome: "Certidão Negativa/Positiva", campo: "docCertidaoNegativa" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "imunidade-sindicatos": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Estatuto do Sindicato e alterações", campo: "docEstatuto" },
+    { nome: "Ata de Eleição da diretoria", campo: "docAtaDiretoria" },
+    { nome: "Documento do imóvel", campo: "docImovel" },
+    { nome: "Registro de IPTU do imóvel", campo: "docIptu" },
+    { nome: "Croqui de localização", campo: "docCroqui" },
+    { nome: "Registro de cadastro imobiliário", campo: "docCadastro" },
+    { nome: "Identificação (RG/CPF)", campo: "docRgCpf" },
+    { nome: "Comprovante de residência", campo: "docComprovanteResidencia" },
+    { nome: "Cartão CNPJ", campo: "docCartaoCnpj" },
+    { nome: "Folha de pagamento", campo: "docFolhaPagamento" },
+    { nome: "Declaração de entidade", campo: "docDeclaracaoEntidade" },
+    { nome: "Demonstração e Balanço", campo: "docDemonstracao" },
+    { nome: "Certidão Negativa/Positiva", campo: "docCertidaoNegativa" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+  "imunidade-reciproca": [
+    { nome: "Guia de Pagamento", campo: "guia" },
+    { nome: "Comprovante de Pagamento", campo: "comprovante" },
+    { nome: "Ofício Assinado do Órgão Público", campo: "docOficio" },
+    { nome: "Estatuto Social e alterações", campo: "docEstatuto" },
+    { nome: "Ata de Eleição da diretoria", campo: "docAtaDiretoria" },
+    { nome: "Documento do imóvel", campo: "docImovel" },
+    { nome: "Registro de IPTU do imóvel", campo: "docIptu" },
+    { nome: "Croqui de localização", campo: "docCroqui" },
+    { nome: "Registro de cadastro imobiliário", campo: "docCadastro" },
+    { nome: "Identificação (RG/CPF)", campo: "docRgCpf" },
+    { nome: "Comprovante de residência", campo: "docComprovanteResidencia" },
+    { nome: "Cartão CNPJ", campo: "docCartaoCnpj" },
+    { nome: "Folha de pagamento", campo: "docFolhaPagamento" },
+    { nome: "Declaração de entidade", campo: "docDeclaracaoEntidade" },
+    { nome: "Demonstração e Balanço", campo: "docDemonstracao" },
+    { nome: "Certidão Negativa/Positiva", campo: "docCertidaoNegativa" },
+    { nome: "Procuração Autenticada", campo: "docProcuracao" },
+    { nome: "CPF do Procurador", campo: "docCpfProcurador" },
+    { nome: "Identidade do Procurador", campo: "docIdentidadeProcurador" },
+    { nome: "Petição", campo: "docPeticao" },
+  ],
+};
 
-  // Array de documentos realmente anexados
-  const documentosAnexados = data.documentosAnexados || [];
+// Função para gerar lista de documentos anexados
+function generateDocumentsList(data: any, baseUrl: string, formularioSlug: FormSlug): string {
+  const documentosEsperados = docsByForm[formularioSlug] || [];
+  const documentosAnexados: string[] = Array.isArray(data.documentosAnexados)
+    ? data.documentosAnexados
+    : [];
+  const nomesArquivos: Record<string, string> | undefined = data.nomesArquivos;
 
-  // Monta a lista de documentos com status e link de download
-  const lista = documentosEsperados
+  if (documentosEsperados.length === 0) {
+    return `
+      <tr>
+        <td colspan="3" style="padding: 12px; text-align: center; color: #666;">
+          Nenhum documento esperado para este formulário.
+        </td>
+      </tr>
+    `;
+  }
+
+  return documentosEsperados
     .map((doc, index) => {
-      const anexado = documentosAnexados.includes(doc.nome);
-      let downloadLink = '';
-      let nomeArquivo = '';
-      if (anexado && data.id && data.nomesArquivos && data.nomesArquivos[doc.campo]) {
-        nomeArquivo = `${doc.campo}_${data.nomesArquivos[doc.campo]}`;
-        downloadLink = `${baseUrl}/api/download-arquivo?id=${data.id}&filename=${encodeURIComponent(nomeArquivo)}`;
-      }
+      const arquivo = nomesArquivos?.[doc.campo];
+      const marcado = documentosAnexados.includes(doc.nome);
+      const estaAnexado = Boolean(arquivo && marcado);
+      const nomeArquivo = arquivo ? `${doc.campo}_${arquivo}` : "";
+      const downloadLink = data.id && nomeArquivo && estaAnexado
+        ? `${baseUrl}/api/download-arquivo?id=${data.id}&filename=${encodeURIComponent(nomeArquivo)}`
+        : "";
+
       return `
         <tr style="background-color: ${index % 2 === 0 ? '#f9f9f9' : '#ffffff'};">
           <td style="padding: 10px 15px; border-bottom: 1px solid #eee;">📄 ${doc.nome}</td>
           <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
-            ${formatAttachmentStatusSimple(anexado)}
+            ${estaAnexado ? '<span style="color: #28a745;">✅ Anexado</span>' : '<span style="color: #d32f2f;">❌ Não anexado</span>'}
           </td>
           <td style="padding: 10px 15px; border-bottom: 1px solid #eee; text-align: center;">
-            ${anexado && data.id && nomeArquivo ? `<a href="${downloadLink}" style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);" download>Baixar</a>` : '<span style="color: #999;">-</span>'}
+            ${downloadLink ? `<a href="${downloadLink}" style="display: inline-flex; justify-content: center; align-items: center; padding: 8px 16px; background: linear-gradient(135deg, #28245B 0%, #1a1a4e 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(40, 36, 91, 0.3);" download>Baixar</a>` : '<span style="color: #999;">-</span>'}
           </td>
         </tr>
       `;
     })
     .join('');
-
-  if (!lista) {
-    return `
-      <tr>
-        <td colspan="3" style="padding: 12px; text-align: center; color: #666;">
-          Nenhum documento foi anexado.
-        </td>
-      </tr>
-    `;
-  }
-  return lista;
 }
 
 // Função para montar o corpo do e-mail em HTML
@@ -188,8 +350,8 @@ function montarCorpoEmail(
     'isencao-taxas-mercantis',
     'isencao-templo-religioso'
   ];
-  
-  const ocultarElegibilidadeTestemunhas = formulariosImunidadeTaxas.includes(formularioSlug);
+
+  const ocultarElegibilidadeTestemunhas = formulariosImunidadeTaxas.includes(formularioSlug as FormSlug);
 
   // Formas de contato
   const formasContato = [];
@@ -589,7 +751,7 @@ function montarCorpoEmail(
                   <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Status</td>
                   <td style="padding: 10px 15px; font-weight: 600; color: #ffffff; text-align: center;">Ação</td>
                 </tr>
-                ${generateDocumentsList(data, baseUrl)}
+                ${generateDocumentsList(data, baseUrl, formularioSlug as FormSlug)}
               </table>
             </td>
           </tr>

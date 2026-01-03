@@ -46,6 +46,40 @@ export interface IdosoFormData extends BasePdfFormData {
   testemunha2Telefone?: string;
   testemunha2Email?: string;
   documentosAnexados?: string[];
+  nomesArquivos?: Record<string, string>;
+}
+
+function renderDocs(data: IdosoFormData) {
+  const anexados = new Set((data.documentosAnexados || []).map((d) => d?.trim()));
+  const nomesArquivos = data.nomesArquivos || {};
+  const docs = [
+    { label: "Guia de Pagamento", field: "guia" },
+    { label: "Comprovante de Pagamento", field: "comprovante" },
+    { label: "Cópia da Certidão", field: "docCertidao" },
+    { label: "Taxas Municipais", field: "docTaxas" },
+    { label: "RG e CPF", field: "docRgCpf" },
+    { label: "Comprovante de Residência", field: "docResidencia" },
+    { label: "Comprovante de Rendimentos", field: "docRendimentos" },
+    { label: "Comprovante de Propriedade", field: "docEscritura" },
+    { label: "Certidão de Único Imóvel", field: "docUnicoImovel" },
+    { label: "Ficha de Lançamento do IPTU", field: "docFichaIptu" },
+    { label: "Procuração Autenticada", field: "docProcuracao" },
+    { label: "CPF do Procurador", field: "docCpfProcurador" },
+    { label: "Identidade do Procurador", field: "docIdentidadeProcurador" },
+    { label: "Petição", field: "docPeticao" },
+  ];
+
+  return docs
+    .map((doc) => {
+      const anexado = anexados.has(doc.label) || Boolean(nomesArquivos[doc.field]);
+      return `
+      <div class="info-item">
+        <div class="info-label">${doc.label}</div>
+        <div class="info-value">${anexado ? "Anexado" : "Faltando"}</div>
+      </div>
+    `;
+    })
+    .join("");
 }
 
 function generatePdfHtml(data: IdosoFormData): string {
@@ -53,28 +87,6 @@ function generatePdfHtml(data: IdosoFormData): string {
   const { data: dataFormatada, hora: horaFormatada } = formatDateTime(
     data.createdAt || new Date()
   );
-
-  // Gera o HTML da seção de documentos anexados
-  const documentosAnexadosHtml = (() => {
-    const docs = data.documentosAnexados;
-    if (Array.isArray(docs) && docs.length > 0) {
-      return docs.map(
-        (doc: string) => `
-            <div class="info-item">
-              <div class="info-label">Documento</div>
-              <div class="info-value">${doc}</div>
-            </div>
-          `
-      ).join("");
-    } else {
-      return `
-            <div class="info-item">
-              <div class="info-label"></div>
-              <div class="info-value">Nenhum documento anexado</div>
-            </div>
-          `;
-    }
-  })();
 
   return `
 <!DOCTYPE html>
@@ -401,7 +413,7 @@ function generatePdfHtml(data: IdosoFormData): string {
   <div class="section">
     <div class="section-title">Documentos Anexados</div>
     <div class="info-grid">
-      ${documentosAnexadosHtml}
+      ${renderDocs(data)}
     </div>
   </div>
 

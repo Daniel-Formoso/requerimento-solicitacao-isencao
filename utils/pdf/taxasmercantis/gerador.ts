@@ -37,29 +37,19 @@ export interface TaxasMercantisFormData extends BasePdfFormData {
 
 function renderDocs(data: TaxasMercantisFormData) {
   const anexados = new Set((data.documentosAnexados || []).map((d) => d?.trim()));
+  const nomesArquivos = (data as any).nomesArquivos || {};
   const docs = [
-    { label: "Estatuto da Entidade", field: "docEstatuto" },
-    { label: "Ata da Diretoria", field: "docAtaDiretoria" },
-    { label: "Documentação do Imóvel", field: "docImovel" },
-    { label: "Comprovante de IPTU", field: "docIptu" },
-    { label: "Croqui da Propriedade", field: "docCroqui" },
-    { label: "Cadastro Imobiliário", field: "docCadastro" },
-    { label: "RG/CPF do Responsável", field: "docRgCpf" },
-    { label: "Comprovante de Residência", field: "docComprovanteResidencia" },
-    { label: "Cartão CNPJ", field: "docCartaoCnpj" },
-    { label: "Folha de Pagamento", field: "docFolhaPagamento" },
-    { label: "Declaração da Entidade", field: "docDeclaracaoEntidade" },
-    { label: "Demonstração Financeira", field: "docDemonstracao" },
-    { label: "Certidão Negativa de Débitos", field: "docCertidaoNegativa" },
-    { label: "Procuração Autenticada", field: "docProcuracao" },
-    { label: "CPF do Procurador", field: "docCpfProcurador" },
-    { label: "Identidade do Procurador", field: "docIdentidadeProcurador" },
+    { label: "Guia de Pagamento", field: "guia" },
+    { label: "Comprovante de Pagamento", field: "comprovante" },
+    { label: "RG e CPF", field: "docRgCpf" },
+    { label: "Comprovante de residência", field: "docComprovanteResidencia" },
+    { label: "Comprovante de rendimentos", field: "docRendimentos" },
     { label: "Petição", field: "docPeticao" },
   ];
 
   return docs
     .map((doc) => {
-      const anexado = anexados.has(doc.label) || Boolean((data as any)[doc.field]);
+      const anexado = anexados.has(doc.label) || Boolean(nomesArquivos[doc.field]);
       return `
       <div class="info-item">
         <div class="info-label">${doc.label}</div>
@@ -242,19 +232,19 @@ function generatePdfHtml(data: TaxasMercantisFormData): string {
       </div>
     </div>
   
-    <div class="section">
-      <div class="section-title">Formas de Contato</div>
-      <div class="info-grid">
-        <div class="info-item full-width">
-          <div class="info-label">Formas de Contato Preferidas</div>
-          <div class="info-value">${formatarFormasContato(
-            data.preferenciaAR,
-            data.preferenciaWhatsapp,
-            data.preferenciaEmail
-          )}</div>
-        </div>
+  <div class="section">
+    <div class="section-title">Formas de Contato</div>
+    <div class="info-grid">
+      <div class="info-item full-width">
+        <div class="info-label">Formas de Contato Preferidas</div>
+        <div class="info-value">${formatarFormasContato(
+          data.preferenciaAR,
+          data.preferenciaWhatsapp,
+          data.preferenciaEmail
+        )}</div>
       </div>
     </div>
+  </div>
   
     <div class="section">
       <div class="section-title">Observações</div>

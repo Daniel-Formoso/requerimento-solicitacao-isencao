@@ -983,12 +983,14 @@ export default function IsencaoImovelCedidoPage() {
         
         // Seção 4: Documentos anexados
         documentosAnexados: [
-          docFichaIptu ? "Ficha de inscrição do IPTU" : null,
-          docRgCpf ? "RG e CPF" : null,
-          docPropriedade ? "Prova de propriedade" : null,
-          docContrato ? "Contrato de cessão" : null,
-          docPublicidade ? "Publicidade do contrato" : null,
-          docCertidaoDebitos ? "Certidão negativa de débitos" : null,
+          guia ? "Guia de Pagamento" : null,
+          comprovante ? "Comprovante de Pagamento" : null,
+          docFichaIptu ? "Ficha de Lançamento do IPTU" : null,
+          docRgCpf ? "Documentos Pessoais (RG e CPF)" : null,
+          docPropriedade ? "Comprovante de Propriedade" : null,
+          docContrato ? "Instrumento Contratual" : null,
+          docPublicidade ? "Comprovante de Publicidade (D.O.M.)" : null,
+          docCertidaoDebitos ? "Certidão Negativa de Débitos" : null,
           // Documentos do Procurador
           possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
           possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
@@ -996,6 +998,22 @@ export default function IsencaoImovelCedidoPage() {
           // Outros documentos
           docPeticao ? "Petição" : null,
         ].filter(Boolean),
+
+        // Mapeamento de nomes de arquivos originais
+        nomesArquivos: {
+          guia: guia?.name || "",
+          comprovante: comprovante?.name || "",
+          docFichaIptu: docFichaIptu?.name || "",
+          docRgCpf: docRgCpf?.name || "",
+          docPropriedade: docPropriedade?.name || "",
+          docContrato: docContrato?.name || "",
+          docPublicidade: docPublicidade?.name || "",
+          docCertidaoDebitos: docCertidaoDebitos?.name || "",
+          docProcuracao: possuiProcurador ? (docProcuracao?.name || "") : "",
+          docCpfProcurador: possuiProcurador ? (docCpfProcurador?.name || "") : "",
+          docIdentidadeProcurador: possuiProcurador ? (docIdentidadeProcurador?.name || "") : "",
+          docPeticao: docPeticao?.name || "",
+        },
         
         // Seção 6: Procurador (se houver)
         possuiProcurador,

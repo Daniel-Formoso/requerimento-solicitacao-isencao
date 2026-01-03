@@ -13,6 +13,8 @@ import { BasePdfFormData } from "../base/types";
 
 export interface ImunidadeInstituicoesFormData extends BasePdfFormData {
   inscricaoMercantil?: string;
+  documentosAnexados?: string[];
+  nomesArquivos?: Record<string, string>;
   docEstatuto?: unknown;
   docAtaDiretoria?: unknown;
   docImovel?: unknown;
@@ -33,35 +35,40 @@ export interface ImunidadeInstituicoesFormData extends BasePdfFormData {
 }
 
 function renderDocs(data: ImunidadeInstituicoesFormData) {
+  const anexados = new Set((data.documentosAnexados || []).map((d) => d?.trim()));
+  const nomesArquivos = data.nomesArquivos || {};
   const docs = [
-    { label: "Estatuto da Entidade", value: data.docEstatuto },
-    { label: "Ata da Diretoria", value: data.docAtaDiretoria },
-    { label: "Documentação do Imóvel", value: data.docImovel },
-    { label: "Comprovante de IPTU", value: data.docIptu },
-    { label: "Croqui da Propriedade", value: data.docCroqui },
-    { label: "Cadastro Imobiliário", value: data.docCadastro },
-    { label: "RG/CPF do Responsável", value: data.docRgCpf },
-    { label: "Comprovante de Residência", value: data.docComprovanteResidencia },
-    { label: "Cartão CNPJ", value: data.docCartaoCnpj },
-    { label: "Folha de Pagamento", value: data.docFolhaPagamento },
-    { label: "Declaração da Entidade", value: data.docDeclaracaoEntidade },
-    { label: "Demonstração Financeira", value: data.docDemonstracao },
-    { label: "Certidão Negativa de Débitos", value: data.docCertidaoNegativa },
-    { label: "Procuração Autenticada", value: data.docProcuracao },
-    { label: "CPF do Procurador", value: data.docCpfProcurador },
-    { label: "Identidade do Procurador", value: data.docIdentidadeProcurador },
-    { label: "Petição", value: data.docPeticao },
+    { label: "Guia de Pagamento", field: "guia" },
+    { label: "Comprovante de Pagamento", field: "comprovante" },
+    { label: "Estatuto Social e alterações", field: "docEstatuto" },
+    { label: "Ata de Eleição da diretoria", field: "docAtaDiretoria" },
+    { label: "Documento do imóvel", field: "docImovel" },
+    { label: "Registro de IPTU do imóvel", field: "docIptu" },
+    { label: "Croqui de localização", field: "docCroqui" },
+    { label: "Registro de cadastro imobiliário", field: "docCadastro" },
+    { label: "Identificação (RG/CPF)", field: "docRgCpf" },
+    { label: "Comprovante de residência", field: "docComprovanteResidencia" },
+    { label: "Cartão CNPJ", field: "docCartaoCnpj" },
+    { label: "Folha de pagamento", field: "docFolhaPagamento" },
+    { label: "Declaração de entidade", field: "docDeclaracaoEntidade" },
+    { label: "Demonstração e Balanço", field: "docDemonstracao" },
+    { label: "Certidão Negativa/Positiva", field: "docCertidaoNegativa" },
+    { label: "Procuração Autenticada", field: "docProcuracao" },
+    { label: "CPF do Procurador", field: "docCpfProcurador" },
+    { label: "Identidade do Procurador", field: "docIdentidadeProcurador" },
+    { label: "Petição", field: "docPeticao" },
   ];
 
   return docs
-    .map(
-      (doc) => `
+    .map((doc) => {
+      const anexado = anexados.has(doc.label) || Boolean(nomesArquivos[doc.field]);
+      return `
       <div class="info-item">
         <div class="info-label">${doc.label}</div>
-        <div class="info-value">${doc.value ? "Anexado" : "Faltando"}</div>
+        <div class="info-value">${anexado ? "Anexado" : "Faltando"}</div>
       </div>
-    `
-    )
+    `;
+    })
     .join("");
 }
 
@@ -237,19 +244,19 @@ function generatePdfHtml(data: ImunidadeInstituicoesFormData): string {
      </div>
    </div>
  
-   <div class="section">
-     <div class="section-title">Formas de Contato</div>
-     <div class="info-grid">
-       <div class="info-item full-width">
-         <div class="info-label">Formas de Contato Preferidas</div>
-         <div class="info-value">${formatarFormasContato(
-           data.preferenciaAR,
-           data.preferenciaWhatsapp,
-           data.preferenciaEmail
-         )}</div>
-       </div>
-     </div>
-   </div>
+  <div class="section">
+    <div class="section-title">Formas de Contato</div>
+    <div class="info-grid">
+      <div class="info-item full-width">
+        <div class="info-label">Formas de Contato Preferidas</div>
+        <div class="info-value">${formatarFormasContato(
+          data.preferenciaAR,
+          data.preferenciaWhatsapp,
+          data.preferenciaEmail
+        )}</div>
+      </div>
+    </div>
+  </div>
  
    <div class="section">
      <div class="section-title">Observações</div>

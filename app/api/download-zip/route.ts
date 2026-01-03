@@ -22,10 +22,38 @@ export async function GET(req: NextRequest) {
     const mes = String(today.getMonth() + 1).padStart(2, '0');
     const ano = today.getFullYear();
     const dateFolder = `${dia}-${mes}-${ano}`;
-    const uploadDir = join(process.cwd(), "uploads", dateFolder, id);
+    const dateFolderPath = join(process.cwd(), "uploads", dateFolder);
+
+    // Buscar a pasta que contém o ID (nova estrutura: uploads/data/tipo-form/NN - nome/)
+    let uploadDir: string | null = null;
+    
+    if (existsSync(dateFolderPath)) {
+      const tiposFormulario = readdirSync(dateFolderPath, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory());
+      
+      for (const tipoDir of tiposFormulario) {
+        const tipoPath = join(dateFolderPath, tipoDir.name);
+        const requerimentos = readdirSync(tipoPath, { withFileTypes: true })
+          .filter(dirent => dirent.isDirectory());
+        
+        for (const reqDir of requerimentos) {
+          const reqPath = join(tipoPath, reqDir.name);
+          const idFilePath = join(reqPath, '.id');
+          // Verificar se existe arquivo .id com o ID correspondente
+          if (existsSync(idFilePath)) {
+            const savedId = require('fs').readFileSync(idFilePath, 'utf8').trim();
+            if (savedId === id) {
+              uploadDir = reqPath;
+              break;
+            }
+          }
+        }
+        if (uploadDir) break;
+      }
+    }
 
     // Verificar se a pasta existe
-    if (!existsSync(uploadDir)) {
+    if (!uploadDir || !existsSync(uploadDir)) {
       return NextResponse.json(
         { success: false, message: "Requerimento não encontrado" },
         { status: 404 }
@@ -45,8 +73,10 @@ export async function GET(req: NextRequest) {
     // Criar um arquivo ZIP
     const archive = archiver("zip", { zlib: { level: 9 } });
 
-    // Adicionar arquivos ao ZIP
+    // Adicionar arquivos ao ZIP (exceto arquivo .id oculto)
     for (const file of files) {
+      if (file === '.id') continue; // Ignorar arquivo de controle
+      
       const filePath = join(uploadDir, file);
       const stat = statSync(filePath);
 
@@ -60,20 +90,10 @@ export async function GET(req: NextRequest) {
     // Converter o stream para ReadableStream para Next.js
     const readable = Readable.from(archive);
     
-    // Buscar nome e cpf do requerente no primeiro arquivo JSON (se existir)
-    let nome = "Requerente";
-    let cpf = "";
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        try {
-          const jsonPath = join(uploadDir, file);
-          const jsonData = JSON.parse(require('fs').readFileSync(jsonPath, 'utf8'));
-          if (jsonData.nome) nome = jsonData.nome;
-          if (jsonData.cpf) cpf = jsonData.cpf;
-          break;
-        } catch {}
-      }
-    }
+    // Extrair nome do requerente da pasta (formato: "NN - requerimento Nome")
+    const folderName = uploadDir.split(/[/\\]/).pop() || "";
+    const match = folderName.match(/\d+ - requerimento (.+)/);
+    const nome = match ? match[1] : "Requerente";
     const nomeLimpo = (nome || "").normalize('NFD').replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
     const nomeZip = `Documentos_${nomeLimpo}.zip`;
     return new NextResponse(readable as any, {
