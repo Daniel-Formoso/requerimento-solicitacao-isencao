@@ -29,6 +29,20 @@ export interface ExCombatenteFormData extends BasePdfFormData {
   telefoneConjuge?: string;
   emailConjuge?: string;
   origemRendaConjuge?: string;
+  documentosAnexados?: string[];
+  testemunha1Nome?: string;
+  testemunha1Cpf?: string;
+  testemunha1Rg?: string;
+  testemunha1OrgaoEmissor?: string;
+  testemunha1Telefone?: string;
+  testemunha1Email?: string;
+  testemunha2Nome?: string;
+  testemunha2Cpf?: string;
+  testemunha2Rg?: string;
+  testemunha2OrgaoEmissor?: string;
+  testemunha2Telefone?: string;
+  testemunha2Email?: string;
+  assinaturaRogo?: boolean;
 }
 
 function generatePdfHtml(data: ExCombatenteFormData): string {
@@ -36,6 +50,28 @@ function generatePdfHtml(data: ExCombatenteFormData): string {
   const { data: dataFormatada, hora: horaFormatada } = formatDateTime(
     data.createdAt || new Date()
   );
+
+  // Gera o HTML da seção de documentos anexados
+  const documentosAnexadosHtml = (() => {
+    const docs = data.documentosAnexados;
+    if (Array.isArray(docs) && docs.length > 0) {
+      return docs.map(
+        (doc: string) => `
+            <div class="info-item">
+              <div class="info-label">Documento</div>
+              <div class="info-value">${doc}</div>
+            </div>
+          `
+      ).join("");
+    } else {
+      return `
+            <div class="info-item">
+              <div class="info-label"></div>
+              <div class="info-value">Nenhum documento anexado</div>
+            </div>
+          `;
+    }
+  })();
 
   return `
 <!DOCTYPE html>
@@ -82,7 +118,7 @@ function generatePdfHtml(data: ExCombatenteFormData): string {
   </div>
 
   <div class="section">
-    <div class="section-title">Dados do Contribuinte</div>
+    <div class="section-title">Identificação do Requerente</div>
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Nome Completo</div>
@@ -110,6 +146,43 @@ function generatePdfHtml(data: ExCombatenteFormData): string {
       </div>
     </div>
   </div>
+
+  <div class="section">
+    <div class="section-title">Identificação do Procurador</div>
+      <div class="info-grid">
+        <div class="info-item">
+        <div class="info-label">Possui Procurador?</div>
+        <div class="info-value bool-value"><span class="${
+          data.possuiProcurador ? "sim" : "nao"
+        }">${data.possuiProcurador ? "Sim" : "Não"}</span></div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Nome do Procurador</div>
+        <div class="info-value">${formatValueOptional(data.nomeProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">CPF</div>
+        <div class="info-value">${formatValueOptional(data.cpfProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">RG</div>
+        <div class="info-value">${formatValueOptional(data.rgProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Órgão Expedidor</div>
+        <div class="info-value">${formatValueOptional(data.orgaoEmissorProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">E-mail</div>
+        <div class="info-value">${formatValueOptional(data.emailProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Telefone</div>
+        <div class="info-value">${formatValueOptional(data.telefoneProcurador)}</div>
+      </div>
+    </div>
+  </div>
+
 
   <div class="section">
     <div class="section-title">Identificação do Imóvel</div>
@@ -238,40 +311,84 @@ function generatePdfHtml(data: ExCombatenteFormData): string {
   </div>
 
   <div class="section">
-    <div class="section-title">Identificação do Procurador</div>
+  <div class="section-title">Testemunhas (Assinatura a Rogo)</div>
+  <div class="info-grid" style="margin-bottom: 8px;">
+    <div class="info-item">
+      <div class="info-label">Assinatura a Rogo?</div>
+      <div class="info-value bool-value"><span class="${data.assinaturaRogo ? "sim" : "nao"}">${data.assinaturaRogo ? "Sim" : "Não"}</span></div>
+    </div>
+  </div>
+  
+  <div style="margin-bottom: 8px;">
+    <div style="font-weight: bold; font-size: 10px; margin-bottom: 4px;">Testemunha 1</div>
     <div class="info-grid">
       <div class="info-item">
-        <div class="info-label">Possui Procurador?</div>
-        <div class="info-value bool-value"><span class="${
-          data.possuiProcurador ? "sim" : "nao"
-        }">${data.possuiProcurador ? "Sim" : "Não"}</span></div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Nome do Procurador</div>
-        <div class="info-value">${formatValueOptional(data.nomeProcurador)}</div>
+        <div class="info-label">Nome</div>
+        <div class="info-value">${formatValueOptional(data.testemunha1Nome)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">CPF</div>
-        <div class="info-value">${formatValueOptional(data.cpfProcurador)}</div>
+        <div class="info-value">${formatValueOptional(data.testemunha1Cpf)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">RG</div>
-        <div class="info-value">${formatValueOptional(data.rgProcurador)}</div>
+        <div class="info-value">${formatValueOptional(data.testemunha1Rg)}</div>
       </div>
       <div class="info-item">
-        <div class="info-label">Órgão Expedidor</div>
-        <div class="info-value">${formatValueOptional(data.orgaoEmissorProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">E-mail</div>
-        <div class="info-value">${formatValueOptional(data.emailProcurador)}</div>
+        <div class="info-label">Órgão Emissor</div>
+        <div class="info-value">${formatValueOptional(data.testemunha1OrgaoEmissor)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">Telefone</div>
-        <div class="info-value">${formatValueOptional(data.telefoneProcurador)}</div>
+        <div class="info-value">${formatValueOptional(data.testemunha1Telefone)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">E-mail</div>
+        <div class="info-value">${formatValueOptional(data.testemunha1Email)}</div>
       </div>
     </div>
   </div>
+
+  <div>
+    <div style="font-weight: bold; font-size: 10px; margin-bottom: 4px;">Testemunha 2</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Nome</div>
+          <div class="info-value">${formatValueOptional(data.testemunha2Nome)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">CPF</div>
+          <div class="info-value">${formatValueOptional(data.testemunha2Cpf)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">RG</div>
+          <div class="info-value">${formatValueOptional(data.testemunha2Rg)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Órgão Emissor</div>
+          <div class="info-value">${formatValueOptional(data.testemunha2OrgaoEmissor)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Telefone</div>
+          <div class="info-value">${formatValueOptional(data.testemunha2Telefone)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">E-mail</div>
+          <div class="info-value">${formatValueOptional(data.testemunha2Email)}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Nova seção: Documentos Anexados -->
+  <div class="section">
+    <div class="section-title">Documentos Anexados</div>
+    <div class="info-grid">
+      ${documentosAnexadosHtml}
+    </div>
+  </div>
+
+
 
   <div class="section">
     <div class="section-title">Formas de Contato</div>
@@ -296,7 +413,7 @@ function generatePdfHtml(data: ExCombatenteFormData): string {
     </div>
   </div>
 
-  <div class="declaration-section">
+  <div class="declaration-section" style="margin-top:150px;">
     <div class="declaration-title">Declaração de Concordância Eletrônica</div>
     <div class="declaration-text">
       "Declaro, sob as penas da lei, que as informações prestadas neste requerimento são verdadeiras e de minha inteira responsabilidade."

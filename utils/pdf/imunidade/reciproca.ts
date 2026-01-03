@@ -12,7 +12,13 @@ import {
 import { BasePdfFormData } from "../base/types";
 
 export interface ImunidadeReciprocaFormData extends BasePdfFormData {
+  possuiGuiaTaxa?: boolean;
+  possuiComprovanteTaxa?: boolean;
   inscricaoMercantil?: string;
+  preferenciaAR?: boolean;
+  preferenciaWhatsapp?: boolean;
+  preferenciaEmail?: boolean;
+  observacoes?: string;
   documentosAnexados?: string[];
 }
 

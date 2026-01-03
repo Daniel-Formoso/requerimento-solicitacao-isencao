@@ -16,7 +16,7 @@ export const baseStyles = `
     color: #000;
     margin: 0;
     padding: 0;
-    padding-bottom: 40px;
+    padding-bottom: 50px;
   }
   
   .header {
@@ -164,10 +164,10 @@ export const baseStyles = `
   
   .page-footer {
     position: fixed;
-    bottom: 0;
+    bottom: 5mm;
     left: 0;
     right: 0;
-    height: 35px;
+    height: 25px;
     border-top: 1px solid #d0d0d0;
     padding: 5px 15mm;
     font-size: 8px;

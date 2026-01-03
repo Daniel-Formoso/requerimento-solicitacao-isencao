@@ -18,6 +18,7 @@ export interface ImovelCedidoFormData extends BasePdfFormData {
   orgaoEmissorInquilino?: string;
   telefoneInquilino?: string;
   emailInquilino?: string;
+  documentosAnexados?: string[];
 }
 
 function generatePdfHtml(data: ImovelCedidoFormData, titulo: string): string {
@@ -25,6 +26,28 @@ function generatePdfHtml(data: ImovelCedidoFormData, titulo: string): string {
   const { data: dataFormatada, hora: horaFormatada } = formatDateTime(
     data.createdAt || new Date()
   );
+
+  // Gera o HTML da seção de documentos anexados
+  const documentosAnexadosHtml = (() => {
+    const docs = data.documentosAnexados;
+    if (Array.isArray(docs) && docs.length > 0) {
+      return docs.map(
+        (doc: string) => `
+            <div class="info-item">
+              <div class="info-label">Documento</div>
+              <div class="info-value">${doc}</div>
+            </div>
+          `
+      ).join("");
+    } else {
+      return `
+            <div class="info-item">
+              <div class="info-label"></div>
+              <div class="info-value">Nenhum documento anexado</div>
+            </div>
+          `;
+    }
+  })();
 
   return `
 <!DOCTYPE html>
@@ -71,7 +94,7 @@ function generatePdfHtml(data: ImovelCedidoFormData, titulo: string): string {
   </div>
 
   <div class="section">
-    <div class="section-title">Dados do Requerente</div>
+    <div class="section-title">Identificação do Requerente</div>
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Nome Completo</div>
@@ -99,6 +122,43 @@ function generatePdfHtml(data: ImovelCedidoFormData, titulo: string): string {
       </div>
     </div>
   </div>
+
+    <div class="section">
+    <div class="section-title">Identificação do Procurador</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Possui Procurador?</div>
+        <div class="info-value bool-value"><span class="${
+          data.possuiProcurador ? "sim" : "nao"
+        }">${data.possuiProcurador ? "Sim" : "Não"}</span></div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Nome do Procurador</div>
+        <div class="info-value">${formatValueOptional(data.nomeProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">CPF</div>
+        <div class="info-value">${formatValueOptional(data.cpfProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">RG</div>
+        <div class="info-value">${formatValueOptional(data.rgProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Órgão Expedidor</div>
+        <div class="info-value">${formatValueOptional(data.orgaoEmissorProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">E-mail</div>
+        <div class="info-value">${formatValueOptional(data.emailProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Telefone</div>
+        <div class="info-value">${formatValueOptional(data.telefoneProcurador)}</div>
+      </div>
+    </div>
+  </div>
+
 
   <div class="section">
     <div class="section-title">Identificação do Imóvel</div>
@@ -156,11 +216,12 @@ function generatePdfHtml(data: ImovelCedidoFormData, titulo: string): string {
     </div>
   </div>
 
+
   ${
     data.nomeInquilino
       ? `
   <div class="section">
-    <div class="section-title">Dados do Inquilino</div>
+    <div class="section-title">Identificação do Inquilino</div>
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Nome do Inquilino</div>
@@ -192,41 +253,15 @@ function generatePdfHtml(data: ImovelCedidoFormData, titulo: string): string {
       : ""
   }
 
+  
+  <!-- Nova seção: Documentos Anexados -->
   <div class="section">
-    <div class="section-title">Identificação do Procurador</div>
+    <div class="section-title">Documentos Anexados</div>
     <div class="info-grid">
-      <div class="info-item">
-        <div class="info-label">Possui Procurador?</div>
-        <div class="info-value bool-value"><span class="${
-          data.possuiProcurador ? "sim" : "nao"
-        }">${data.possuiProcurador ? "Sim" : "Não"}</span></div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Nome do Procurador</div>
-        <div class="info-value">${formatValueOptional(data.nomeProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">CPF</div>
-        <div class="info-value">${formatValueOptional(data.cpfProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">RG</div>
-        <div class="info-value">${formatValueOptional(data.rgProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Órgão Expedidor</div>
-        <div class="info-value">${formatValueOptional(data.orgaoEmissorProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">E-mail</div>
-        <div class="info-value">${formatValueOptional(data.emailProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Telefone</div>
-        <div class="info-value">${formatValueOptional(data.telefoneProcurador)}</div>
-      </div>
+      ${documentosAnexadosHtml}
     </div>
   </div>
+
 
   <div class="section">
     <div class="section-title">Formas de Contato</div>
