@@ -1092,12 +1092,27 @@ export default function IsencaoPcdPage() {
         telefoneProcurador: possuiProcurador ? telefoneProcurador : undefined,
         emailProcurador: possuiProcurador ? emailProcurador : undefined,
         
-        // Seção 7: Preferências de Comunicação
+        // Seção 7: Assinatura a Rogo e Testemunhas
+        assinaturaRogo,
+        testemunha1Nome,
+        testemunha1Cpf,
+        testemunha1Rg,
+        testemunha1OrgaoEmissor,
+        testemunha1Telefone,
+        testemunha1Email,
+        testemunha2Nome,
+        testemunha2Cpf,
+        testemunha2Rg,
+        testemunha2OrgaoEmissor,
+        testemunha2Telefone,
+        testemunha2Email,
+        
+        // Seção 8: Preferências de Comunicação
         preferenciaAR,
         preferenciaWhatsapp,
         preferenciaEmail: preferenciaEmail,
         
-        // Seção 8: Observações
+        // Seção 9: Observações
         observacoes,
       };
       

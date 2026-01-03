@@ -54,6 +54,28 @@ function generatePdfHtml(data: IdosoFormData): string {
     data.createdAt || new Date()
   );
 
+  // Gera o HTML da seção de documentos anexados
+  const documentosAnexadosHtml = (() => {
+    const docs = data.documentosAnexados;
+    if (Array.isArray(docs) && docs.length > 0) {
+      return docs.map(
+        (doc: string) => `
+            <div class="info-item">
+              <div class="info-label">Documento</div>
+              <div class="info-value">${doc}</div>
+            </div>
+          `
+      ).join("");
+    } else {
+      return `
+            <div class="info-item">
+              <div class="info-label"></div>
+              <div class="info-value">Nenhum documento anexado</div>
+            </div>
+          `;
+    }
+  })();
+
   return `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -99,7 +121,7 @@ function generatePdfHtml(data: IdosoFormData): string {
   </div>
 
   <div class="section">
-    <div class="section-title">Dados do Contribuinte</div>
+    <div class="section-title">Identificação do Requerente</div>
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Nome Completo</div>
@@ -127,6 +149,43 @@ function generatePdfHtml(data: IdosoFormData): string {
       </div>
     </div>
   </div>
+
+  <div class="section">
+    <div class="section-title">Identificação do Procurador</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Possui Procurador?</div>
+        <div class="info-value bool-value"><span class="${
+          data.possuiProcurador ? "sim" : "nao"
+        }">${data.possuiProcurador ? "Sim" : "Não"}</span></div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Nome do Procurador</div>
+        <div class="info-value">${formatValueOptional(data.nomeProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">CPF</div>
+        <div class="info-value">${formatValueOptional(data.cpfProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">RG</div>
+        <div class="info-value">${formatValueOptional(data.rgProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Órgão Expedidor</div>
+        <div class="info-value">${formatValueOptional(data.orgaoEmissorProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">E-mail</div>
+        <div class="info-value">${formatValueOptional(data.emailProcurador)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Telefone</div>
+        <div class="info-value">${formatValueOptional(data.telefoneProcurador)}</div>
+      </div>
+    </div>
+  </div>
+
 
   <div class="section">
     <div class="section-title">Identificação do Imóvel</div>
@@ -260,41 +319,7 @@ function generatePdfHtml(data: IdosoFormData): string {
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Identificação do Procurador</div>
-    <div class="info-grid">
-      <div class="info-item">
-        <div class="info-label">Possui Procurador?</div>
-        <div class="info-value bool-value"><span class="${
-          data.possuiProcurador ? "sim" : "nao"
-        }">${data.possuiProcurador ? "Sim" : "Não"}</span></div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Nome do Procurador</div>
-        <div class="info-value">${formatValueOptional(data.nomeProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">CPF</div>
-        <div class="info-value">${formatValueOptional(data.cpfProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">RG</div>
-        <div class="info-value">${formatValueOptional(data.rgProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Órgão Expedidor</div>
-        <div class="info-value">${formatValueOptional(data.orgaoEmissorProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">E-mail</div>
-        <div class="info-value">${formatValueOptional(data.emailProcurador)}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Telefone</div>
-        <div class="info-value">${formatValueOptional(data.telefoneProcurador)}</div>
-      </div>
-    </div>
-  </div>
+
 
   <div class="section">
     <div class="section-title">Testemunhas (Assinatura a Rogo)</div>
@@ -372,6 +397,14 @@ function generatePdfHtml(data: IdosoFormData): string {
     </div>
   </div>
 
+  <!-- Nova seção: Documentos Anexados -->
+  <div class="section">
+    <div class="section-title">Documentos Anexados</div>
+    <div class="info-grid">
+      ${documentosAnexadosHtml}
+    </div>
+  </div>
+
   <div class="section">
     <div class="section-title">Formas de Contato</div>
     <div class="info-grid">
@@ -395,7 +428,7 @@ function generatePdfHtml(data: IdosoFormData): string {
     </div>
   </div>
 
-  <div class="declaration-section">
+  <div class="declaration-section" style="margin-top:32px;">
     <div class="declaration-title">Declaração de Concordância Eletrônica</div>
     <div class="declaration-text">
       "Declaro, sob as penas da lei, que as informações prestadas neste requerimento são verdadeiras e de minha inteira responsabilidade."

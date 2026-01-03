@@ -796,9 +796,7 @@ export default function IsencaoImovelCedidoPage() {
           docPublicidade &&
           docCertidaoDebitos
         );
-      case 6: // Seção intermediária (não existe no formulário, mas necessária para fluxo)
-        return true;
-      case 7: // Assinatura a Rogo
+      case 6: // Assinatura a Rogo
         if (assinaturaRogo) {
           const testemunha1Valid =
             testemunha1Nome &&
@@ -828,14 +826,14 @@ export default function IsencaoImovelCedidoPage() {
           );
         }
         return true;
-      case 8: // Preferências
+      case 7: // Preferências
         const selectedCount = [
           preferenciaAR,
           preferenciaWhatsapp,
           preferenciaEmail,
         ].filter(Boolean).length;
         return selectedCount >= 2;
-      case 9: // Finalização
+      case 8: // Finalização
         return aceiteTermo;
       default:
         return false;
@@ -871,8 +869,8 @@ export default function IsencaoImovelCedidoPage() {
         setCompletedSections([...completedSections, currentSection]);
       }
 
-      // Pula da seção 5 direto para a 7 (não existe seção 6 neste formulário)
-      const nextSectionNumber = currentSection === 5 ? 7 : currentSection + 1;
+      // Próxima seção
+      const nextSectionNumber = currentSection + 1;
       setActiveSection(nextSectionNumber);
 
       // Fechar a seção atual e expandir apenas a próxima seção
@@ -937,7 +935,7 @@ export default function IsencaoImovelCedidoPage() {
   };
 
   const handleSubmit = async () => {
-    if (isSectionValid(9)) {
+    if (isSectionValid(8)) {
       console.log("Formulário enviado com sucesso!");
       
       // Abrir modal de loading
@@ -1152,7 +1150,7 @@ export default function IsencaoImovelCedidoPage() {
         setDocPublicidade(dados.documentos?.[0] || null);
         setDocCertidaoDebitos(dados.documentos?.[1] || null);
         break;
-      case 7:
+      case 6:
         setAssinaturaRogo(true);
         // Testemunha 1
         const testemunha1Data = gerarDadosAleatorios({});
@@ -1179,12 +1177,12 @@ export default function IsencaoImovelCedidoPage() {
         setTestemunha2TelefoneError("");
         setTestemunha2EmailError("");
         break;
-      case 8:
+      case 7:
         setPreferenciaAR(true);
         setPreferenciaWhatsapp(true);
         setPreferenciaEmail(false);
         break;
-      case 9:
+      case 8:
         setObservacoes(
           "Observações de teste geradas automaticamente para facilitar o preenchimento do formulário."
         );
@@ -2349,38 +2347,38 @@ export default function IsencaoImovelCedidoPage() {
           )}
         </section>
 
-        {/* Seção 7 - Testemunhas (Assinatura a Rogo) */}
+        {/* Seção 6 - Testemunhas (Assinatura a Rogo) */}
         <section
-          data-section="7"
+          data-section="6"
           className={`${styles.section} ${
-            activeSection === 7 ? styles.sectionActive : ""
-          } ${completedSections.includes(7) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 7 ? 1 : 0.5 }}
+            activeSection === 6 ? styles.sectionActive : ""
+          } ${completedSections.includes(6) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 6 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(7)}
+            onClick={() => toggleSection(6)}
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              07. Testemunhas (Assinatura a Rogo)
+              06. Testemunhas (Assinatura a Rogo)
             </h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(7) && (
+              {completedSections.includes(6) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(7) ? styles.expandIconOpen : ""
+                  expandedSections.includes(6) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(7) && (
+          {expandedSections.includes(6) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 7 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 6 ? "auto" : "none" }}
             >
               <p className={styles.helperText}>
                 Exclusivo para requerentes analfabetos ou impossibilitados de
@@ -2675,8 +2673,8 @@ export default function IsencaoImovelCedidoPage() {
               )}
 
               <button
-                onClick={() => handleNextSection(7)}
-                disabled={!isSectionValid(7)}
+                onClick={() => handleNextSection(6)}
+                disabled={!isSectionValid(6)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -2685,38 +2683,38 @@ export default function IsencaoImovelCedidoPage() {
           )}
         </section>
 
-        {/* Seção 8 - Preferências de Comunicação */}
+        {/* Seção 7 - Preferências de Comunicação */}
         <section
-          data-section="8"
+          data-section="7"
           className={`${styles.section} ${
-            activeSection === 8 ? styles.sectionActive : ""
-          } ${completedSections.includes(8) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 8 ? 1 : 0.5 }}
+            activeSection === 7 ? styles.sectionActive : ""
+          } ${completedSections.includes(7) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 7 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(8)}
+            onClick={() => toggleSection(7)}
             style={{ cursor: "pointer" }}
           >
             <h2 className={styles.sectionTitle}>
-              08. Como deseja receber o nosso contato?
+              07. Como deseja receber o nosso contato?
             </h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(8) && (
+              {completedSections.includes(7) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(8) ? styles.expandIconOpen : ""
+                  expandedSections.includes(7) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(8) && (
+          {expandedSections.includes(7) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 8 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 7 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Escolha a melhor forma para receber atualizações sobre seu
@@ -2759,8 +2757,8 @@ export default function IsencaoImovelCedidoPage() {
               </div>
 
               <button
-                onClick={() => handleNextSection(8)}
-                disabled={!isSectionValid(8)}
+                onClick={() => handleNextSection(7)}
+                disabled={!isSectionValid(7)}
                 className={styles.btnContinue}
               >
                 Continuar
@@ -2769,36 +2767,36 @@ export default function IsencaoImovelCedidoPage() {
           )}
         </section>
 
-        {/* Seção 9 - Finalização */}
+        {/* Seção 8 - Finalização */}
         <section
-          data-section="9"
+          data-section="8"
           className={`${styles.section} ${
-            activeSection === 9 ? styles.sectionActive : ""
-          } ${completedSections.includes(9) ? styles.sectionCompleted : ""}`}
-          style={{ opacity: activeSection >= 9 ? 1 : 0.5 }}
+            activeSection === 8 ? styles.sectionActive : ""
+          } ${completedSections.includes(8) ? styles.sectionCompleted : ""}`}
+          style={{ opacity: activeSection >= 8 ? 1 : 0.5 }}
         >
           <div
             className={styles.sectionHeader}
-            onClick={() => toggleSection(9)}
+            onClick={() => toggleSection(8)}
             style={{ cursor: "pointer" }}
           >
-            <h2 className={styles.sectionTitle}>09. Observações Finais</h2>
+            <h2 className={styles.sectionTitle}>08. Observações Finais</h2>
             <div className={styles.sectionHeaderIcons}>
-              {completedSections.includes(9) && (
+              {completedSections.includes(8) && (
                 <CheckCircleIcon className={styles.checkIcon} />
               )}
               <ExpandMoreIcon
                 className={`${styles.expandIcon} ${
-                  expandedSections.includes(9) ? styles.expandIconOpen : ""
+                  expandedSections.includes(8) ? styles.expandIconOpen : ""
                 }`}
               />
             </div>
           </div>
 
-          {expandedSections.includes(9) && (
+          {expandedSections.includes(8) && (
             <div
               className={styles.sectionContent}
-              style={{ pointerEvents: activeSection >= 9 ? "auto" : "none" }}
+              style={{ pointerEvents: activeSection >= 8 ? "auto" : "none" }}
             >
               <p className={styles.sectionDescription}>
                 Inclua informações adicionais que possam ser relevantes para o
@@ -2886,7 +2884,7 @@ export default function IsencaoImovelCedidoPage() {
 
               <button
                 onClick={handleSubmit}
-                disabled={!isSectionValid(9)}
+                disabled={!isSectionValid(8)}
                 className={styles.btnSubmit}
               >
                 ENVIAR REQUERIMENTO
