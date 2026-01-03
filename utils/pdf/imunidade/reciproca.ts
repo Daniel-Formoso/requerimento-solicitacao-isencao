@@ -20,23 +20,45 @@ export interface ImunidadeReciprocaFormData extends BasePdfFormData {
   preferenciaEmail?: boolean;
   observacoes?: string;
   documentosAnexados?: string[];
+  nomesArquivos?: Record<string, string>;
 }
 
 function renderDocs(data: ImunidadeReciprocaFormData) {
-  const anexados = data.documentosAnexados || [];
-  if (!anexados.length) {
-    return `<div class="info-item"><div class="info-label">Documentos</div><div class="info-value">Vide anexos enviados</div></div>`;
-  }
+  const anexados = new Set((data.documentosAnexados || []).map((d) => d?.trim()));
+  const nomesArquivos = data.nomesArquivos || {};
+  const docs = [
+    { label: "Guia de Pagamento", field: "guia" },
+    { label: "Comprovante de Pagamento", field: "comprovante" },
+    { label: "Ofício Assinado do Órgão Público", field: "docOficio" },
+    { label: "Estatuto Social e alterações", field: "docEstatuto" },
+    { label: "Ata de Eleição da diretoria", field: "docAtaDiretoria" },
+    { label: "Documento do imóvel", field: "docImovel" },
+    { label: "Registro de IPTU do imóvel", field: "docIptu" },
+    { label: "Croqui de localização", field: "docCroqui" },
+    { label: "Registro de cadastro imobiliário", field: "docCadastro" },
+    { label: "Identificação (RG/CPF)", field: "docRgCpf" },
+    { label: "Comprovante de residência", field: "docComprovanteResidencia" },
+    { label: "Cartão CNPJ", field: "docCartaoCnpj" },
+    { label: "Folha de pagamento", field: "docFolhaPagamento" },
+    { label: "Declaração de entidade", field: "docDeclaracaoEntidade" },
+    { label: "Demonstração e Balanço", field: "docDemonstracao" },
+    { label: "Certidão Negativa/Positiva", field: "docCertidaoNegativa" },
+    { label: "Procuração Autenticada", field: "docProcuracao" },
+    { label: "CPF do Procurador", field: "docCpfProcurador" },
+    { label: "Identidade do Procurador", field: "docIdentidadeProcurador" },
+    { label: "Petição", field: "docPeticao" },
+  ];
 
-  return anexados
-    .map(
-      (doc) => `
+  return docs
+    .map((doc) => {
+      const anexado = anexados.has(doc.label) || Boolean(nomesArquivos[doc.field]);
+      return `
       <div class="info-item">
-        <div class="info-label">${doc}</div>
-        <div class="info-value">Anexado</div>
+        <div class="info-label">${doc.label}</div>
+        <div class="info-value">${anexado ? "Anexado" : "Faltando"}</div>
       </div>
-    `
-    )
+    `;
+    })
     .join("");
 }
 
@@ -210,19 +232,19 @@ function generatePdfHtml(data: ImunidadeReciprocaFormData): string {
      </div>
    </div>
  
-   <div class="section">
-     <div class="section-title">Formas de Contato</div>
-     <div class="info-grid">
-       <div class="info-item full-width">
-         <div class="info-label">Formas de Contato Preferidas</div>
-         <div class="info-value">${formatarFormasContato(
-           data.preferenciaAR,
-           data.preferenciaWhatsapp,
-           data.preferenciaEmail
-         )}</div>
-       </div>
-     </div>
-   </div>
+  <div class="section">
+    <div class="section-title">Formas de Contato</div>
+    <div class="info-grid">
+      <div class="info-item full-width">
+        <div class="info-label">Formas de Contato Preferidas</div>
+        <div class="info-value">${formatarFormasContato(
+          data.preferenciaAR,
+          data.preferenciaWhatsapp,
+          data.preferenciaEmail
+        )}</div>
+      </div>
+    </div>
+  </div>
  
    <div class="section">
      <div class="section-title">Observações</div>

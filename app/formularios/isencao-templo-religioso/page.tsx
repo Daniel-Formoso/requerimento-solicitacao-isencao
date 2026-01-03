@@ -697,18 +697,39 @@ export default function IsencaoTemploReligiosoPage() {
         
         // Seção 4: Documentos anexados
         documentosAnexados: [
-          docEstatuto ? "Estatuto da Entidade" : null,
-          docAtaDiretoria ? "Ata da Diretoria" : null,
-          docImovel ? "Documentação do Imóvel" : null,
-          docIptu ? "Comprovante de IPTU" : null,
-          docCroqui ? "Croqui da Propriedade" : null,
-          docCadastro ? "Cadastro Imobiliário" : null,
-          docRgCpf ? "RG e CPF do Responsável" : null,
+          guia ? "Guia de Pagamento" : null,
+          comprovante ? "Comprovante de Pagamento" : null,
+          docEstatuto ? "Estatuto Social e alterações" : null,
+          docAtaDiretoria ? "Ata de Eleição da diretoria" : null,
+          docImovel ? "Documento do imóvel" : null,
+          docIptu ? "Registro de IPTU do imóvel" : null,
+          docCroqui ? "Croqui de localização" : null,
+          docCadastro ? "Registro de cadastro imobiliário" : null,
+          docRgCpf ? "Identificação (RG/CPF)" : null,
           // Documentos do Procurador
           possuiProcurador && docProcuracao ? "Procuração Autenticada" : null,
           possuiProcurador && docCpfProcurador ? "CPF do Procurador" : null,
           possuiProcurador && docIdentidadeProcurador ? "Identidade do Procurador" : null,
+          // Outros documentos
+          docPeticao ? "Petição" : null,
         ].filter(Boolean),
+
+        // Mapeamento de nomes de arquivos originais
+        nomesArquivos: {
+          guia: guia?.name || "",
+          comprovante: comprovante?.name || "",
+          docEstatuto: docEstatuto?.name || "",
+          docAtaDiretoria: docAtaDiretoria?.name || "",
+          docImovel: docImovel?.name || "",
+          docIptu: docIptu?.name || "",
+          docCroqui: docCroqui?.name || "",
+          docCadastro: docCadastro?.name || "",
+          docRgCpf: docRgCpf?.name || "",
+          docProcuracao: possuiProcurador ? (docProcuracao?.name || "") : "",
+          docCpfProcurador: possuiProcurador ? (docCpfProcurador?.name || "") : "",
+          docIdentidadeProcurador: possuiProcurador ? (docIdentidadeProcurador?.name || "") : "",
+          docPeticao: docPeticao?.name || "",
+        },
         
         // Seção 6: Procurador (se houver)
         possuiProcurador,
