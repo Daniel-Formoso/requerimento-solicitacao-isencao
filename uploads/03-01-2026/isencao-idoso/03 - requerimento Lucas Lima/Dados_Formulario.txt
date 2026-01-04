@@ -1,0 +1,27 @@
+RequerimentoLocalId: 1f3fa24b
+Formulario: isencao-idoso
+Nome: Lucas Lima
+Sequencial: 03
+Data: 03-01-2026
+
+=== Dados do formulario ===
+{
+  "nome": "Lucas Lima",
+  "cpf": "83328745059",
+  "formularioSlug": "isencao-idoso"
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_guia_pagamento.pdf
+- comprovante_comprovante_pagamento.pdf
+- docCertidao_doc1.pdf
+- docTaxas_doc2.pdf
+- docRgCpf_doc1.pdf
+- docResidencia_doc2.pdf
+- docRendimentos_doc1.pdf
+- docEscritura_doc2.pdf
+- docUnicoImovel_doc1.pdf
+- docFichaIptu_doc2.pdf
+- docProcuracao_proc1.pdf
+- docCpfProcurador_proc2.pdf
+- docIdentidadeProcurador_proc3.pdf

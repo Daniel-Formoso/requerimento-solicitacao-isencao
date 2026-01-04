@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  // DATABASE_URL fica em prisma.config.ts (ex.: file:./prisma/dev.db)
 }
 
 model Requerimento {
@@ -103,4 +104,35 @@ model Requerimento {
   userAgent             String?
   
   @@map("requerimentos")
+}
+
+model DriveUploadStatus {
+  id                Int       @id @default(autoincrement())
+  requerimentoLocalId String
+  formulario        String
+  nomePessoa        String
+  nomeArquivo       String
+  localFilePath     String
+  driveFolderName   String?
+  status            String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  attempts          Int       @default(0)
+  lastError         String?
+  lastTriedAt       DateTime?
+  driveFileId       String?
+  driveViewLink     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("drive_upload_status")
+}
+
+model DriveDailySequence {
+  id         Int      @id @default(autoincrement())
+  formulario String
+  dateFolder String
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([formulario, dateFolder], name: "formulario_dateFolder")
+  @@map("drive_daily_sequence")
 }
