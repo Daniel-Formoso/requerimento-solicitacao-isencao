@@ -3,9 +3,8 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import logger from "../../../utils/logger";
-import { markDrivePending, markDriveSuccess, markDriveFailed } from "../../../services/driveUploadStatusService";
+import { markDrivePending } from "../../../services/driveUploadStatusService";
 import { getNextDailySequence } from "../../../services/driveSequenceService";
-
 
 export async function POST(req: Request) {
   try {
@@ -127,6 +126,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
+    logger.error("Erro ao salvar requerimento", { error: String(error) });
     return NextResponse.json(
       { success: false, message: "Erro ao salvar requerimento", error: String(error) },
       { status: 500 }

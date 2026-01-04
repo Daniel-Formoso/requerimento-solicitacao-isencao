@@ -89,7 +89,6 @@ export async function enviarRequerimentoCompleto(dados: any, arquivos: { [key: s
     } catch {
       // best-effort
     }
-
     return { 
       success: true, 
       message: emailResult.message,
