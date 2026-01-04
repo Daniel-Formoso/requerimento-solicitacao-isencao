@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
+import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
+import logger from "../../../utils/logger";
+import { markDrivePending } from "../../../services/driveUploadStatusService";
+import { getNextDailySequence } from "../../../services/driveSequenceService";
 
 export async function POST(req: Request) {
   try {
@@ -20,34 +23,23 @@ export async function POST(req: Request) {
     // Obter tipo de formulário e nome do requerente
     const tipoFormulario = (formData.get('formularioSlug') as string) || 'requerimento-geral';
     const nomeRequerente = (formData.get('nome') as string) || 'Sem Nome';
-    
-    console.log('📋 DADOS RECEBIDOS:');
-    console.log('  - formularioSlug:', tipoFormulario);
-    console.log('  - nome:', nomeRequerente);
-    console.log('  - dateFolder:', dateFolder);
-    
+
     // Criar pasta base: uploads/data/tipo-formulario (sempre criar primeiro)
     const formularioDir = join(process.cwd(), "uploads", dateFolder, tipoFormulario);
-    console.log('📁 Criando diretório base:', formularioDir);
     mkdirSync(formularioDir, { recursive: true });
 
-    // Contar quantas pastas já existem para gerar o próximo número
-    const existingFolders = readdirSync(formularioDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .length;
-    console.log('📊 Pastas existentes no diretório:', existingFolders);
-    
-    const numeroSequencial = String(existingFolders + 1).padStart(2, '0');
+    // ID sequencial por (formulario, dia) - cresce sempre e comeca em 01
+    const seqNumber = await getNextDailySequence({ formulario: tipoFormulario, dateFolder });
+    const numeroSequencial = String(seqNumber).padStart(2, '0');
     const nomePasta = `${numeroSequencial} - requerimento ${nomeRequerente}`;
-    console.log('📌 Nome da nova pasta:', nomePasta);
-    
+
     // Criar estrutura completa: uploads/DD-MM-YYYY/tipo-formulario/01 - requerimento Nome/
     const uploadDir = join(formularioDir, nomePasta);
-    console.log('🎯 Caminho completo:', uploadDir);
     mkdirSync(uploadDir, { recursive: true });
 
-
-    // Salvar os arquivos enviados
+    // Salvar os arquivos enviados e coletar nomes para upload no Drive
+    const arquivosSalvos: { key: string; safeName: string; filePath: string }[] = [];
+    const dadosFormulario: Record<string, unknown> = {};
     for (const [key, value] of formData) {
       if (value instanceof File) {
         const arrayBuffer = await value.arrayBuffer();
@@ -56,20 +48,85 @@ export async function POST(req: Request) {
         const safeName = `${key}_${value.name}`;
         const filePath = join(uploadDir, safeName);
         writeFileSync(filePath, buffer);
+        arquivosSalvos.push({ key, safeName, filePath });
+      } else {
+        // Mantem os campos do formulario para gerar o .txt
+        // (se o mesmo campo vier repetido, preserva o ultimo valor)
+        dadosFormulario[key] = value;
       }
     }
+
+    // Cria um .txt com os dados do formulario + lista de arquivos
+    const txtFileName = `Dados_Formulario.txt`;
+    const txtFilePath = join(uploadDir, txtFileName);
+    const txtContent =
+      `RequerimentoLocalId: ${id}\n` +
+      `Formulario: ${tipoFormulario}\n` +
+      `Nome: ${nomeRequerente}\n` +
+      `Sequencial: ${numeroSequencial}\n` +
+      `Data: ${dateFolder}\n\n` +
+      `=== Dados do formulario ===\n` +
+      JSON.stringify(dadosFormulario, null, 2) +
+      `\n\n=== Arquivos anexados (salvos localmente) ===\n` +
+      (arquivosSalvos.length ? arquivosSalvos.map(a => `- ${a.safeName}`).join('\n') : '(nenhum)') +
+      `\n`;
+    writeFileSync(txtFilePath, txtContent, 'utf8');
+    arquivosSalvos.push({ key: 'dados_formulario', safeName: txtFileName, filePath: txtFilePath });
+
 
     // Salvar arquivo .id para facilitar busca posterior
     writeFileSync(join(uploadDir, '.id'), id, 'utf8');
 
-    console.log(`Requerimento ${numeroSequencial} - ${nomeRequerente} salvo em ${uploadDir}`);
+    // --- INTEGRAÇÃO GOOGLE DRIVE (após upload local) ---
+    const logBase = {
+      formulario: tipoFormulario,
+      requerimentoId: id,
+      nomePessoa: nomeRequerente,
+    };
+
+    // Estrutura no Drive (exigida):
+    // tipoFormulario / dateFolder / "NN - requerimento Nome"
+    const driveFolderName = nomePasta;
+
+    for (const arquivo of arquivosSalvos) {
+      const logMeta = {
+        ...logBase,
+        nomeArquivo: arquivo.safeName,
+        localFilePath: arquivo.filePath,
+      };
+
+      // Registra status como PENDING (best effort, não bloqueia)
+      let statusRecordId: number | null = null;
+      try {
+        const statusRecord = await markDrivePending({
+          requerimentoLocalId: id,
+          formulario: tipoFormulario,
+          nomePessoa: nomeRequerente,
+          nomeArquivo: arquivo.safeName,
+          localFilePath: arquivo.filePath,
+          driveFolderName,
+        });
+        statusRecordId = statusRecord.id;
+      } catch (err: any) {
+        logger.warn("Nao foi possivel registrar status PENDING no banco", {
+          ...logMeta,
+          error: err?.message,
+        });
+      }
+
+      // Importante: o upload para o Drive agora e' ASSINCRONO.
+      // Este endpoint nao tenta fazer upload (nem faz retry) para nao travar o fluxo principal.
+      // Um worker/job separado deve processar os registros PENDING/FAILED e atualizar para SUCCESS/FAILED.
+      // Se nao conseguiu nem registrar no banco, apenas segue o fluxo.
+      void statusRecordId;
+    }
 
     return NextResponse.json(
       { success: true, message: "Requerimento salvo com sucesso", id, numeroSequencial, caminho: uploadDir, uploadDir },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Erro ao salvar requerimento:", error);
+    logger.error("Erro ao salvar requerimento", { error: String(error) });
     return NextResponse.json(
       { success: false, message: "Erro ao salvar requerimento", error: String(error) },
       { status: 500 }

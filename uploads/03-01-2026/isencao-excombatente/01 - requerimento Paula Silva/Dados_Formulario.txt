@@ -1,0 +1,26 @@
+RequerimentoLocalId: c2f01e29
+Formulario: isencao-excombatente
+Nome: Paula Silva
+Sequencial: 01
+Data: 03-01-2026
+
+=== Dados do formulario ===
+{
+  "nome": "Paula Silva",
+  "cpf": "07171317749",
+  "formularioSlug": "isencao-excombatente"
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_guia_pagamento.pdf
+- comprovante_comprovante_pagamento.pdf
+- docResidencia_doc1.pdf
+- docRgCpf_doc2.pdf
+- docEscritura_doc1.pdf
+- docRendimentos_doc2.pdf
+- docExcombatente_doc1.pdf
+- docUnicoImovel_doc2.pdf
+- docFichaIptu_doc1.pdf
+- docProcuracao_proc1.pdf
+- docCpfProcurador_proc2.pdf
+- docIdentidadeProcurador_proc3.pdf

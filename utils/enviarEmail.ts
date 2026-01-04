@@ -34,28 +34,25 @@ export async function enviarRequerimentoCompleto(dados: any, arquivos: { [key: s
     }
 
     // Passo 2: Gerar PDF do requerimento e salvar na pasta de uploads
-    try {
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
-        : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      
-      const pdfResponse = await fetch(`${baseUrl}/api/generate-pdf?data=${encodeURIComponent(JSON.stringify(dados))}`);
-      if (pdfResponse.ok) {
-        const pdfBlob = await pdfResponse.blob();
-        const pdfBuffer = await pdfBlob.arrayBuffer();
-        
-        // Salvar PDF na pasta de uploads (apenas no servidor)
-        if (saveResult.uploadDir && typeof window === 'undefined') {
-          const fs = await import('fs');
-          const path = await import('path');
-          const pdfPath = path.join(saveResult.uploadDir, '00 - REQUERIMENTO.pdf');
-          fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
-          console.log(`PDF do requerimento salvo em ${pdfPath}`);
+    // OBS: Gerar PDF aqui no browser deixava o envio MUITO mais lento e nao salvava nada,
+    // porque o fs so existe no servidor. Entao so tentamos gerar/salvar PDF quando rodando no server.
+    if (typeof window === 'undefined') {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const pdfResponse = await fetch(`${baseUrl}/api/generate-pdf?data=${encodeURIComponent(JSON.stringify(dados))}`);
+        if (pdfResponse.ok) {
+          const pdfBuffer = await pdfResponse.arrayBuffer();
+          if (saveResult.uploadDir) {
+            const fs = await import('fs');
+            const path = await import('path');
+            const pdfPath = path.join(saveResult.uploadDir, '00 - REQUERIMENTO.pdf');
+            fs.writeFileSync(pdfPath, Buffer.from(pdfBuffer));
+            console.log(`PDF do requerimento salvo em ${pdfPath}`);
+          }
         }
+      } catch (pdfError) {
+        console.error('Erro ao salvar PDF do requerimento:', pdfError);
       }
-    } catch (pdfError) {
-      console.error('Erro ao salvar PDF do requerimento:', pdfError);
-      // Continua mesmo se falhar o PDF
     }
 
     // Passo 3: Enviar e-mail com os dados, o ID e os nomes dos arquivos
@@ -81,6 +78,17 @@ export async function enviarRequerimentoCompleto(dados: any, arquivos: { [key: s
       throw new Error(emailResult.message || "Erro ao enviar e-mail");
     }
 
+    // Dispara o processamento do Drive em background (nao bloqueia o sucesso do envio)
+    // Isso evita que o upload concorra com o envio do email durante o submit.
+    try {
+      void fetch("/api/drive/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requerimentoLocalId: saveResult.id }),
+      });
+    } catch {
+      // best-effort
+    }
     return { 
       success: true, 
       message: emailResult.message,

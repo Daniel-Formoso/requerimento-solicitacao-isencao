@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "drive:worker": "tsx jobs/reprocessDriveUploads.ts",
+    "drive:check-root": "node scripts/check_drive_root.js",
+    "drive:reset": "tsx scripts/reset_drive_state.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -19,6 +22,7 @@
     "@supabase/supabase-js": "^2.89.0",
     "archiver": "^7.0.1",
     "better-sqlite3": "^12.5.0",
+    "googleapis": "^144.0.0",
     "next": "16.0.6",
     "nodemailer": "^7.0.12",
     "puppeteer": "^24.34.0",
@@ -26,7 +30,8 @@
     "react-dom": "19.2.0",
     "react-toastify": "^11.0.5",
     "sharp": "^0.34.5",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "winston": "^3.14.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -40,6 +45,7 @@
     "eslint-config-next": "16.0.6",
     "prisma": "^7.2.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }

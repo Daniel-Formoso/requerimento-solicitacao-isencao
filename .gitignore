@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# Google service account keys (never commit)
+/config/requerimento-isencao-imunidade-4119f7ee8e08.json
+/config/*service-account*.json
+/config/*credentials*.json
