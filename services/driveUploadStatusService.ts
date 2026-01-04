@@ -26,7 +26,6 @@ export async function markDrivePending(params: {
       nomePessoa: params.nomePessoa,
       nomeArquivo: params.nomeArquivo,
       localFilePath: params.localFilePath,
-      driveFolderName: params.driveFolderName ?? null,
       status: "PENDING",
       attempts: 0,
       lastError: null,
