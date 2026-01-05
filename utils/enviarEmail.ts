@@ -30,7 +30,12 @@ export async function enviarRequerimentoCompleto(dados: any, arquivos: { [key: s
     }
 
     if (!saveResponse.ok) {
-      throw new Error(saveResult.message || "Erro ao salvar requerimento");
+      const detailedMessage =
+        saveResult?.message ||
+        saveResult?.error ||
+        "Erro ao salvar requerimento";
+
+      throw new Error(detailedMessage);
     }
 
     // Passo 2: Gerar PDF do requerimento e salvar na pasta de uploads
