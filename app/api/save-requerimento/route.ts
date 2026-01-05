@@ -6,6 +6,26 @@ import logger from "../../../utils/logger";
 import { markDrivePending } from "../../../services/driveUploadStatusService";
 import { getNextDailySequence } from "../../../services/driveSequenceService";
 
+function sanitizePathSegment(input: string, options?: { maxLength?: number }) {
+  const maxLength = options?.maxLength ?? 120;
+
+  // Windows-invalid characters for file/folder names: < > : " / \ | ? *
+  // Also remove control chars and trim.
+  const sanitized = input
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!sanitized) return "Sem Nome";
+  if (sanitized.length <= maxLength) return sanitized;
+  return sanitized.slice(0, maxLength).trim();
+}
+
+function isMissingSqliteTableError(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /no such table/i.test(msg);
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -21,17 +41,42 @@ export async function POST(req: Request) {
     const dateFolder = `${dia}-${mes}-${ano}`;
 
     // Obter tipo de formulário e nome do requerente
-    const tipoFormulario = (formData.get('formularioSlug') as string) || 'requerimento-geral';
-    const nomeRequerente = (formData.get('nome') as string) || 'Sem Nome';
+    const tipoFormularioRaw = (formData.get('formularioSlug') as string) || 'requerimento-geral';
+    const nomeRequerenteRaw = (formData.get('nome') as string) || 'Sem Nome';
+
+    const tipoFormulario = sanitizePathSegment(tipoFormularioRaw, { maxLength: 60 });
+    const nomeRequerente = sanitizePathSegment(nomeRequerenteRaw, { maxLength: 80 });
 
     // Criar pasta base: uploads/data/tipo-formulario (sempre criar primeiro)
     const formularioDir = join(process.cwd(), "uploads", dateFolder, tipoFormulario);
     mkdirSync(formularioDir, { recursive: true });
 
     // ID sequencial por (formulario, dia) - cresce sempre e comeca em 01
-    const seqNumber = await getNextDailySequence({ formulario: tipoFormulario, dateFolder });
-    const numeroSequencial = String(seqNumber).padStart(2, '0');
-    const nomePasta = `${numeroSequencial} - requerimento ${nomeRequerente}`;
+    let numeroSequencial = "00";
+    let nomePasta = `${numeroSequencial} - requerimento ${nomeRequerente} (${id})`;
+
+    try {
+      const seqNumber = await getNextDailySequence({ formulario: tipoFormulario, dateFolder });
+      numeroSequencial = String(seqNumber).padStart(2, '0');
+      nomePasta = `${numeroSequencial} - requerimento ${nomeRequerente}`;
+    } catch (err: unknown) {
+      // Se a tabela ainda nao existe (banco desatualizado), nao bloqueia o salvamento local.
+      // Mantem uma pasta unica usando o id.
+      const details = err instanceof Error ? err.message : String(err);
+      if (isMissingSqliteTableError(err)) {
+        logger.warn("Tabela de sequencia diaria ausente; usando pasta com ID (fallback)", {
+          formulario: tipoFormulario,
+          dateFolder,
+          error: details,
+        });
+      } else {
+        logger.warn("Falha ao obter sequencia diaria; usando pasta com ID (fallback)", {
+          formulario: tipoFormulario,
+          dateFolder,
+          error: details,
+        });
+      }
+    }
 
     // Criar estrutura completa: uploads/DD-MM-YYYY/tipo-formulario/01 - requerimento Nome/
     const uploadDir = join(formularioDir, nomePasta);
@@ -45,7 +90,7 @@ export async function POST(req: Request) {
         const arrayBuffer = await value.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         // Salvar como campo_nomeoriginal.ext para evitar sobrescrita
-        const safeName = `${key}_${value.name}`;
+        const safeName = sanitizePathSegment(`${key}_${value.name}`, { maxLength: 160 });
         const filePath = join(uploadDir, safeName);
         writeFileSync(filePath, buffer);
         arquivosSalvos.push({ key, safeName, filePath });
@@ -126,9 +171,15 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    logger.error("Erro ao salvar requerimento", { error: String(error) });
+    const details = error instanceof Error ? error.message : String(error);
+    logger.error("Erro ao salvar requerimento", { error: details });
     return NextResponse.json(
-      { success: false, message: "Erro ao salvar requerimento", error: String(error) },
+      {
+        success: false,
+        message: "Erro ao salvar requerimento",
+        // Ajuda no debug local sem expor detalhes em producao
+        ...(process.env.NODE_ENV === "production" ? {} : { error: details }),
+      },
       { status: 500 }
     );
   }

@@ -1,0 +1,32 @@
+RequerimentoLocalId: d9b1ecca
+Formulario: isencao-taxas-mercantis
+Nome: Maria Ferreira
+Sequencial: 02
+Data: 05-01-2026
+
+=== Dados do formulario ===
+{
+  "nome": "Maria Ferreira",
+  "cpf": "07349919955",
+  "formularioSlug": "isencao-taxas-mercantis"
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_guia_pagamento.pdf
+- comprovante_comprovante_pagamento.pdf
+- docEstatuto_doc1.pdf
+- docAtaDiretoria_doc2.pdf
+- docImovel_doc1.pdf
+- docIptu_doc2.pdf
+- docCroqui_doc1.pdf
+- docCadastro_doc2.pdf
+- docRgCpf_doc1.pdf
+- docComprovanteResidencia_doc2.pdf
+- docCartaoCnpj_doc1.pdf
+- docFolhaPagamento_doc2.pdf
+- docDeclaracaoEntidade_doc1.pdf
+- docDemonstracao_doc2.pdf
+- docCertidaoNegativa_doc1.pdf
+- docProcuracao_proc1.pdf
+- docCpfProcurador_proc2.pdf
+- docIdentidadeProcurador_proc3.pdf
