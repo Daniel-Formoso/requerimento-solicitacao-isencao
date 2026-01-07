@@ -127,46 +127,49 @@ export async function GET(req: NextRequest) {
     // Criar um arquivo ZIP
     const archive = archiver("zip", { zlib: { level: 9 } });
 
-    // 1) Primeiro arquivo do ZIP: PDF do requerimento (00 - REQUERIMENTO.PDF)
+    // 1) Primeiro arquivo do ZIP: PDF do requerimento (sempre 00 - REQUERIMENTO.PDF)
     const requerimentoPdfPath = join(uploadDir, REQUERIMENTO_PDF_NAME);
-    let pdfAdded = false;
+    const pdfZipName = "00 - REQUERIMENTO.PDF";
     if (existsSync(requerimentoPdfPath) && statSync(requerimentoPdfPath).isFile()) {
-      archive.file(requerimentoPdfPath, { name: REQUERIMENTO_PDF_NAME.toUpperCase() });
-      pdfAdded = true;
+      archive.file(requerimentoPdfPath, { name: pdfZipName });
     } else {
       const savedData = loadSavedFormData(uploadDir);
       if (savedData?.formularioSlug && savedData?.nome && savedData?.cpf) {
         try {
           const pdfBuffer = await generatePdf(savedData);
-          archive.append(pdfBuffer, { name: REQUERIMENTO_PDF_NAME.toUpperCase() });
-          pdfAdded = true;
+          archive.append(pdfBuffer, { name: pdfZipName });
         } catch (err) {
           console.error("Falha ao gerar PDF para o ZIP:", err);
         }
       }
     }
 
-    // 2) Adicionar anexos numerados, ignorando .id, .json, Dados_Formulario.txt e o PDF do requerimento
-    //    Todos os nomes em maiúsculas, numerados a partir de 01
-    let anexos = files.filter((file) => {
+    // Adicionar arquivos ao ZIP (exceto arquivo .id oculto, quaisquer .json e o PDF do requerimento)
+    // Ordenar alfabeticamente sem numeração
+    const arquivosParaZip = files.filter(file => {
       const lower = file.toLowerCase();
       if (file === '.id') return false;
       if (lower.endsWith('.json')) return false;
+      if (lower.endsWith('.txt')) return false;
       if (file === REQUERIMENTO_PDF_NAME) return false;
-      if (lower === 'dados_formulario.txt') return false;
       return statSync(join(uploadDir, file)).isFile();
     });
-    anexos = anexos.sort(); // Ordena para garantir ordem estável
-    let idx = 1;
-    for (const file of anexos) {
-      const ext = file.includes('.') ? file.substring(file.lastIndexOf('.')) : '';
-      const nomeBase = file.replace(ext, '');
-      const numero = String(idx).padStart(2, '0');
-      const nomeFinal = `${numero} - ${nomeBase}${ext}`.toUpperCase();
-      const filePath = join(uploadDir, file);
+
+    // Remover numeração e ordenar
+    const arquivosOrdenados = arquivosParaZip
+      .map(file => ({
+        original: file,
+        nomeSemNumeracao: file.replace(/^\d+\s*-\s*/, "")
+      }))
+      .sort((a, b) => a.nomeSemNumeracao.localeCompare(b.nomeSemNumeracao, 'pt-BR'));
+
+    // Adicionar ao ZIP com numeração a partir de 01
+    arquivosOrdenados.forEach((arquivo, idx) => {
+      const numero = String(idx + 1).padStart(2, '0');
+      const nomeFinal = `${numero} - ${arquivo.nomeSemNumeracao}`.toUpperCase();
+      const filePath = join(uploadDir, arquivo.original);
       archive.file(filePath, { name: nomeFinal });
-      idx++;
-    }
+    });
 
     await archive.finalize();
 
