@@ -1,8 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createReadStream, existsSync, readdirSync, statSync } from "fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 import archiver from "archiver";
 import { Readable } from "stream";
+import { generatePdf } from "@/utils/pdf/pdfFactory";
+import type { BasePdfFormData } from "@/utils/pdf/base/types";
+
+const REQUERIMENTO_PDF_NAME = "00 - REQUERIMENTO.pdf";
+
+function tryParseJson(value: string): any | null {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function getFormDataFromTxt(txt: string): BasePdfFormData | null {
+  const markerStart = "=== Dados do formulario ===";
+  const markerEnd = "=== Arquivos anexados";
+
+  const startIdx = txt.indexOf(markerStart);
+  if (startIdx === -1) return null;
+
+  const jsonStart = startIdx + markerStart.length;
+  const endIdx = txt.indexOf(markerEnd, jsonStart);
+  const jsonText = (endIdx === -1 ? txt.slice(jsonStart) : txt.slice(jsonStart, endIdx)).trim();
+  const parsed = tryParseJson(jsonText);
+  return parsed as BasePdfFormData | null;
+}
+
+function loadSavedFormData(uploadDir: string): BasePdfFormData | null {
+  // 1) Preferir JSON (caso exista na pasta)
+  try {
+    const files = readdirSync(uploadDir);
+    const jsonCandidate = files.find((f) => f.toLowerCase().endsWith(".json"));
+    if (jsonCandidate) {
+      const jsonPath = join(uploadDir, jsonCandidate);
+      if (statSync(jsonPath).isFile()) {
+        const json = readFileSync(jsonPath, "utf8");
+        const parsed = tryParseJson(json);
+        if (parsed) return parsed as BasePdfFormData;
+      }
+    }
+  } catch {
+    // best-effort
+  }
+
+  // 2) Fallback: extrair JSON do Dados_Formulario.txt
+  try {
+    const txtPath = join(uploadDir, "Dados_Formulario.txt");
+    if (!existsSync(txtPath)) return null;
+    const txt = readFileSync(txtPath, "utf8");
+    return getFormDataFromTxt(txt);
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,7 +95,7 @@ export async function GET(req: NextRequest) {
           const idFilePath = join(reqPath, '.id');
           // Verificar se existe arquivo .id com o ID correspondente
           if (existsSync(idFilePath)) {
-            const savedId = require('fs').readFileSync(idFilePath, 'utf8').trim();
+            const savedId = readFileSync(idFilePath, 'utf8').trim();
             if (savedId === id) {
               uploadDir = reqPath;
               break;
@@ -73,17 +127,49 @@ export async function GET(req: NextRequest) {
     // Criar um arquivo ZIP
     const archive = archiver("zip", { zlib: { level: 9 } });
 
-    // Adicionar arquivos ao ZIP (exceto arquivo .id oculto)
-    for (const file of files) {
-      if (file === '.id') continue; // Ignorar arquivo de controle
-      
-      const filePath = join(uploadDir, file);
-      const stat = statSync(filePath);
-
-      if (stat.isFile()) {
-        archive.file(filePath, { name: file });
+    // 1) Primeiro arquivo do ZIP: PDF do requerimento (sempre 00 - REQUERIMENTO.PDF)
+    const requerimentoPdfPath = join(uploadDir, REQUERIMENTO_PDF_NAME);
+    const pdfZipName = "00 - REQUERIMENTO.PDF";
+    if (existsSync(requerimentoPdfPath) && statSync(requerimentoPdfPath).isFile()) {
+      archive.file(requerimentoPdfPath, { name: pdfZipName });
+    } else {
+      const savedData = loadSavedFormData(uploadDir);
+      if (savedData?.formularioSlug && savedData?.nome && savedData?.cpf) {
+        try {
+          const pdfBuffer = await generatePdf(savedData);
+          archive.append(pdfBuffer, { name: pdfZipName });
+        } catch (err) {
+          console.error("Falha ao gerar PDF para o ZIP:", err);
+        }
       }
     }
+
+    // Adicionar arquivos ao ZIP (exceto arquivo .id oculto, quaisquer .json e o PDF do requerimento)
+    // Ordenar alfabeticamente sem numeração
+    const arquivosParaZip = files.filter(file => {
+      const lower = file.toLowerCase();
+      if (file === '.id') return false;
+      if (lower.endsWith('.json')) return false;
+      if (lower.endsWith('.txt')) return false;
+      if (file === REQUERIMENTO_PDF_NAME) return false;
+      return statSync(join(uploadDir, file)).isFile();
+    });
+
+    // Remover numeração e ordenar
+    const arquivosOrdenados = arquivosParaZip
+      .map(file => ({
+        original: file,
+        nomeSemNumeracao: file.replace(/^\d+\s*-\s*/, "")
+      }))
+      .sort((a, b) => a.nomeSemNumeracao.localeCompare(b.nomeSemNumeracao, 'pt-BR'));
+
+    // Adicionar ao ZIP com numeração a partir de 01
+    arquivosOrdenados.forEach((arquivo, idx) => {
+      const numero = String(idx + 1).padStart(2, '0');
+      const nomeFinal = `${numero} - ${arquivo.nomeSemNumeracao}`.toUpperCase();
+      const filePath = join(uploadDir, arquivo.original);
+      archive.file(filePath, { name: nomeFinal });
+    });
 
     await archive.finalize();
 
