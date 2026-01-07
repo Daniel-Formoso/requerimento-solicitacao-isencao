@@ -31,7 +31,7 @@ export { generatePdfIdoso, type IdosoFormData, getIdosoFileName } from "./idoso/
 export { generatePdfExCombatente, type ExCombatenteFormData, getExCombatenteFileName } from "./excombatente/gerador";
 export { generatePdfPCD, type PCDFormData, getPCDFileName } from "./pcd/gerador";
 export { generatePdfImovelCedido, type ImovelCedidoFormData, getImovelCedidoFileName } from "./imovelcedido/gerador";
-export { generatePdfTemploReligioso, type TemploReligiosoFormData, getTemploReligiosoFileName } from "./temploligioso/gerador";
+export { generatePdfTemploReligioso, type TemploReligiosoFormData, getTemploReligiosoFileName } from "./temploReligioso/gerador";
 export { generatePdfTaxasMercantis, type TaxasMercantisFormData, getTaxasMercantisFileName } from "./taxasmercantis/gerador";
 export { generatePdfImunidadeTemplo, getImunidadeTemploFileName, type ImunidadeTemploFormData } from "./imunidade/temploReligioso";
 export { generatePdfImunidadeInstituicoes, getImunidadeInstituicoesFileName, type ImunidadeInstituicoesFormData } from "./imunidade/instituicoes";
