@@ -1,0 +1,27 @@
+RequerimentoLocalId: 89763b75
+Formulario: isencao-idoso
+Nome: Maria Silva
+Sequencial: 02
+Data: 06-01-2026
+
+=== Dados do formulario ===
+{
+  "nome": "Maria Silva",
+  "cpf": "44954718937",
+  "formularioSlug": "isencao-idoso"
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_guia_pagamento.pdf
+- comprovante_comprovante_pagamento.pdf
+- docCertidao_doc1.pdf
+- docTaxas_doc2.pdf
+- docRgCpf_doc1.pdf
+- docResidencia_doc2.pdf
+- docRendimentos_doc1.pdf
+- docEscritura_doc2.pdf
+- docUnicoImovel_doc1.pdf
+- docFichaIptu_doc2.pdf
+- docProcuracao_proc1.pdf
+- docCpfProcurador_proc2.pdf
+- docIdentidadeProcurador_proc3.pdf
