@@ -1,0 +1,83 @@
+RequerimentoLocalId: d808f6e8
+Formulario: isencao-idoso
+Nome: Fernanda Silva
+Sequencial: 04
+Data: 07-01-2026
+
+=== Dados do formulario ===
+{
+  "formularioSlug": "isencao-idoso",
+  "tipoFormulario": "Isenção de IPTU para Idosos maiores de 60 anos",
+  "possuiGuiaTaxa": "true",
+  "possuiComprovanteTaxa": "true",
+  "tipoSolicitacao": "primeira",
+  "nome": "Fernanda Silva",
+  "rg": "HR4973662",
+  "orgaoEmissor": "SSP/SP",
+  "cpf": "34482189464",
+  "telefone": "(32) 96954-7097",
+  "email": "fernanda.silva@exemplo.com",
+  "inscricaoImobiliaria": "1234567-8",
+  "cep": "01001-000",
+  "rua": "Rua das Flores",
+  "numero": "123",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "lote": "1",
+  "quadra": "A",
+  "documentosAnexados": "[\"Guia de Pagamento\",\"Comprovante de Pagamento\",\"Cópia da Certidão\",\"Taxas Municipais\",\"RG e CPF\",\"Comprovante de Residência\",\"Comprovante de Rendimentos\",\"Comprovante de Propriedade\",\"Certidão de Único Imóvel\",\"Ficha de Lançamento do IPTU\",\"Procuração Autenticada\",\"CPF do Procurador\",\"Identidade do Procurador\"]",
+  "nomesArquivos": "{\"guia\":\"guia_pagamento.pdf\",\"comprovante\":\"comprovante_pagamento.pdf\",\"docCertidao\":\"doc1.pdf\",\"docTaxas\":\"doc2.pdf\",\"docRgCpf\":\"doc1.pdf\",\"docResidencia\":\"doc2.pdf\",\"docRendimentos\":\"doc1.pdf\",\"docEscritura\":\"doc2.pdf\",\"docUnicoImovel\":\"doc1.pdf\",\"docFichaIptu\":\"doc2.pdf\",\"docProcuracao\":\"proc1.pdf\",\"docCpfProcurador\":\"proc2.pdf\",\"docIdentidadeProcurador\":\"proc3.pdf\",\"docPeticao\":\"\"}",
+  "perfilRequerente": "aposentado",
+  "estadoCivil": "casado",
+  "unicoImovel": "true",
+  "residenciaPropria": "true",
+  "anoInicio": "2010",
+  "rendaAte2Salarios": "true",
+  "origemRenda": "aposentadoria",
+  "nomeConjuge": "Lucas Ferreira",
+  "cpfConjuge": "90836762408",
+  "rgConjuge": "QS1479132",
+  "telefoneConjuge": "(27) 98907-6364",
+  "emailConjuge": "lucas.ferreira@exemplo.com",
+  "coproprietario": "true",
+  "origemRendaConjuge": "Pensão",
+  "possuiProcurador": "true",
+  "nomeProcurador": "Carlos Ferreira",
+  "cpfProcurador": "75205564197",
+  "rgProcurador": "JW1851560",
+  "telefoneProcurador": "(58) 98365-4150",
+  "emailProcurador": "joão.ferreira@exemplo.com",
+  "assinaturaRogo": "true",
+  "testemunha1Nome": "Lucas Souza",
+  "testemunha1Cpf": "44839188735",
+  "testemunha1Rg": "XR3507792",
+  "testemunha1OrgaoEmissor": "SSP/RJ",
+  "testemunha1Telefone": "(53) 97919-1596",
+  "testemunha1Email": "lucas.souza@exemplo.com",
+  "testemunha2Nome": "Maria Souza",
+  "testemunha2Cpf": "72565734990",
+  "testemunha2Rg": "GL2040544",
+  "testemunha2OrgaoEmissor": "SSP/SP",
+  "testemunha2Telefone": "(20) 91594-1492",
+  "testemunha2Email": "maria.souza@exemplo.com",
+  "preferenciaAR": "true",
+  "preferenciaWhatsapp": "true",
+  "preferenciaEmail": "false",
+  "observacoes": "Observações de teste geradas automaticamente para facilitar o preenchimento do formulário."
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_guia_pagamento.pdf
+- comprovante_comprovante_pagamento.pdf
+- docCertidao_doc1.pdf
+- docTaxas_doc2.pdf
+- docRgCpf_doc1.pdf
+- docResidencia_doc2.pdf
+- docRendimentos_doc1.pdf
+- docEscritura_doc2.pdf
+- docUnicoImovel_doc1.pdf
+- docFichaIptu_doc2.pdf
+- docProcuracao_proc1.pdf
+- docCpfProcurador_proc2.pdf
+- docIdentidadeProcurador_proc3.pdf
