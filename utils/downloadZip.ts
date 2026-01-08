@@ -1,5 +1,5 @@
 /**
- * Função para fazer download de todos os documentos em um arquivo ZIP
+ * Função para fazer download de todos os documentos mesclados em um único PDF
  * @param documentos - Objeto contendo todos os arquivos e o nome do contribuinte
  */
 export async function baixarDocumentosZip(documentos: {
@@ -53,7 +53,7 @@ export async function baixarDocumentosZip(documentos: {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || "Erro ao gerar ZIP");
+      throw new Error(error.error || "Erro ao mesclar PDFs");
     }
 
     // Criar um blob com a resposta
@@ -67,7 +67,7 @@ export async function baixarDocumentosZip(documentos: {
     // Obter o nome do arquivo do header Content-Disposition
     const contentDisposition = response.headers.get("Content-Disposition");
     const fileNameMatch = contentDisposition?.match(/filename="(.+)"/);
-    const fileName = fileNameMatch ? fileNameMatch[1] : `Documentos_${Date.now()}.zip`;
+    const fileName = fileNameMatch ? fileNameMatch[1] : `Requerimento_Completo_${Date.now()}.pdf`;
     
     a.download = fileName;
     document.body.appendChild(a);
@@ -79,7 +79,7 @@ export async function baixarDocumentosZip(documentos: {
     
     return true;
   } catch (error) {
-    console.error("Erro ao baixar ZIP:", error);
+    console.error("Erro ao baixar PDF mesclado:", error);
     throw error;
   }
 }

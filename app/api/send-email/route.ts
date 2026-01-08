@@ -421,12 +421,12 @@ function montarCorpoEmail(
                   <a href="${baseUrl}/api/generate-pdf?data=${encodeURIComponent(JSON.stringify(data))}" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #28d160; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
                     BAIXAR REQUERIMENTO
                   </a>
-                  <a href="${baseUrl}/api/download-zip?id=${data.id}" style="display: inline-block; margin-bottom: 10px; padding: 12px 24px; background: #ff6b00; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
-                    BAIXAR DOCUMENTOS ANEXADOS (ZIP)
+                  <a href="${baseUrl}/api/merge-pdfs?id=${data.id}" style="display: inline-block; margin-right: 10px; margin-bottom: 10px; padding: 12px 24px; background: #ff6b00; color: #fff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                    BAIXAR PDFs UNIFICADOS
                   </a>
                 </div>
                 <div style="font-size: 13px; color: #555; background: #fffbe6; border-radius: 6px; padding: 12px; border-left: 4px solid #ffc107;">
-                  <strong>Como usar:</strong> Clique em "Baixar Requerimento" para gerar o PDF do seu requerimento ou em "Baixar Documentos Anexados" para baixar todos os documentos em um arquivo ZIP.
+                  <strong>Como usar:</strong> Clique em "Baixar Requerimento" para gerar apenas o PDF do requerimento ou em "Baixar PDFs Juntos" para gerar um único PDF mesclando todos os arquivos PDF anexados.
                 </div>
               </div>
             </td>

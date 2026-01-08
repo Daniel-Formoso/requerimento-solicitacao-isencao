@@ -1,0 +1,33 @@
+RequerimentoLocalId: 656052fc
+Formulario: imunidade-instituicoes
+Nome: Carlos Silva
+Sequencial: 02
+Data: 08-01-2026
+
+=== Dados do formulario ===
+{
+  "nome": "Carlos Silva",
+  "cpf": "49971823791",
+  "formularioSlug": "imunidade-instituicoes"
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_PDFs_Mesclados_Joao_Ferreira.pdf
+- comprovante_RESTITUIÇÃO DE IPTU - 2024026658.docx.pdf
+- docEstatuto_RESTITUIÇÃO DE IPTU - 2024026658 ASSINADO.docx.pdf
+- docAtaDiretoria_PDFs_Mesclados_Joao_Ferreira.pdf
+- docImovel_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docIptu_588 a 592_merged.pdf
+- docCroqui_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docCadastro_RESTITUIÇÃO DE IPTU - 2024026658 ASSINADO.docx.pdf
+- docRgCpf_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docComprovanteResidencia_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docCartaoCnpj_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docFolhaPagamento_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docDeclaracaoEntidade_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docDemonstracao_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docCertidaoNegativa_MEMORANDO - Nº05 - CLÉCIO PANDIM FRANCO JUNIOR.docx.pdf
+- docProcuracao_RESTITUIÇÃO DE IPTU - 2024026658 ASSINADO.docx.pdf
+- docCpfProcurador_RESTITUIÇÃO DE IPTU - 2024026658.docx.pdf
+- docIdentidadeProcurador_RESTITUIÇÃO DE IPTU - 2024026658.docx.pdf
+- docPeticao_Requerimento_ExCombatente_Ana_Oliveira.pdf
