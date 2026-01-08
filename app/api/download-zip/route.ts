@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 import archiver from "archiver";
-import { Readable } from "stream";
+import { PassThrough, Readable } from "stream";
 import { generatePdf } from "@/utils/pdf/pdfFactory";
 import type { BasePdfFormData } from "@/utils/pdf/base/types";
 
 const REQUERIMENTO_PDF_NAME = "00 - REQUERIMENTO.pdf";
 
-function tryParseJson(value: string): any | null {
+function tryParseJson(value: string): unknown | null {
   try {
     return JSON.parse(value);
   } catch {
@@ -63,6 +63,8 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const id = searchParams.get("id");
 
+    console.log(`🔍 Buscando requerimento com ID: ${id}`);
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "ID não fornecido" },
@@ -70,37 +72,43 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Construir o caminho para a pasta de uploads do requerimento (formato brasileiro DD-MM-YYYY)
-    const today = new Date();
-    const dia = String(today.getDate()).padStart(2, '0');
-    const mes = String(today.getMonth() + 1).padStart(2, '0');
-    const ano = today.getFullYear();
-    const dateFolder = `${dia}-${mes}-${ano}`;
-    const dateFolderPath = join(process.cwd(), "uploads", dateFolder);
-
-    // Buscar a pasta que contém o ID (nova estrutura: uploads/data/tipo-form/NN - nome/)
+    // Buscar em todas as pastas de data (nova estrutura: uploads/DD-MM-YYYY/tipo-form/NN - nome/)
     let uploadDir: string | null = null;
+    const uploadsPath = join(process.cwd(), "uploads");
     
-    if (existsSync(dateFolderPath)) {
-      const tiposFormulario = readdirSync(dateFolderPath, { withFileTypes: true })
+    console.log(`📂 Verificando pasta uploads: ${uploadsPath}`);
+    
+    if (existsSync(uploadsPath)) {
+      const dateFolders = readdirSync(uploadsPath, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory());
       
-      for (const tipoDir of tiposFormulario) {
-        const tipoPath = join(dateFolderPath, tipoDir.name);
-        const requerimentos = readdirSync(tipoPath, { withFileTypes: true })
+      console.log(`📅 Pastas de data encontradas: ${dateFolders.map(d => d.name).join(', ')}`);
+      
+      for (const dateDir of dateFolders) {
+        const datePath = join(uploadsPath, dateDir.name);
+        const tiposFormulario = readdirSync(datePath, { withFileTypes: true })
           .filter(dirent => dirent.isDirectory());
         
-        for (const reqDir of requerimentos) {
-          const reqPath = join(tipoPath, reqDir.name);
-          const idFilePath = join(reqPath, '.id');
-          // Verificar se existe arquivo .id com o ID correspondente
-          if (existsSync(idFilePath)) {
-            const savedId = readFileSync(idFilePath, 'utf8').trim();
-            if (savedId === id) {
-              uploadDir = reqPath;
-              break;
+        for (const tipoDir of tiposFormulario) {
+          const tipoPath = join(datePath, tipoDir.name);
+          const requerimentos = readdirSync(tipoPath, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory());
+          
+          for (const reqDir of requerimentos) {
+            const reqPath = join(tipoPath, reqDir.name);
+            const idFilePath = join(reqPath, '.id');
+            
+            // Verificar se existe arquivo .id com o ID correspondente
+            if (existsSync(idFilePath)) {
+              const savedId = readFileSync(idFilePath, 'utf8').trim();
+              if (savedId === id) {
+                uploadDir = reqPath;
+                console.log(`✅ Pasta encontrada: ${uploadDir}`);
+                break;
+              }
             }
           }
+          if (uploadDir) break;
         }
         if (uploadDir) break;
       }
@@ -108,6 +116,7 @@ export async function GET(req: NextRequest) {
 
     // Verificar se a pasta existe
     if (!uploadDir || !existsSync(uploadDir)) {
+      console.log(`❌ Pasta não encontrada para o ID: ${id}`);
       return NextResponse.json(
         { success: false, message: "Requerimento não encontrado" },
         { status: 404 }
@@ -116,6 +125,7 @@ export async function GET(req: NextRequest) {
 
     // Obter lista de arquivos na pasta
     const files = readdirSync(uploadDir);
+    console.log("📁 Arquivos encontrados na pasta:", files);
 
     if (files.length === 0) {
       return NextResponse.json(
@@ -124,12 +134,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Criar um arquivo ZIP
+    // Criar ZIP (requerimento + anexos)
     const archive = archiver("zip", { zlib: { level: 9 } });
+    const outputStream = new PassThrough();
+    archive.pipe(outputStream);
 
     // 1) Primeiro arquivo do ZIP: PDF do requerimento (sempre 00 - REQUERIMENTO.PDF)
     const requerimentoPdfPath = join(uploadDir, REQUERIMENTO_PDF_NAME);
     const pdfZipName = "00 - REQUERIMENTO.PDF";
+
     if (existsSync(requerimentoPdfPath) && statSync(requerimentoPdfPath).isFile()) {
       archive.file(requerimentoPdfPath, { name: pdfZipName });
     } else {
@@ -144,28 +157,27 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Adicionar arquivos ao ZIP (exceto arquivo .id oculto, quaisquer .json e o PDF do requerimento)
-    // Ordenar alfabeticamente sem numeração
-    const arquivosParaZip = files.filter(file => {
+    // 2) Adicionar arquivos ao ZIP (exceto arquivo .id oculto, quaisquer .json/.txt e o PDF do requerimento)
+    const arquivosParaZip = files.filter((file) => {
       const lower = file.toLowerCase();
-      if (file === '.id') return false;
-      if (lower.endsWith('.json')) return false;
-      if (lower.endsWith('.txt')) return false;
+      if (file === ".id") return false;
+      if (lower.endsWith(".json")) return false;
+      if (lower.endsWith(".txt")) return false;
       if (file === REQUERIMENTO_PDF_NAME) return false;
       return statSync(join(uploadDir, file)).isFile();
     });
 
     // Remover numeração e ordenar
     const arquivosOrdenados = arquivosParaZip
-      .map(file => ({
+      .map((file) => ({
         original: file,
-        nomeSemNumeracao: file.replace(/^\d+\s*-\s*/, "")
+        nomeSemNumeracao: file.replace(/^\d+\s*-\s*/, ""),
       }))
-      .sort((a, b) => a.nomeSemNumeracao.localeCompare(b.nomeSemNumeracao, 'pt-BR'));
+      .sort((a, b) => a.nomeSemNumeracao.localeCompare(b.nomeSemNumeracao, "pt-BR"));
 
     // Adicionar ao ZIP com numeração a partir de 01
     arquivosOrdenados.forEach((arquivo, idx) => {
-      const numero = String(idx + 1).padStart(2, '0');
+      const numero = String(idx + 1).padStart(2, "0");
       const nomeFinal = `${numero} - ${arquivo.nomeSemNumeracao}`.toUpperCase();
       const filePath = join(uploadDir, arquivo.original);
       archive.file(filePath, { name: nomeFinal });
@@ -173,16 +185,18 @@ export async function GET(req: NextRequest) {
 
     await archive.finalize();
 
-    // Converter o stream para ReadableStream para Next.js
-    const readable = Readable.from(archive);
-    
-    // Extrair nome do requerente da pasta (formato: "NN - requerimento Nome")
+    // Nome do ZIP baseado no nome do requerente (extraído do nome da pasta)
     const folderName = uploadDir.split(/[/\\]/).pop() || "";
     const match = folderName.match(/\d+ - requerimento (.+)/);
     const nome = match ? match[1] : "Requerente";
-    const nomeLimpo = (nome || "").normalize('NFD').replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
+    const nomeLimpo = (nome || "")
+      .normalize("NFD")
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, "_");
     const nomeZip = `Documentos_${nomeLimpo}.zip`;
-    return new NextResponse(readable as any, {
+
+    const webStream = Readable.toWeb(outputStream);
+    return new NextResponse(webStream, {
       status: 200,
       headers: {
         "Content-Type": "application/zip",

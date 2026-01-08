@@ -1,0 +1,27 @@
+RequerimentoLocalId: a6af852c
+Formulario: isencao-idoso
+Nome: Carlos Santos
+Sequencial: 06
+Data: 07-01-2026
+
+=== Dados do formulario ===
+{
+  "nome": "Carlos Santos",
+  "cpf": "39017247123",
+  "formularioSlug": "isencao-idoso"
+}
+
+=== Arquivos anexados (salvos localmente) ===
+- guia_guia_pagamento.pdf
+- comprovante_comprovante_pagamento.pdf
+- docCertidao_doc1.pdf
+- docTaxas_doc2.pdf
+- docRgCpf_doc1.pdf
+- docResidencia_doc2.pdf
+- docRendimentos_doc1.pdf
+- docEscritura_doc2.pdf
+- docUnicoImovel_doc1.pdf
+- docFichaIptu_doc2.pdf
+- docProcuracao_proc1.pdf
+- docCpfProcurador_proc2.pdf
+- docIdentidadeProcurador_proc3.pdf
